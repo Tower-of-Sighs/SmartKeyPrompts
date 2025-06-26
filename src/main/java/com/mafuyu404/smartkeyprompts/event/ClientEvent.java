@@ -1,5 +1,6 @@
 package com.mafuyu404.smartkeyprompts.event;
 
+import com.mafuyu404.smartkeyprompts.Config;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.*;
@@ -21,6 +22,7 @@ import java.util.*;
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
 public class ClientEvent {
     public static ArrayList<KeyBindingInfo> bindingInfoList = new ArrayList<>();
+    private static Font font;
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
@@ -50,14 +52,31 @@ public class ClientEvent {
         int screenWidth = window.getGuiScaledWidth();
         int screenHeight = window.getGuiScaledHeight();
 
-        int x = 10;
-        int y = 10;
-        for (KeyBindingInfo keyBindingInfo : bindingInfoList) {
-            drawText(guiGraphics, x, y, "[" + keyBindingInfo.key() + "]" + keyBindingInfo.text(), 0.8f);
-            y += 10;
+        if (font == null) font = Minecraft.getInstance().font;
+
+        float scale = Config.SCALE.get().floatValue();
+        int position = Config.POSITION.get();
+        int x = 0, y = 0;
+
+        if (position == 1 || position == 7 || position == 8) {
+            x = 5;
         }
-    }
-    private static void drawText(GuiGraphics guiGraphics, int x, int y, String text, float scale) {
+        if (position == 2 || position == 6) {
+            x = screenWidth / 2;
+        }
+        if (position == 3 || position == 4 || position == 5) {
+            x = screenWidth - 5;
+        }
+        if (position == 1 || position == 2 || position == 3) {
+            y = 5;
+        }
+        if (position == 4 || position == 8) {
+            y = screenHeight / 2;
+        }
+        if (position == 5 || position == 6 || position == 7) {
+            y = screenHeight - 5;
+        }
+
         PoseStack poseStack = guiGraphics.pose();
         poseStack.pushPose(); // 保存当前变换状态
 
@@ -66,35 +85,44 @@ public class ClientEvent {
         poseStack.scale(scale, scale, 1.0f);
         poseStack.translate(-x, -y, 0);
 
-        Font font = Minecraft.getInstance().font;
+        for (KeyBindingInfo keyBindingInfo : bindingInfoList) {
+            KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, keyBindingInfo.key());
+            drawText(guiGraphics, font.width(keyBindingInfo.key()) + 12, y + 2, keyBindingInfo.text());
+            y += 14;
+        }
+
+        poseStack.popPose();
+    }
+    public static void drawText(GuiGraphics guiGraphics, int x, int y, String text) {
+
         // 渲染文字描边（四周偏移1像素）
         guiGraphics.drawString(
                 font,
                 text,
                 x - 1, y,
                 0xFF000000,
-                false
+                true
         );
         guiGraphics.drawString(
                 font,
                 text,
                 x + 1, y,
                 0xFF000000,
-                false
+                true
         );
         guiGraphics.drawString(
                 font,
                 text,
                 x, y - 1,
                 0xFF000000,
-                false
+                true
         );
         guiGraphics.drawString(
                 font,
                 text,
                 x, y + 1,
                 0xFF000000,
-                false
+                true
         );
 
         // 渲染主体文字
@@ -103,10 +131,8 @@ public class ClientEvent {
                 text,
                 x, y,
                 0xFFFFFFFF,
-                false
+                true
         );
-
-        poseStack.popPose();
     }
 
     public static ArrayList<KeyBindingInfo> getAllKeyBindings() {
