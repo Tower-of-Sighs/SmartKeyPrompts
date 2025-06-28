@@ -1,12 +1,8 @@
 package com.mafuyu404.smartkeyprompts.event;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.util.Mth;
-
-import static com.mafuyu404.smartkeyprompts.event.ClientEvent.drawText;
 
 public class KeyRenderer {
     public static void drawKeyBoardKey(GuiGraphics guiGraphics, int x, int y, String key) {
@@ -36,5 +32,47 @@ public class KeyRenderer {
 
         // 可选：外框（更突出轮廓）
         guiGraphics.drawCenteredString(font, key, x + width / 2, y + (height - 8) / 2, 0xFFFFFFFF);
+    }
+
+    public static void drawText(GuiGraphics guiGraphics, int x, int y, String text) {
+        Font font = Minecraft.getInstance().font;
+        // 渲染文字描边（四周偏移1像素）
+        guiGraphics.drawString(
+                font,
+                text,
+                x - 1, y,
+                0xFF000000,
+                true
+        );
+        guiGraphics.drawString(
+                font,
+                text,
+                x + 1, y,
+                0xFF000000,
+                true
+        );
+        guiGraphics.drawString(
+                font,
+                text,
+                x, y - 1,
+                0xFF000000,
+                true
+        );
+        guiGraphics.drawString(
+                font,
+                text,
+                x, y + 1,
+                0xFF000000,
+                true
+        );
+
+        // 渲染主体文字
+        guiGraphics.drawString(
+                font,
+                text,
+                x, y,
+                0xFFFFFFFF,
+                true
+        );
     }
 }

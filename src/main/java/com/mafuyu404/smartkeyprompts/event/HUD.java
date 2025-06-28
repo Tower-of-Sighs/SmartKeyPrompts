@@ -1,7 +1,9 @@
 package com.mafuyu404.smartkeyprompts.event;
 
 import com.mafuyu404.smartkeyprompts.Config;
+import com.mafuyu404.smartkeyprompts.KeyBindings;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.KeyMapping;
@@ -10,6 +12,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
@@ -20,17 +23,40 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.*;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
-public class ClientEvent {
+public class HUD {
     public static ArrayList<KeyBindingInfo> bindingInfoList = new ArrayList<>();
+    public static HashMap<String, ArrayList<KeyBindingInfo>> bindingInfoCache = new HashMap<>();
     private static Font font;
+
+    @SubscribeEvent
+    public static void action(InputEvent.Key event) {
+        if (event.getAction() != InputConstants.PRESS) return;
+        if (event.getKey() == KeyBindings.SWITCH_POSITION_KEY.getKey().getValue()) {
+            if (Config.POSITION.get() == 8) Config.POSITION.set(1);
+            else Config.POSITION.set(Config.POSITION.get() + 1);
+            Config.POSITION.save();
+        }
+    }
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
         if (Minecraft.getInstance().player == null) return;
         if (event.phase == TickEvent.Phase.START) {
-            SmartKeyPrompts.show(new String[]{"key.jade.narrate", "key.sprint", "key.jei.cheatOneItem"});
+            bindingInfoList.clear();
+            bindingInfoCache.forEach((string, keyBindingInfos) -> {
+                if (!Config.BLACKLIST.get().contains(string)) {
+                    bindingInfoList.addAll(keyBindingInfos);
+                }
+            });
+        }
+    }
+    @SubscribeEvent
+    public static void ticks(TickEvent.ClientTickEvent event) {
+        if (Minecraft.getInstance().player == null) return;
+        if (event.phase == TickEvent.Phase.END) {
+            SmartKeyPrompts.show("default", new String[]{"key.jade.narrate", "key.sprint", "key.jei.cheatOneItem"});
             if (Minecraft.getInstance().player.isSprinting()) {
-                SmartKeyPrompts.custom(new String[]{"key.keyboard.space"}, new String[]{"飞跃"});
+                SmartKeyPrompts.custom("default", new String[]{"key.keyboard.space"}, new String[]{"飞跃"});
             }
         }
     }
@@ -58,27 +84,22 @@ public class ClientEvent {
         int position = Config.POSITION.get();
         int x = 0, y = 0;
 
-        if (position == 1 || position == 7 || position == 8) {
-            x = 5;
-        }
         if (position == 2 || position == 6) {
-            x = screenWidth / 2;
+            return;
         }
-        if (position == 3 || position == 4 || position == 5) {
-            x = screenWidth - 5;
-        }
-        if (position == 1 || position == 2 || position == 3) {
+        if (position == 1 || position == 3) {
             y = 5;
         }
         if (position == 4 || position == 8) {
-            y = screenHeight / 2;
+            int length = (int) (double) (bindingInfoList.size() / 2);
+            y = screenHeight / 2 - length * 14 / 2;
         }
-        if (position == 5 || position == 6 || position == 7) {
-            y = screenHeight - 5;
+        if (position == 5 || position == 7) {
+            y = screenHeight - 5 - bindingInfoList.size() * 14;
         }
 
         PoseStack poseStack = guiGraphics.pose();
-        poseStack.pushPose(); // 保存当前变换状态
+        poseStack.pushPose();
 
         // 应用缩放变换（以指定位置为中心点）
         poseStack.translate(x, y, 0);
@@ -86,53 +107,20 @@ public class ClientEvent {
         poseStack.translate(-x, -y, 0);
 
         for (KeyBindingInfo keyBindingInfo : bindingInfoList) {
-            KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, keyBindingInfo.key());
-            drawText(guiGraphics, font.width(keyBindingInfo.key()) + 12, y + 2, keyBindingInfo.text());
+            if (position == 1 || position == 7 || position == 8) {
+                x = 5;
+                KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, keyBindingInfo.key());
+                KeyRenderer.drawText(guiGraphics, x + font.width(keyBindingInfo.key()) + 7, y + 2, keyBindingInfo.text());
+            }
+            if (position == 3 || position == 4 || position == 5) {
+                x = screenWidth;
+                KeyRenderer.drawText(guiGraphics, x - font.width(keyBindingInfo.text() + keyBindingInfo.key()), y + 2, keyBindingInfo.text());
+                KeyRenderer.drawKeyBoardKey(guiGraphics, x - font.width(keyBindingInfo.key()), y, keyBindingInfo.key());
+            }
             y += 14;
         }
 
         poseStack.popPose();
-    }
-    public static void drawText(GuiGraphics guiGraphics, int x, int y, String text) {
-
-        // 渲染文字描边（四周偏移1像素）
-        guiGraphics.drawString(
-                font,
-                text,
-                x - 1, y,
-                0xFF000000,
-                true
-        );
-        guiGraphics.drawString(
-                font,
-                text,
-                x + 1, y,
-                0xFF000000,
-                true
-        );
-        guiGraphics.drawString(
-                font,
-                text,
-                x, y - 1,
-                0xFF000000,
-                true
-        );
-        guiGraphics.drawString(
-                font,
-                text,
-                x, y + 1,
-                0xFF000000,
-                true
-        );
-
-        // 渲染主体文字
-        guiGraphics.drawString(
-                font,
-                text,
-                x, y,
-                0xFFFFFFFF,
-                true
-        );
     }
 
     public static ArrayList<KeyBindingInfo> getAllKeyBindings() {

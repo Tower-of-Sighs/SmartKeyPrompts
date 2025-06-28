@@ -8,6 +8,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,13 @@ public class Config {
     public static final ForgeConfigSpec.DoubleValue SCALE = BUILDER.comment("scale").defineInRange("magicNumber", 0.8, 0, 10);
 
     public static final ForgeConfigSpec.IntValue POSITION = BUILDER.comment("What you want the introduction message to be for the magic number").defineInRange("position", 1, 1, 8);
+
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>>  BLACKLIST  = BUILDER
+            .comment("禁用列表。")
+            .defineList("Blacklist",
+                    List.of("minecraft"),
+                    entry -> entry instanceof String
+            );
 
     static final ForgeConfigSpec SPEC = BUILDER.build();
 }

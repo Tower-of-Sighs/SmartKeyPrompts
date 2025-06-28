@@ -1,6 +1,6 @@
 package com.mafuyu404.smartkeyprompts;
 
-import com.mafuyu404.smartkeyprompts.event.ClientEvent;
+import com.mafuyu404.smartkeyprompts.event.HUD;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -24,19 +24,19 @@ public class SmartKeyPrompts {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.SPEC);
     }
 
-    public static void show(String[] showList) {
-        ArrayList<ClientEvent.KeyBindingInfo> bindingList = ClientEvent.getAllKeyBindings();
-        ArrayList<ClientEvent.KeyBindingInfo> result = new ArrayList<>();
+    public static void show(String id, String[] showList) {
+        ArrayList<HUD.KeyBindingInfo> bindingList = HUD.getAllKeyBindings();
+        ArrayList<HUD.KeyBindingInfo> result = new ArrayList<>();
         bindingList.forEach(keyBindingInfo -> {
             if (List.of(showList).contains(keyBindingInfo.name())) result.add(keyBindingInfo);
         });
-        ClientEvent.bindingInfoList = result;
+        HUD.bindingInfoCache.put(id, result);
     }
-    public static void custom(String[] keyList, String[] descList) {
-        ArrayList<ClientEvent.KeyBindingInfo> result = new ArrayList<>();
+    public static void custom(String id, String[] keyList, String[] descList) {
+        ArrayList<HUD.KeyBindingInfo> result = new ArrayList<>();
         for (int i = 0; i < keyList.length; i++) {
-            result.add(new ClientEvent.KeyBindingInfo("", descList[i], Component.translatable(keyList[i]).getString()));
+            result.add(new HUD.KeyBindingInfo("", descList[i], Component.translatable(keyList[i]).getString()));
         }
-        ClientEvent.bindingInfoList = result;
+        HUD.bindingInfoCache.put(id, result);
     }
 }
