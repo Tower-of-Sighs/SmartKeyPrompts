@@ -27,7 +27,7 @@ public class Config {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>>  BLACKLIST  = BUILDER
             .comment("禁用列表。")
             .defineList("Blacklist",
-                    List.of("minecraft"),
+                    List.of("jei"),
                     entry -> entry instanceof String
             );
 

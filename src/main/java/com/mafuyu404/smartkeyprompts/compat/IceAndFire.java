@@ -11,25 +11,20 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
-public class TACZ {
-    private static final String modid = "tacz";
+public class IceAndFire {
+    private static final String modid = "iceandfire";
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
         if (!ModList.get().isLoaded(modid)) return;
         Player player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().screen != null) return;
-        if (Utils.getMainHandItemId(player).equals("tacz:modern_kinetic_gun")) {
-            SmartKeyPrompts.show(modid, "key.tacz.shoot.desc");
-            SmartKeyPrompts.show(modid, "key.tacz.zoom.desc");
-            SmartKeyPrompts.show(modid, "key.tacz.reload.desc");
-            SmartKeyPrompts.show(modid, "key.tacz.refit.desc");
-            SmartKeyPrompts.show(modid, "key.tacz.melee.desc");
-            SmartKeyPrompts.show(modid, "key.tacz.interact.desc");
-            SmartKeyPrompts.show(modid, "key.tacz.inspect.desc");
-            SmartKeyPrompts.show(modid, "key.tacz.fire_select.desc");
-            SmartKeyPrompts.show(modid, "key.tacz.crawl.desc");
-            SmartKeyPrompts.show(modid, "key.tacz.aim.desc");
+        String vehicle = Utils.getVehicleType(player);
+        if (vehicle != null && vehicle.startsWith("iceandfire:") && vehicle.endsWith("_dragon")) {
+            SmartKeyPrompts.show(modid, "key.dragon_strike");
+            SmartKeyPrompts.show(modid, "key.dragon_fireAttack");
+            SmartKeyPrompts.show(modid, "key.dragon_down");
+            SmartKeyPrompts.show(modid, "key.dragon_change_view");
         }
     }
 }
