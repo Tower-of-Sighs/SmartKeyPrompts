@@ -1,7 +1,6 @@
-package com.mafuyu404.smartkeyprompts.event;
+package com.mafuyu404.smartkeyprompts.init;
 
 import com.mafuyu404.smartkeyprompts.Config;
-import com.mafuyu404.smartkeyprompts.KeyBindings;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
@@ -24,9 +23,15 @@ import java.util.*;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
 public class HUD {
-    public static ArrayList<KeyBindingInfo> bindingInfoList = new ArrayList<>();
-    public static HashMap<String, ArrayList<KeyBindingInfo>> bindingInfoCache = new HashMap<>();
+    public static List<KeyBindingInfo> bindingInfoList = new ArrayList<>();
+    public static List<KeyBindingInfo> bindingInfoCache = new ArrayList<>();
     private static Font font;
+
+    public static void addCache(KeyBindingInfo keyBindingInfo) {
+        if (!bindingInfoCache.contains(keyBindingInfo)) {
+            bindingInfoCache.add(keyBindingInfo);
+        }
+    }
 
     @SubscribeEvent
     public static void action(InputEvent.Key event) {
@@ -43,23 +48,22 @@ public class HUD {
         if (Minecraft.getInstance().player == null) return;
         if (event.phase == TickEvent.Phase.START) {
             bindingInfoList.clear();
-            bindingInfoCache.forEach((string, keyBindingInfos) -> {
-                if (!Config.BLACKLIST.get().contains(string)) {
-                    bindingInfoList.addAll(keyBindingInfos);
-                }
-            });
+            bindingInfoList.addAll(bindingInfoCache);
+            bindingInfoCache.clear();
         }
     }
-    @SubscribeEvent
-    public static void ticks(TickEvent.ClientTickEvent event) {
-        if (Minecraft.getInstance().player == null) return;
-        if (event.phase == TickEvent.Phase.END) {
-            SmartKeyPrompts.show("default", new String[]{"key.jade.narrate", "key.sprint", "key.jei.cheatOneItem"});
-            if (Minecraft.getInstance().player.isSprinting()) {
-                SmartKeyPrompts.custom("default", new String[]{"key.keyboard.space"}, new String[]{"飞跃"});
-            }
-        }
-    }
+//    @SubscribeEvent
+//    public static void test(TickEvent.ClientTickEvent event) {
+//        if (Minecraft.getInstance().player == null) return;
+//        if (event.phase == TickEvent.Phase.END) {
+//            SmartKeyPrompts.show("default", "key.jade.narrate");
+//            SmartKeyPrompts.show("default", "key.sprint");
+//            SmartKeyPrompts.show("default", "key.jei.cheatOneItem");
+//            if (Minecraft.getInstance().player.isSprinting()) {
+//                SmartKeyPrompts.custom("default", "key.keyboard.space", "key.jump");
+//            }
+//        }
+//    }
     @SubscribeEvent
     public static void onRenderGameOverlay(RenderGuiOverlayEvent.Post event) {
         if (Minecraft.getInstance().screen != null) return;
@@ -91,56 +95,60 @@ public class HUD {
             y = 5;
         }
         if (position == 4 || position == 8) {
-            int length = (int) (double) (bindingInfoList.size() / 2);
-            y = screenHeight / 2 - length * 14 / 2;
+            int totalHeight = bindingInfoList.size() * 14;
+            y = screenHeight / 2 - totalHeight / 2;
         }
         if (position == 5 || position == 7) {
             y = screenHeight - 5 - bindingInfoList.size() * 14;
         }
 
         PoseStack poseStack = guiGraphics.pose();
-        poseStack.pushPose();
-
-        // 应用缩放变换（以指定位置为中心点）
-        poseStack.translate(x, y, 0);
-        poseStack.scale(scale, scale, 1.0f);
-        poseStack.translate(-x, -y, 0);
 
         for (KeyBindingInfo keyBindingInfo : bindingInfoList) {
+            poseStack.pushPose();
+
+            String key = Component.translatable(keyBindingInfo.key).getString();
+            if (key.contains("key.keyboard")) {
+                key = key.split("\\.")[2].toUpperCase();
+            }
+            String desc = Component.translatable(keyBindingInfo.desc).getString();
+
             if (position == 1 || position == 7 || position == 8) {
                 x = 5;
-                KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, keyBindingInfo.key());
-                KeyRenderer.drawText(guiGraphics, x + font.width(keyBindingInfo.key()) + 7, y + 2, keyBindingInfo.text());
+                poseStack.translate(x, y, 0);
+                poseStack.scale(scale, scale, 1.0f);
+                poseStack.translate(-x, -y, 0);
+                KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key);
+                KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
             }
             if (position == 3 || position == 4 || position == 5) {
-                x = screenWidth;
-                KeyRenderer.drawText(guiGraphics, x - font.width(keyBindingInfo.text() + keyBindingInfo.key()), y + 2, keyBindingInfo.text());
-                KeyRenderer.drawKeyBoardKey(guiGraphics, x - font.width(keyBindingInfo.key()), y, keyBindingInfo.key());
+                x = screenWidth - 8;
+                poseStack.translate(x, y, 0);
+                poseStack.scale(scale, scale, 1.0f);
+                poseStack.translate(-x, -y, 0);
+                KeyRenderer.drawText(guiGraphics, x - font.width(desc + key) - 3, y + 2, desc);
+                KeyRenderer.drawKeyBoardKey(guiGraphics, x - font.width(key), y, key);
             }
             y += 14;
-        }
 
-        poseStack.popPose();
+            poseStack.popPose();
+        }
     }
 
     public static ArrayList<KeyBindingInfo> getAllKeyBindings() {
         Minecraft mc = Minecraft.getInstance();
         ArrayList<KeyBindingInfo> bindingList = new ArrayList<>();
-//        Map<String, List<KeyBindingInfo>> groupedBindings = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (KeyMapping binding : mc.options.keyMappings) {
             KeyBindingInfo info = new KeyBindingInfo(
-                    binding.getName(),
-                    Component.translatable(binding.getName()).getString(),
-                    binding.getKey().getDisplayName().getString()
+                    "",
+                    binding.getKey().getName(),
+                    binding.getName()
             );
-//            groupedBindings
-//                    .computeIfAbsent(binding.getCategory(), k -> new ArrayList<>())
-//                    .add(info);
             bindingList.add(info);
         }
         return bindingList;
     }
 
     // 按键绑定信息类
-    public record KeyBindingInfo(String name, String text, String key) {}
+    public record KeyBindingInfo(String id, String key, String desc) {}
 }

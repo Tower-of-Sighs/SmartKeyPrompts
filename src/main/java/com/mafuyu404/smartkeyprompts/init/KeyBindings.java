@@ -1,5 +1,6 @@
-package com.mafuyu404.smartkeyprompts;
+package com.mafuyu404.smartkeyprompts.init;
 
+import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.api.distmarker.Dist;

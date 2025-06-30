@@ -1,4 +1,4 @@
-package com.mafuyu404.smartkeyprompts.event;
+package com.mafuyu404.smartkeyprompts.init;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
