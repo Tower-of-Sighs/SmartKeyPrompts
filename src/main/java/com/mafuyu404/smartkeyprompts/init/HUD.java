@@ -7,8 +7,11 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
@@ -20,12 +23,14 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
 public class HUD {
     public static List<KeyBindingInfo> bindingInfoList = new ArrayList<>();
     public static List<KeyBindingInfo> bindingInfoCache = new ArrayList<>();
     private static Font font;
+    public static KeyMapping[] KeyMappingCache;
 
     public static void addCache(KeyBindingInfo keyBindingInfo) {
         if (!bindingInfoCache.contains(keyBindingInfo)) {
@@ -37,6 +42,14 @@ public class HUD {
     public static void action(InputEvent.Key event) {
         if (event.getAction() != InputConstants.PRESS) return;
         if (event.getKey() == KeyBindings.SWITCH_POSITION_KEY.getKey().getValue()) {
+            Options options = Minecraft.getInstance().options;
+            if (options.keyShift.isDown() || Screen.hasShiftDown()) {
+                List<String> currentKey = bindingInfoList.stream()
+                        .filter(keyBindingInfo -> !keyBindingInfo.custom && Utils.getKeyByDesc(keyBindingInfo.desc) != null)
+                        .map(keyBindingInfo -> keyBindingInfo.desc).toList();
+                modifyKey(currentKey);
+                return;
+            }
             if (Config.POSITION.get() == 8) Config.POSITION.set(1);
             else Config.POSITION.set(Config.POSITION.get() + 1);
             Config.POSITION.save();
@@ -45,22 +58,27 @@ public class HUD {
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
-        if (Minecraft.getInstance().player == null) return;
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.player == null) return;
         if (event.phase == TickEvent.Phase.START) {
             bindingInfoList.clear();
             bindingInfoList.addAll(bindingInfoCache);
             bindingInfoCache.clear();
+        }
+        if (!(minecraft.screen instanceof KeyBindsScreen) && KeyMappingCache != null) {
+            minecraft.options.keyMappings = KeyMappingCache;
+            KeyMappingCache = null;
         }
     }
 //    @SubscribeEvent
 //    public static void test(TickEvent.ClientTickEvent event) {
 //        if (Minecraft.getInstance().player == null) return;
 //        if (event.phase == TickEvent.Phase.END) {
-//            SmartKeyPrompts.show("default", "key.jade.narrate");
+//            SmartKeyPrompts.show("default", "key.jade.narratet");
 //            SmartKeyPrompts.show("default", "key.sprint");
-//            SmartKeyPrompts.show("default", "key.jei.cheatOneItem");
+////            SmartKeyPrompts.show("default", "key.jei.cheatOneItem");
 //            if (Minecraft.getInstance().player.isSprinting()) {
-//                SmartKeyPrompts.custom("default", "key.keyboard.space", "key.jump");
+//                SmartKeyPrompts.custom("default", "key.keyboard.left.shift+key.keyboard.space", "key.jump");
 //            }
 //        }
 //    }
@@ -107,10 +125,7 @@ public class HUD {
         for (KeyBindingInfo keyBindingInfo : bindingInfoList) {
             poseStack.pushPose();
 
-            String key = Component.translatable(keyBindingInfo.key).getString();
-            if (key.contains("key.keyboard")) {
-                key = key.split("\\.")[2].toUpperCase();
-            }
+            String key = translateKey(keyBindingInfo.key);
             String desc = Component.translatable(keyBindingInfo.desc).getString();
 
             if (position == 1 || position == 7 || position == 8) {
@@ -135,6 +150,22 @@ public class HUD {
         }
     }
 
+    private static String translateKey(String key) {
+        if (key.contains("+")) {
+            StringBuilder result = new StringBuilder();
+            List.of(key.split("\\+")).forEach(part -> {
+                if (!result.isEmpty()) result.append("+");
+                result.append(translateKey(part));
+            });
+            return result.toString();
+        }
+        String text = Component.translatable(key).getString();
+        if (text.contains("key.keyboard")) {
+            text = text.split("\\.")[2].toUpperCase();
+        }
+        return text;
+    }
+
     public static ArrayList<KeyBindingInfo> getAllKeyBindings() {
         Minecraft mc = Minecraft.getInstance();
         ArrayList<KeyBindingInfo> bindingList = new ArrayList<>();
@@ -142,7 +173,8 @@ public class HUD {
             KeyBindingInfo info = new KeyBindingInfo(
                     "",
                     binding.getKey().getName(),
-                    binding.getName()
+                    binding.getName(),
+                    false
             );
             bindingList.add(info);
         }
@@ -150,5 +182,35 @@ public class HUD {
     }
 
     // 按键绑定信息类
-    public record KeyBindingInfo(String id, String key, String desc) {}
+    public record KeyBindingInfo(String id, String key, String desc, boolean custom) {}
+
+    public static void modifyKey(List<String> keyNames) {
+        if (KeyMappingCache != null) return;
+
+        Minecraft minecraft = Minecraft.getInstance();
+
+        KeyMappingCache = minecraft.options.keyMappings;
+
+        KeyMapping[] allKeys = minecraft.options.keyMappings;
+        Set<String> targetKeys = keyNames.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+
+        KeyMapping[] filteredKeys = new KeyMapping[allKeys.length];
+        int count = 0;
+
+        for (KeyMapping key : allKeys) {
+            String name = key.getName().toLowerCase();
+            if (targetKeys.contains(name)) {
+                filteredKeys[count++] = key;
+            }
+        }
+
+        KeyMapping[] tempKeys = new KeyMapping[count];
+        System.arraycopy(filteredKeys, 0, tempKeys, 0, count);
+
+        minecraft.options.keyMappings = tempKeys;
+        minecraft.setScreen(new KeyBindsScreen(null, minecraft.options));
+
+    }
 }

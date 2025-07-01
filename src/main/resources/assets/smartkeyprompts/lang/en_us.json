@@ -1,4 +1,11 @@
 {
   "key.categories.smartkeyprompts": "Smart Key Prompts",
-  "key.smartkeyprompts.switch_position": "Switch Position"
+  "key.smartkeyprompts.switch_position": "Switch Position",
+
+  "key.diligentstalker.connect": "Connect",
+  "key.diligentstalker.disconnect": "Disconnect",
+  "key.diligentstalker.container": "Container",
+  "key.diligentstalker.record": "Record",
+  "key.diligentstalker.add_fuel": "Add Fuel",
+  "key.diligentstalker.remote_connect": "Remote Connect"
 }
