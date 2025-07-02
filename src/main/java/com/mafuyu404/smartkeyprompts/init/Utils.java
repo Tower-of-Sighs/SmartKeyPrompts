@@ -3,6 +3,7 @@ package com.mafuyu404.smartkeyprompts.init;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
@@ -13,7 +14,9 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.ForgeMod;
+import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,16 +35,15 @@ public class Utils {
     }
 
     public static String getKeyByDesc(String desc) {
-        for (HUD.KeyBindingInfo keyBindingInfo : HUD.getAllKeyBindings()) {
+        for (HUD.KeyBindingInfo keyBindingInfo : getAllKeyBindings()) {
             if (keyBindingInfo.desc().equals(desc)) return keyBindingInfo.key();
         }
         return null;
     }
 
-    public static Entity getTargetedEntity(Player player, double extendReachDistance) {
+    public static Entity getTargetedEntity(Player player) {
         AttributeInstance reachAttr = player.getAttribute(ForgeMod.BLOCK_REACH.get());
         double maxDistance = reachAttr != null ? reachAttr.getValue() : 4.5; // 默认值
-        maxDistance += extendReachDistance;
 
         Vec3 eyePosition = player.getEyePosition();
         Vec3 viewVector = player.getLookAngle();
@@ -65,5 +67,42 @@ public class Utils {
         );
 
         return result != null ? result.getEntity() : null;
+    }
+
+    public static ArrayList<HUD.KeyBindingInfo> getAllKeyBindings() {
+        Minecraft mc = Minecraft.getInstance();
+        ArrayList<HUD.KeyBindingInfo> bindingList = new ArrayList<>();
+        for (KeyMapping binding : mc.options.keyMappings) {
+            HUD.KeyBindingInfo info = new HUD.KeyBindingInfo(
+                    "",
+                    binding.getKey().getName(),
+                    binding.getName(),
+                    false
+            );
+            bindingList.add(info);
+        }
+        return bindingList;
+    }
+
+    public static String translateKey(String key) {
+        if (key.contains("+")) {
+            StringBuilder result = new StringBuilder();
+            List.of(key.split("\\+")).forEach(part -> {
+                if (!result.isEmpty()) result.append("+");
+                result.append(translateKey(part));
+            });
+            return result.toString();
+        }
+        String text = Component.translatable(key).getString();
+        if (text.contains("key.keyboard")) {
+            text = text.split("\\.")[2].toUpperCase();
+        }
+        return text;
+    }
+
+    public static boolean isKeyPressed(int glfwKeyCode) {
+        Minecraft minecraft = Minecraft.getInstance();
+        long windowHandle = minecraft.getWindow().getWindow();
+        return GLFW.glfwGetKey(windowHandle, glfwKeyCode) == GLFW.GLFW_PRESS;
     }
 }

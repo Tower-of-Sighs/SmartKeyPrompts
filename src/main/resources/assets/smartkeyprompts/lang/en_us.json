@@ -1,9 +1,13 @@
 {
   "key.categories.smartkeyprompts": "Smart Key Prompts",
-  "key.smartkeyprompts.switch_position": "Switch Position",
+  "key.smartkeyprompts.control": "control",
+  "key.smartkeyprompts.keybinding": "View Keybindings",
+  "key.smartkeyprompts.position": "Move HUD",
+  "key.smartkeyprompts.scale": "Scale HUD",
+
+  "key.mouse.wheel": "Wheel",
 
   "key.diligentstalker.connect": "Connect",
-  "key.diligentstalker.disconnect": "Disconnect",
   "key.diligentstalker.container": "Container",
   "key.diligentstalker.record": "Record",
   "key.diligentstalker.add_fuel": "Add Fuel",

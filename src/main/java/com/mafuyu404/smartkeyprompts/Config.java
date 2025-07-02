@@ -20,13 +20,13 @@ public class Config {
 
 //    private static final ForgeConfigSpec.BooleanValue LOG_DIRT_BLOCK = BUILDER.comment("Whether to log the dirt block on common setup").define("logDirtBlock", true);
 
-    public static final ForgeConfigSpec.DoubleValue SCALE = BUILDER.comment("scale").defineInRange("magicNumber", 0.8, 0, 10);
+    public static final ForgeConfigSpec.DoubleValue SCALE = BUILDER.comment("缩放").defineInRange("scale", 0.8, 0, 10);
 
-    public static final ForgeConfigSpec.IntValue POSITION = BUILDER.comment("What you want the introduction message to be for the magic number").defineInRange("position", 1, 1, 8);
+    public static final ForgeConfigSpec.IntValue POSITION = BUILDER.comment("显示位置").defineInRange("position", 1, 1, 8);
 
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>>  BLACKLIST  = BUILDER
-            .comment("禁用列表。")
-            .defineList("Blacklist",
+            .comment("标识ID黑名单")
+            .defineList("blacklist",
                     List.of("jei"),
                     entry -> entry instanceof String
             );

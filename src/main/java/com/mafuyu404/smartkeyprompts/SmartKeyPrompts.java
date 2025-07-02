@@ -1,6 +1,7 @@
 package com.mafuyu404.smartkeyprompts;
 
 import com.mafuyu404.smartkeyprompts.init.HUD;
+import com.mafuyu404.smartkeyprompts.init.Utils;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -27,7 +28,7 @@ public class SmartKeyPrompts {
 
 
     public static void show(String id, String desc) {
-        HUD.getAllKeyBindings().forEach(keyBindingInfo -> {
+        Utils.getAllKeyBindings().forEach(keyBindingInfo -> {
             if (keyBindingInfo.desc().equals(desc)) {
                 HUD.addCache(new HUD.KeyBindingInfo(id, keyBindingInfo.key(), keyBindingInfo.desc(), false));
             }
@@ -35,5 +36,8 @@ public class SmartKeyPrompts {
     }
     public static void custom(String id, String key, String desc) {
         HUD.addCache(new HUD.KeyBindingInfo(id, key, desc, true));
+    }
+    public static void alias(String id, String key, String desc) {
+        HUD.addCache(new HUD.KeyBindingInfo(id, key, desc, false));
     }
 }

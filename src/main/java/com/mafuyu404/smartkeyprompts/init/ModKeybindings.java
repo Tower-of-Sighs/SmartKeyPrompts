@@ -12,8 +12,8 @@ import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT, modid = SmartKeyPrompts.MODID)
-public class KeyBindings {
-    public static final KeyMapping SWITCH_POSITION_KEY = new KeyMapping("key.smartkeyprompts.switch_position",
+public class ModKeybindings {
+    public static final KeyMapping CONTROL_KEY = new KeyMapping("key.smartkeyprompts.control",
             KeyConflictContext.IN_GAME,
             KeyModifier.NONE,
             InputConstants.Type.KEYSYM,
@@ -23,6 +23,6 @@ public class KeyBindings {
 
     @SubscribeEvent
     public static void registerKeyMapping(RegisterKeyMappingsEvent event) {
-        event.register(SWITCH_POSITION_KEY);
+        event.register(CONTROL_KEY);
     }
 }
