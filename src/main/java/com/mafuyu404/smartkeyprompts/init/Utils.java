@@ -42,31 +42,46 @@ public class Utils {
     }
 
     public static Entity getTargetedEntity(Player player) {
-        AttributeInstance reachAttr = player.getAttribute(ForgeMod.BLOCK_REACH.get());
-        double maxDistance = reachAttr != null ? reachAttr.getValue() : 4.5; // 默认值
+        // 1. 获取玩家视线的起点和终点
+        double distance = 0;
+        Vec3 start = player.getEyePosition();
+        Vec3 look = player.getViewVector(1.0F);
+        Vec3 end = start.add(look.x * distance, look.y * distance, look.z * distance);
 
-        Vec3 eyePosition = player.getEyePosition();
-        Vec3 viewVector = player.getLookAngle();
-        Vec3 endPosition = eyePosition.add(viewVector.x * maxDistance, viewVector.y * maxDistance, viewVector.z * maxDistance);
-
-        EntityHitResult result = player.level().clip(new ClipContext(
-                eyePosition,
-                endPosition,
-                ClipContext.Block.OUTLINE, // 方块检测模式
-                ClipContext.Fluid.NONE, // 忽略流体
+        // 2. 进行方块碰撞检测 (避免穿透方块选中实体)
+        HitResult blockHit = player.level().clip(new ClipContext(
+                start, end,
+                ClipContext.Block.OUTLINE,
+                ClipContext.Fluid.NONE,
                 player
-        )).getType() == HitResult.Type.BLOCK
-                ? null // 如果视线被方块阻挡则跳过实体检测
-                : ProjectileUtil.getEntityHitResult(
+        ));
+
+        // 3. 设置实体检测范围
+        AABB searchArea = player.getBoundingBox()
+                .expandTowards(look.x * distance, look.y * distance, look.z * distance)
+                .inflate(1.0D); // 扩大检测范围
+
+        // 4. 检测视线上的实体
+        EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
                 player.level(),
                 player,
-                eyePosition,
-                endPosition,
-                new AABB(eyePosition, endPosition).inflate(1.0D), // 检测范围
-                entity -> !entity.isSpectator() && entity.isPickable() && entity != player
+                start,
+                end,
+                searchArea,
+                entity -> !entity.isSpectator() && entity.isPickable() // 过滤条件
         );
 
-        return result != null ? result.getEntity() : null;
+        // 5. 判断结果优先级 (优先选择实体)
+        if (entityHit != null) {
+            // 确保实体没有被方块遮挡
+            Vec3 entityHitPos = entityHit.getLocation();
+            if (blockHit.getType() == HitResult.Type.MISS ||
+                    start.distanceToSqr(entityHitPos) < start.distanceToSqr(blockHit.getLocation())) {
+                return entityHit.getEntity();
+            }
+        }
+
+        return null;
     }
 
     public static ArrayList<HUD.KeyBindingInfo> getAllKeyBindings() {
@@ -104,5 +119,14 @@ public class Utils {
         Minecraft minecraft = Minecraft.getInstance();
         long windowHandle = minecraft.getWindow().getWindow();
         return GLFW.glfwGetKey(windowHandle, glfwKeyCode) == GLFW.GLFW_PRESS;
+    }
+    public static boolean isKeyPressedOfDesc(String key) {
+        boolean result = false;
+        for (KeyMapping keyMapping : Minecraft.getInstance().options.keyMappings) {
+            if (key.equals(keyMapping.getName()) && isKeyPressed(keyMapping.getKey().getValue())) {
+                result = true;
+            }
+        }
+        return result;
     }
 }

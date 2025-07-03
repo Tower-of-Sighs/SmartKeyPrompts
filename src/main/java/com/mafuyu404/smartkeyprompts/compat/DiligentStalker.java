@@ -43,11 +43,11 @@ public class DiligentStalker {
         }
         if (targetedDrone) {
             if (mainHandItem.equals("minecraft:sugar")) {
-                SmartKeyPrompts.custom(modid, keyShift + keyUse, "key.diligentstalker.add_fuel");
+                SmartKeyPrompts.custom(modid, keyShift + "+" + keyUse, "key.diligentstalker.add_fuel");
             } else if (mainHandItem.equals("diligentstalker:stalker_master")) {
-                SmartKeyPrompts.custom(modid, keyShift + keyUse, "key.diligentstalker.record");
+                SmartKeyPrompts.custom(modid, keyShift + "+" + keyUse, "key.diligentstalker.record");
             } else {
-                SmartKeyPrompts.custom(modid, keyShift + keyUse, "key.diligentstalker.container");
+                SmartKeyPrompts.custom(modid, keyShift + "+" + keyUse, "key.diligentstalker.container");
             }
         }
     }

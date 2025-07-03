@@ -13,11 +13,11 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
 public class JEI {
-    private static final String modid = "jei";
+    private static final String modid = "jei_skp";
 
     @SubscribeEvent
     public static void itemTooltip(ItemTooltipEvent event) {
-        if (ModList.get().isLoaded(modid)) {
+        if (ModList.get().isLoaded("jei")) {
             SmartKeyPrompts.show(modid, "key.jei.showRecipe");
             SmartKeyPrompts.show(modid, "key.jei.showUses");
             SmartKeyPrompts.show(modid, "key.jei.bookmark");
@@ -26,7 +26,7 @@ public class JEI {
     }
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
-        if (!ModList.get().isLoaded(modid)) return;
+        if (!ModList.get().isLoaded("jei")) return;
         if (JeiCompat.isEnabled()) {
             SmartKeyPrompts.show(modid, "key.jei.recipeBack");
             SmartKeyPrompts.show(modid, "key.jei.toggleOverlay");

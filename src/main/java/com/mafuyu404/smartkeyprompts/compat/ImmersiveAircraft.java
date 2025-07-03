@@ -14,11 +14,11 @@ import java.util.Objects;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
 public class ImmersiveAircraft {
-    private static final String modid = "immersive_aircraft";
+    private static final String modid = "immersive_aircraft_skp";
     
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
-        if (!ModList.get().isLoaded(modid)) return;
+        if (!ModList.get().isLoaded("immersive_aircraft")) return;
         Player player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().screen != null) return;
         String vehicle = Utils.getVehicleType(player);

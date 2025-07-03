@@ -12,11 +12,11 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
 public class TACZ {
-    private static final String modid = "tacz";
+    private static final String modid = "tacz_skp";
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
-        if (!ModList.get().isLoaded(modid)) return;
+        if (!ModList.get().isLoaded("tacz")) return;
         Player player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().screen != null) return;
         if (Utils.getMainHandItemId(player).equals("tacz:modern_kinetic_gun")) {

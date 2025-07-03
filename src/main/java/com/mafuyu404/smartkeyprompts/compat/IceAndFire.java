@@ -12,11 +12,11 @@ import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
 public class IceAndFire {
-    private static final String modid = "iceandfire";
+    private static final String modid = "iceandfire_skp";
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
-        if (!ModList.get().isLoaded(modid)) return;
+        if (!ModList.get().isLoaded("iceandfire")) return;
         Player player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().screen != null) return;
         String vehicle = Utils.getVehicleType(player);
