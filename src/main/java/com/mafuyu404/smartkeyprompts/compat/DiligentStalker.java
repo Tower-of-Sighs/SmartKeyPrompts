@@ -34,7 +34,6 @@ public class DiligentStalker {
         }
 
         Entity entity = Utils.getTargetedEntity();
-//        System.out.print(entity+"\n");
         if (entity == null) return;
         boolean targetedDrone = Utils.toPathString(entity.getType().toString()).equals("diligentstalker:drone_stalker");
 

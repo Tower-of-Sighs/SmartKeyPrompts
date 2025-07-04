@@ -39,7 +39,6 @@ public class HUD {
     public static void tick(TickEvent.ClientTickEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) return;
-        System.out.print(Utils.getTargetedEntity()+"\n");
         if (event.phase == TickEvent.Phase.START) {
             if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
                 List<? extends String> blacklist = Config.BLACKLIST.get();
