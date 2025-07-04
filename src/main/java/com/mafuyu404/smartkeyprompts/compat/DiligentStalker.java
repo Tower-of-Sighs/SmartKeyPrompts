@@ -33,7 +33,7 @@ public class DiligentStalker {
             SmartKeyPrompts.show(modid, "key.diligentstalker.disconnect.desc");
         }
 
-        Entity entity = Utils.getTargetedEntity(player);
+        Entity entity = Utils.getTargetedEntity();
 //        System.out.print(entity+"\n");
         if (entity == null) return;
         boolean targetedDrone = Utils.toPathString(entity.getType().toString()).equals("diligentstalker:drone_stalker");

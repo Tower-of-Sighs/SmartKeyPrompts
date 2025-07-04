@@ -39,7 +39,7 @@ public class HUD {
     public static void tick(TickEvent.ClientTickEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) return;
-        System.out.print(Utils.getTargetedEntity(minecraft.player)+"\n");
+        System.out.print(Utils.getTargetedEntity()+"\n");
         if (event.phase == TickEvent.Phase.START) {
             if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
                 List<? extends String> blacklist = Config.BLACKLIST.get();
@@ -111,6 +111,7 @@ public class HUD {
 
             String key = translateKey(keyBindingInfo.key);
             String desc = Component.translatable(keyBindingInfo.desc).getString();
+            boolean pressed = Utils.isKeyPressedOfDesc(keyBindingInfo.desc);
 
             if (i != 0) y += (int) (16.0 * scale);
 
@@ -119,7 +120,7 @@ public class HUD {
                 poseStack.translate(x, y, 0);
                 poseStack.scale(scale, scale, 1.0f);
                 poseStack.translate(-x, -y, 0);
-                KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key);
+                KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
                 KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
             }
             if (position == 3 || position == 4 || position == 5) {
@@ -128,7 +129,7 @@ public class HUD {
                 poseStack.scale(scale, scale, 1.0f);
                 poseStack.translate(-x, -y, 0);
                 KeyRenderer.drawText(guiGraphics, x - font.width(desc + key) - 3, y + 2, desc);
-                KeyRenderer.drawKeyBoardKey(guiGraphics, x - font.width(key), y, key);
+                KeyRenderer.drawKeyBoardKey(guiGraphics, x - font.width(key), y, key, pressed);
             }
 
             poseStack.popPose();

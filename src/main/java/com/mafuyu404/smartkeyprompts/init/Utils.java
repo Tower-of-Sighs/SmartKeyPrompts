@@ -41,46 +41,12 @@ public class Utils {
         return null;
     }
 
-    public static Entity getTargetedEntity(Player player) {
-        // 1. 获取玩家视线的起点和终点
-        double distance = 0;
-        Vec3 start = player.getEyePosition();
-        Vec3 look = player.getViewVector(1.0F);
-        Vec3 end = start.add(look.x * distance, look.y * distance, look.z * distance);
-
-        // 2. 进行方块碰撞检测 (避免穿透方块选中实体)
-        HitResult blockHit = player.level().clip(new ClipContext(
-                start, end,
-                ClipContext.Block.OUTLINE,
-                ClipContext.Fluid.NONE,
-                player
-        ));
-
-        // 3. 设置实体检测范围
-        AABB searchArea = player.getBoundingBox()
-                .expandTowards(look.x * distance, look.y * distance, look.z * distance)
-                .inflate(1.0D); // 扩大检测范围
-
-        // 4. 检测视线上的实体
-        EntityHitResult entityHit = ProjectileUtil.getEntityHitResult(
-                player.level(),
-                player,
-                start,
-                end,
-                searchArea,
-                entity -> !entity.isSpectator() && entity.isPickable() // 过滤条件
-        );
-
-        // 5. 判断结果优先级 (优先选择实体)
-        if (entityHit != null) {
-            // 确保实体没有被方块遮挡
-            Vec3 entityHitPos = entityHit.getLocation();
-            if (blockHit.getType() == HitResult.Type.MISS ||
-                    start.distanceToSqr(entityHitPos) < start.distanceToSqr(blockHit.getLocation())) {
-                return entityHit.getEntity();
-            }
+    public static Entity getTargetedEntity() {
+        Minecraft mc = Minecraft.getInstance();
+        HitResult hit = mc.hitResult;
+        if (hit instanceof EntityHitResult entityHit) {
+            return entityHit.getEntity();
         }
-
         return null;
     }
 
