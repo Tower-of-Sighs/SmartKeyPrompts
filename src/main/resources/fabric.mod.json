@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "smartkeyprompts",
+  "version": "1.0.0",
+  "name": "SmartKeyPrompts",
+  "description": "Mafuyu never like you.",
+  "authors": [
+    "Mafuyu404",
+    "Flechazo"
+  ],
+  "contact": {},
+  "license": "GNU GPL 3.0",
+  "icon": "",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.mafuyu404.smartkeyprompts.init.ClientSetupEvent"
+    ],
+    "main": [
+      "com.mafuyu404.smartkeyprompts.SmartKeyPrompts"
+    ],
+    "jei_mod_plugin": [
+      "com.mafuyu404.smartkeyprompts.env.JeiPlugin"
+    ]
+  },
+  "mixins": [
+    "smartkeyprompts.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.10",
+    "fabric": "*",
+    "minecraft": "1.20.1"
+  },
+  "accessWidener" : "smartkeyprompts.accesswidener"
+}

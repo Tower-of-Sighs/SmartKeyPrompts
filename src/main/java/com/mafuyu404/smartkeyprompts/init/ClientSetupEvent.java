@@ -1,16 +1,22 @@
 package com.mafuyu404.smartkeyprompts.init;
 
-import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
+import com.mafuyu404.smartkeyprompts.compat.DiligentStalker;
+import com.mafuyu404.smartkeyprompts.compat.IceAndFire;
+import com.mafuyu404.smartkeyprompts.compat.ImmersiveAircraft;
+import com.mafuyu404.smartkeyprompts.compat.JEI;
 import com.mafuyu404.smartkeyprompts.env.JeiCompat;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.fabricmc.api.ClientModInitializer;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT, modid = SmartKeyPrompts.MODID)
-public class ClientSetupEvent {
-    @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(JeiCompat::init);
+public class ClientSetupEvent implements ClientModInitializer {
+    @Override
+    public void onInitializeClient() {
+        ModKeybindings.register();
+        HUD.init();
+        ConfigAction.init();
+        JeiCompat.init();
+        JEI.init();
+        DiligentStalker.init();
+        IceAndFire.init();
+        ImmersiveAircraft.init();
     }
 }

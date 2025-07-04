@@ -1,15 +1,12 @@
 package com.mafuyu404.smartkeyprompts.init;
 
-import com.mafuyu404.smartkeyprompts.Config;
-import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
-import com.mojang.blaze3d.platform.InputConstants;
+import com.mafuyu404.smartkeyprompts.ModConfig;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
@@ -18,46 +15,74 @@ import java.util.stream.Collectors;
 
 import static com.mafuyu404.smartkeyprompts.init.HUD.KeyMappingCache;
 
-@Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
 
 public class ConfigAction {
-    @SubscribeEvent
-    public static void mouseAction(InputEvent.MouseButton.Pre event) {
-        if (event.getAction() != InputConstants.PRESS) return;
-        if (Minecraft.getInstance().player == null) return;
-        if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
-        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-            List<String> currentKey = HUD.bindingInfoList.stream()
-                    .filter(keyBindingInfo -> !keyBindingInfo.custom() && Utils.getKeyByDesc(keyBindingInfo.desc()) != null)
-                    .map(HUD.KeyBindingInfo::desc).toList();
-            modifyKey(currentKey);
-        }
-        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-            int position = Config.POSITION.get();
-            if (position == 8) Config.POSITION.set(1);
-            else Config.POSITION.set(position + 1);
-            Config.POSITION.save();
-        }
-        event.setCanceled(true);
+    private static boolean mousePressed = false;
+    private static double lastScrollTime = 0;
+
+    public static void init() {
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.player == null) return;
+
+            long window = client.getWindow().getWindow();
+
+            if (GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS) {
+                if (!mousePressed && Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.key.getValue())) {
+                    mousePressed = true;
+                    handleLeftClick();
+                }
+            } else {
+                mousePressed = false;
+            }
+
+            if (GLFW.glfwGetMouseButton(window, GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS) {
+                if (Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.key.getValue())) {
+                    handleRightClick();
+                }
+            }
+        });
+
+        ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+            ScreenMouseEvents.allowMouseScroll(screen).register((screenInstance, mouseX, mouseY, horizontalAmount, verticalAmount) -> {
+                if (client.player == null) return true;
+                if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.key.getValue())) return true;
+
+                // 防止重复触发
+                double currentTime = System.currentTimeMillis();
+                if (currentTime - lastScrollTime < 100) return false;
+                lastScrollTime = currentTime;
+
+                scaleHUD(verticalAmount);
+                return false;
+            });
+        });
     }
 
-    @SubscribeEvent
-    public static void wheelAction(InputEvent.MouseScrollingEvent event) {
-        if (Minecraft.getInstance().player == null) return;
-        if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
-        scaleHUD(event.getScrollDelta());
-        event.setCanceled(true);
+    private static void handleLeftClick() {
+        List<String> currentKey = HUD.bindingInfoList.stream()
+                .filter(keyBindingInfo -> !keyBindingInfo.custom() && Utils.getKeyByDesc(keyBindingInfo.desc()) != null)
+                .map(HUD.KeyBindingInfo::desc).toList();
+        modifyKey(currentKey);
+    }
+
+    private static void handleRightClick() {
+        ModConfig config = ModConfig.getInstance();
+        if (config.position == 8) {
+            config.position = 1;
+        } else {
+            config.position += 1;
+        }
     }
 
     public static void scaleHUD(double delta) {
-        double scale = Config.SCALE.get();
+        ModConfig config = ModConfig.getInstance();
+        double scale = config.scale;
         if (delta < 0) {
             scale = Math.max(scale - 0.1, 0);
         } else {
             scale = Math.min(scale + 0.1, 10);
         }
-        Config.SCALE.set(scale);
-        Config.SCALE.save();
+        config.scale = scale;
     }
 
     public static void modifyKey(List<String> keyNames) {

@@ -2,18 +2,16 @@ package com.mafuyu404.smartkeyprompts.env;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import mezz.jei.api.IModPlugin;
-import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.runtime.IJeiRuntime;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 @mezz.jei.api.JeiPlugin
 public class JeiPlugin implements IModPlugin {
     private static IJeiRuntime jeiRuntime;

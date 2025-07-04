@@ -1,28 +1,24 @@
 package com.mafuyu404.smartkeyprompts.init;
 
-import com.mafuyu404.smartkeyprompts.Config;
+import com.mafuyu404.smartkeyprompts.ModConfig;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.MODID;
 import static com.mafuyu404.smartkeyprompts.init.Utils.translateKey;
 
-@Mod.EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
+
 public class HUD {
     public static List<KeyBindingInfo> bindingInfoList = new ArrayList<>();
     public static List<KeyBindingInfo> bindingInfoCache = new ArrayList<>();
@@ -35,14 +31,13 @@ public class HUD {
         }
     }
 
-    @SubscribeEvent
-    public static void tick(TickEvent.ClientTickEvent event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null) return;
-        System.out.print(Utils.getTargetedEntity()+"\n");
-        if (event.phase == TickEvent.Phase.START) {
-            if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
-                List<? extends String> blacklist = Config.BLACKLIST.get();
+    public static void init() {
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.player == null) return;
+//            System.out.print(Utils.getTargetedEntity() + "\n");
+
+            if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.key.getValue())) {
+                List<String> blacklist = ModConfig.getInstance().blacklist;
                 bindingInfoList.clear();
                 bindingInfoCache.forEach(keyBindingInfo -> {
                     if (!blacklist.contains(keyBindingInfo.id())) {
@@ -59,23 +54,17 @@ public class HUD {
                 });
             }
             bindingInfoCache.clear();
-        }
-        if (!(minecraft.screen instanceof KeyBindsScreen) && KeyMappingCache != null) {
-            minecraft.options.keyMappings = KeyMappingCache;
-            KeyMappingCache = null;
-        }
-    }
-    @SubscribeEvent
-    public static void onRenderGameOverlay(RenderGuiOverlayEvent.Post event) {
-        if (Minecraft.getInstance().screen != null) return;
-        if (event.getOverlay().id().equals(VanillaGuiOverlay.DEBUG_TEXT.id())) {
-            drawHud(event.getGuiGraphics());
-        }
-    }
-    @SubscribeEvent
-    public static void onRenderScreenOverlay(ScreenEvent.Render.Post event) {
-        if (Minecraft.getInstance().player == null) return;
-        drawHud(event.getGuiGraphics());
+
+            if (!(client.screen instanceof KeyBindsScreen) && KeyMappingCache != null) {
+                client.options.keyMappings = KeyMappingCache;
+                KeyMappingCache = null;
+            }
+        });
+
+        HudRenderCallback.EVENT.register((guiGraphics, tickDelta) -> {
+            if (Minecraft.getInstance().screen != null) return;
+            drawHud(guiGraphics);
+        });
     }
 
     private static void drawHud(GuiGraphics guiGraphics) {
@@ -85,8 +74,8 @@ public class HUD {
 
         if (font == null) font = Minecraft.getInstance().font;
 
-        float scale = Config.SCALE.get().floatValue();
-        int position = Config.POSITION.get();
+        float scale = (float) ModConfig.getInstance().scale;
+        int position = ModConfig.getInstance().position;
         int x = 0, y = 0;
 
         if (position == 2 || position == 6) {
@@ -137,5 +126,6 @@ public class HUD {
     }
 
     // 按键绑定信息类
-    public record KeyBindingInfo(String id, String key, String desc, boolean custom) {}
+    public record KeyBindingInfo(String id, String key, String desc, boolean custom) {
+    }
 }

@@ -2,33 +2,26 @@ package com.mafuyu404.smartkeyprompts.init;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.ForgeMod;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class Utils {
     public static String getVehicleType(Player player) {
         if (player.getVehicle() == null) return null;
         return toPathString(player.getVehicle().getType().toString());
     }
+
     public static String getMainHandItemId(Player player) {
         return toPathString(player.getMainHandItem().getItem().getDescriptionId());
     }
+
     public static String toPathString(String key) {
         String[] path = key.split("\\.");
         return path[1] + ":" + path[2];
@@ -56,7 +49,7 @@ public class Utils {
         for (KeyMapping binding : mc.options.keyMappings) {
             HUD.KeyBindingInfo info = new HUD.KeyBindingInfo(
                     "",
-                    binding.getKey().getName(),
+                    binding.key.getName(),
                     binding.getName(),
                     false
             );
@@ -75,9 +68,31 @@ public class Utils {
             return result.toString();
         }
         String text = Component.translatable(key).getString();
+
+        // 处理键盘按键
         if (text.contains("key.keyboard")) {
             text = text.split("\\.")[2].toUpperCase();
         }
+        // 处理鼠标按键
+        else if (key.startsWith("key.mouse.")) {
+            switch (key) {
+                case "key.mouse.0" -> text = "左键";
+                case "key.mouse.1" -> text = "右键";
+                case "key.mouse.2" -> text = "中键";
+                default -> {
+                    // 对于其他鼠标按键，提取数字部分
+                    String[] parts = key.split("\\.");
+                    if (parts.length >= 3) {
+                        text = "鼠标" + parts[2];
+                    }
+                }
+            }
+        }
+        // 处理其他特殊按键
+        else if (key.equals("key.mouse.wheel")) {
+            text = "滚轮";
+        }
+
         return text;
     }
 
@@ -86,10 +101,11 @@ public class Utils {
         long windowHandle = minecraft.getWindow().getWindow();
         return GLFW.glfwGetKey(windowHandle, glfwKeyCode) == GLFW.GLFW_PRESS;
     }
+
     public static boolean isKeyPressedOfDesc(String key) {
         boolean result = false;
         for (KeyMapping keyMapping : Minecraft.getInstance().options.keyMappings) {
-            if (key.equals(keyMapping.getName()) && isKeyPressed(keyMapping.getKey().getValue())) {
+            if (key.equals(keyMapping.getName()) && isKeyPressed(keyMapping.key.getValue())) {
                 result = true;
             }
         }
