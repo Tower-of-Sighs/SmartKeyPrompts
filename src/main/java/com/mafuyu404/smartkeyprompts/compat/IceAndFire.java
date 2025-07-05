@@ -19,7 +19,7 @@ public class IceAndFire {
         if (!ModList.get().isLoaded("iceandfire")) return;
         Player player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().screen != null) return;
-        String vehicle = Utils.getVehicleType(player);
+        String vehicle = Utils.getVehicleType();
         if (vehicle != null && vehicle.startsWith("iceandfire:") && vehicle.endsWith("_dragon")) {
             SmartKeyPrompts.show(modid, "key.dragon_strike");
             SmartKeyPrompts.show(modid, "key.dragon_fireAttack");

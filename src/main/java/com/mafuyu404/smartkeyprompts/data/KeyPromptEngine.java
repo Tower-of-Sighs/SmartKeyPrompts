@@ -130,8 +130,8 @@ public class KeyPromptEngine {
         // 添加基础变量
         context.put("modid", modid);
         context.put("player", player);
-        context.put("mainHandItem", Utils.getMainHandItemId(player));
-        context.put("vehicleType", Utils.getVehicleType(player));
+        context.put("mainHandItem", Utils.getMainHandItemId());
+        context.put("vehicleType", Utils.getVehicleType());
         context.put("targetedEntity", Utils.getTargetedEntityType());
         context.put("isInVehicle", player.getVehicle() != null);
         context.put("isSneaking", player.isShiftKeyDown());

@@ -42,6 +42,6 @@ public class SmartKeyPrompts {
     }
 
     public static KeyPrompt addDesc(String desc) {
-        return new KeyPrompt("", desc, "", false);
+        return new KeyPrompt("", Utils.getKeyByDesc(desc), desc, false);
     }
 }
