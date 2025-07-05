@@ -1,0 +1,6 @@
+{
+  "smartkeyprompts.configuration.config": "SmartKeyPrompts模组配置",
+  "smartkeyprompts.configuration.scale": "缩放",
+  "smartkeyprompts.configuration.position": "显示位置",
+  "smartkeyprompts.configuration.blacklist": "标识ID黑名单"
+}
