@@ -19,12 +19,12 @@ public class JEI {
             SmartKeyPrompts.show(modid, "key.jei.showRecipe");
             SmartKeyPrompts.show(modid, "key.jei.showUses");
             SmartKeyPrompts.show(modid, "key.jei.bookmark");
-            SmartKeyPrompts.show(modid, "key.jei.focusSearch");
         }
     }
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
+//        SmartKeyPrompts.addDesc("key.jei.showRecipe").atPosition("crosshair").toGroup("jei_skp");
         if (!ModList.get().isLoaded("jei")) return;
         if (JeiCompat.isEnabled()) {
             SmartKeyPrompts.show(modid, "key.jei.recipeBack");

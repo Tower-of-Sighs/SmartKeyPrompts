@@ -90,52 +90,75 @@ public class HUD {
 
         float scale = Config.SCALE.get().floatValue();
         int position = Config.POSITION.get();
-        int x = 0, y = 0;
+        int y0 = 0;
 
         if (position == 2 || position == 6) {
             return;
         }
         if (position == 1 || position == 3) {
-            y = 5;
+            y0 = 5;
         }
         if (position == 4 || position == 8) {
             int totalHeight = KeyPromptList.size() * 14;
-            y = screenHeight / 2 - totalHeight / 2;
+            y0 = screenHeight / 2 - totalHeight / 2;
         }
         if (position == 5 || position == 7) {
-            y = screenHeight - 5 - KeyPromptList.size() * 14;
+            y0 = screenHeight - 5 - KeyPromptList.size() * 14;
         }
 
         PoseStack poseStack = guiGraphics.pose();
 
-        for (int i = 0; i < KeyPromptList.size(); i++) {
-            KeyPrompt keyPrompt = KeyPromptList.get(i);
+        List<KeyPrompt> defaultKeyPrompts = KeyPromptList.stream().filter(keyPrompt -> keyPrompt.position.equals("default")).toList();
+
+        for (int i = 0; i < defaultKeyPrompts.size(); i++) {
+            KeyPrompt keyPrompt = defaultKeyPrompts.get(i);
             poseStack.pushPose();
 
             String key = translateKey(keyPrompt.key);
             String desc = Component.translatable(keyPrompt.desc).getString();
             boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
 
-            if (i != 0) y += (int) (16.0 * scale);
+            int x, y = y0 + (int) (16.0 * scale * i);
 
             if (position == 1 || position == 7 || position == 8) {
                 x = 5;
-                poseStack.translate(x, y, 0);
-                poseStack.scale(scale, scale, 1.0f);
-                poseStack.translate(-x, -y, 0);
+                scaleHUD(poseStack, x, y, scale);
                 KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
                 KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
             }
             if (position == 3 || position == 4 || position == 5) {
                 x = screenWidth - 8;
-                poseStack.translate(x, y, 0);
-                poseStack.scale(scale, scale, 1.0f);
-                poseStack.translate(-x, -y, 0);
+                scaleHUD(poseStack, x, y, scale);
                 KeyRenderer.drawText(guiGraphics, x - font.width(desc + key) - 3, y + 2, desc);
                 KeyRenderer.drawKeyBoardKey(guiGraphics, x - font.width(key), y, key, pressed);
             }
 
             poseStack.popPose();
         }
+
+        List<KeyPrompt> crosshairKeyPrompts = KeyPromptList.stream().filter(keyPrompt -> keyPrompt.position.equals("crosshair")).toList();
+
+        for (int i = 0; i < crosshairKeyPrompts.size(); i++) {
+            KeyPrompt keyPrompt = crosshairKeyPrompts.get(i);
+            poseStack.pushPose();
+
+            String key = translateKey(keyPrompt.key);
+            String desc = Component.translatable(keyPrompt.desc).getString();
+            boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
+
+            int x = screenWidth / 2 - (int) (font.width(key + " : " + desc) * scale / 2);
+            int y = screenHeight / 2 + 5 + (int) (16.0 * scale * i);
+
+            scaleHUD(poseStack, x, y, scale);
+            KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
+            KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
+
+            poseStack.popPose();
+        }
+    }
+    private static void scaleHUD(PoseStack poseStack, int x, int y, float scale) {
+        poseStack.translate(x, y, 0);
+        poseStack.scale(scale, scale, 1.0f);
+        poseStack.translate(-x, -y, 0);
     }
 }

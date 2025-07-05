@@ -4,9 +4,12 @@ import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.data.SKPFunction;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.fml.ModList;
@@ -22,13 +25,14 @@ public class Utils {
         currentPlayer = player;
     }
 
-    public static String getVehicleType(Player player) {
+    public static String getVehicleType() {
+        Player player = Minecraft.getInstance().player;
         if (player.getVehicle() == null) return null;
         return toPathString(player.getVehicle().getType().toString());
     }
 
-    public static String getMainHandItemId(Player player) {
-        return toPathString(player.getMainHandItem().getItem().getDescriptionId());
+    public static String getMainHandItemId() {
+        return toPathString(Minecraft.getInstance().player.getMainHandItem().getItem().getDescriptionId());
     }
 
     public static String toPathString(String key) {
@@ -44,10 +48,22 @@ public class Utils {
         }
         return null;
     }
+    public static BlockState getTargetedBlock() {
+        Minecraft mc = Minecraft.getInstance();
+        HitResult hit = mc.hitResult;
+        if (hit instanceof BlockHitResult targetedBlock) {
+            return Minecraft.getInstance().player.level().getBlockState(targetedBlock.getBlockPos());
+        }
+        return null;
+    }
 
     public static String getTargetedEntityType() {
         var entity = getTargetedEntity();
         return entity != null ? toPathString(entity.getType().toString()) : null;
+    }
+    public static String getTargetedBlockId() {
+        BlockState blockState = getTargetedBlock();
+        return blockState != null ? toPathString(blockState.getBlock().getDescriptionId()) : null;
     }
 
     public static ArrayList<KeyPrompt> getAllKeyBindings() {
