@@ -1,6 +1,7 @@
 package com.mafuyu404.smartkeyprompts;
 
 import com.mafuyu404.smartkeyprompts.init.HUD;
+import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
 import com.mafuyu404.smartkeyprompts.init.Utils;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -25,18 +26,22 @@ public class SmartKeyPrompts {
 
 
     public static void show(String id, String desc) {
-        Utils.getAllKeyBindings().forEach(keyBindingInfo -> {
-            if (keyBindingInfo.desc().equals(desc)) {
-                HUD.addCache(new HUD.KeyBindingInfo(id, keyBindingInfo.key(), keyBindingInfo.desc(), false));
+        Utils.getAllKeyBindings().forEach(keyPrompt -> {
+            if (keyPrompt.desc.equals(desc)) {
+                HUD.addCache(new KeyPrompt(id, keyPrompt.key, keyPrompt.desc, false));
             }
         });
     }
 
     public static void custom(String id, String key, String desc) {
-        HUD.addCache(new HUD.KeyBindingInfo(id, key, desc, true));
+        HUD.addCache(new KeyPrompt(id, key, desc, true));
     }
 
     public static void alias(String id, String key, String desc) {
-        HUD.addCache(new HUD.KeyBindingInfo(id, key, desc, false));
+        HUD.addCache(new KeyPrompt(id, key, desc, false));
+    }
+
+    public static KeyPrompt addDesc(String desc) {
+        return new KeyPrompt("", desc, "", false);
     }
 }
