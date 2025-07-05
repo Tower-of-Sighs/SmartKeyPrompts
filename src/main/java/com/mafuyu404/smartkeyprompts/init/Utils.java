@@ -50,11 +50,11 @@ public class Utils {
         return entity != null ? toPathString(entity.getType().toString()) : null;
     }
 
-    public static ArrayList<HUD.KeyBindingInfo> getAllKeyBindings() {
+    public static ArrayList<KeyPrompt> getAllKeyBindings() {
         Minecraft mc = Minecraft.getInstance();
-        ArrayList<HUD.KeyBindingInfo> bindingList = new ArrayList<>();
+        ArrayList<KeyPrompt> bindingList = new ArrayList<>();
         for (KeyMapping binding : mc.options.keyMappings) {
-            HUD.KeyBindingInfo info = new HUD.KeyBindingInfo(
+            KeyPrompt info = new KeyPrompt(
                     "",
                     binding.getKey().getName(),
                     binding.getName(),
@@ -100,8 +100,8 @@ public class Utils {
 
     @SKPFunction(description = "根据描述获取按键名称")
     public static String getKeyByDesc(String desc) {
-        for (HUD.KeyBindingInfo keyBindingInfo : getAllKeyBindings()) {
-            if (keyBindingInfo.desc().equals(desc)) return keyBindingInfo.key();
+        for (KeyPrompt keyPrompt : getAllKeyBindings()) {
+            if (keyPrompt.desc.equals(desc)) return keyPrompt.key;
         }
         return "key.keyboard.unknown";
     }

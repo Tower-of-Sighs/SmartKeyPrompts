@@ -25,14 +25,15 @@ import static com.mafuyu404.smartkeyprompts.init.Utils.translateKey;
 
 @Mod.EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
 public class HUD {
-    public static List<KeyBindingInfo> bindingInfoList = new ArrayList<>();
-    public static List<KeyBindingInfo> bindingInfoCache = new ArrayList<>();
+    public static List<KeyPrompt> KeyPromptList = new ArrayList<>();
+    public static List<KeyPrompt> KeyPromptCache = new ArrayList<>();
     private static Font font;
     public static KeyMapping[] KeyMappingCache;
 
-    public static void addCache(KeyBindingInfo keyBindingInfo) {
-        if (!bindingInfoCache.contains(keyBindingInfo)) {
-            bindingInfoCache.add(keyBindingInfo);
+    public static void addCache(KeyPrompt keyPrompt) {
+//        KeyPromptCache.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString())
+        if (!KeyPromptCache.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString())) {
+            KeyPromptCache.add(keyPrompt);
         }
     }
 
@@ -43,22 +44,22 @@ public class HUD {
         if (event.phase == TickEvent.Phase.START) {
             if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
                 List<? extends String> blacklist = Config.BLACKLIST.get();
-                bindingInfoList.clear();
-                bindingInfoCache.forEach(keyBindingInfo -> {
-                    if (!blacklist.contains(keyBindingInfo.id())) {
-                        bindingInfoList.add(keyBindingInfo);
+                KeyPromptList.clear();
+                KeyPromptCache.forEach(keyPrompt -> {
+                    if (!blacklist.contains(keyPrompt.group)) {
+                        KeyPromptList.add(keyPrompt);
                     }
                 });
             } else {
                 List.of(
-                        new HUD.KeyBindingInfo(MODID, "key.mouse.left", "key.smartkeyprompts.keybinding", true),
-                        new HUD.KeyBindingInfo(MODID, "key.mouse.wheel", "key.smartkeyprompts.scale", true),
-                        new HUD.KeyBindingInfo(MODID, "key.mouse.right", "key.smartkeyprompts.position", true)
-                ).forEach(keyBindingInfo -> {
-                    if (!bindingInfoList.contains(keyBindingInfo)) bindingInfoList.add(keyBindingInfo);
+                        new KeyPrompt(MODID, "key.mouse.left", "key.smartkeyprompts.keybinding", true),
+                        new KeyPrompt(MODID, "key.mouse.wheel", "key.smartkeyprompts.scale", true),
+                        new KeyPrompt(MODID, "key.mouse.right", "key.smartkeyprompts.position", true)
+                ).forEach(keyPrompt -> {
+                    if (!KeyPromptList.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString())) KeyPromptList.add(keyPrompt);
                 });
             }
-            bindingInfoCache.clear();
+            KeyPromptCache.clear();
         }
         if (!(minecraft.screen instanceof KeyBindsScreen) && KeyMappingCache != null) {
             minecraft.options.keyMappings = KeyMappingCache;
@@ -98,22 +99,22 @@ public class HUD {
             y = 5;
         }
         if (position == 4 || position == 8) {
-            int totalHeight = bindingInfoList.size() * 14;
+            int totalHeight = KeyPromptList.size() * 14;
             y = screenHeight / 2 - totalHeight / 2;
         }
         if (position == 5 || position == 7) {
-            y = screenHeight - 5 - bindingInfoList.size() * 14;
+            y = screenHeight - 5 - KeyPromptList.size() * 14;
         }
 
         PoseStack poseStack = guiGraphics.pose();
 
-        for (int i = 0; i < bindingInfoList.size(); i++) {
-            KeyBindingInfo keyBindingInfo = bindingInfoList.get(i);
+        for (int i = 0; i < KeyPromptList.size(); i++) {
+            KeyPrompt keyPrompt = KeyPromptList.get(i);
             poseStack.pushPose();
 
-            String key = translateKey(keyBindingInfo.key);
-            String desc = Component.translatable(keyBindingInfo.desc).getString();
-            boolean pressed = Utils.isKeyPressedOfDesc(keyBindingInfo.desc);
+            String key = translateKey(keyPrompt.key);
+            String desc = Component.translatable(keyPrompt.desc).getString();
+            boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
 
             if (i != 0) y += (int) (16.0 * scale);
 
@@ -136,9 +137,5 @@ public class HUD {
 
             poseStack.popPose();
         }
-    }
-
-    // 按键绑定信息类
-    public record KeyBindingInfo(String id, String key, String desc, boolean custom) {
     }
 }

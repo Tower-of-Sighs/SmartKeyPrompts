@@ -197,12 +197,12 @@ dependencies {
     compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge-api:15.20.0.104")
     implementation fg.deobf("mezz.jei:jei-1.20.1-forge:15.20.0.104")
     implementation fg.deobf("curse.maven:embeddium-908741:5681725")
-    implementation fg.deobf("curse.maven:jade-324717:6271651")
-    implementation fg.deobf("curse.maven:ice-and-fire-dragons-264231:5633453")
-    implementation fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6654541")
-    implementation fg.deobf("curse.maven:diligentstalker-1256172:6539116")
-    implementation fg.deobf("curse.maven:immersive-aircraft-666014:6316345")
-    implementation fg.deobf("curse.maven:citadel-331936:6702068")
+//    implementation fg.deobf("curse.maven:jade-324717:6271651")
+//    implementation fg.deobf("curse.maven:ice-and-fire-dragons-264231:5633453")
+//    implementation fg.deobf("curse.maven:timeless-and-classics-zero-1028108:6654541")
+//    implementation fg.deobf("curse.maven:diligentstalker-1256172:6539116")
+//    implementation fg.deobf("curse.maven:immersive-aircraft-666014:6316345")
+//    implementation fg.deobf("curse.maven:citadel-331936:6702068")
     implementation 'org.mvel:mvel2:2.5.0.Final'
     minecraftLibrary(jarJar('org.mvel:mvel2:2.5.0.Final')) {
         jarJar.ranged(it, '[2.5.0.Final,2.6.0)')
