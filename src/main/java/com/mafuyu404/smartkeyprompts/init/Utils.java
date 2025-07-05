@@ -36,14 +36,6 @@ public class Utils {
         return path[1] + ":" + path[2];
     }
 
-    @SKPFunction(description = "根据描述获取按键名称")
-    public static String getKeyByDesc(String desc) {
-        for (HUD.KeyBindingInfo keyBindingInfo : getAllKeyBindings()) {
-            if (keyBindingInfo.desc().equals(desc)) return keyBindingInfo.key();
-        }
-        return "key.keyboard.unknown";
-    }
-
     public static Entity getTargetedEntity() {
         Minecraft mc = Minecraft.getInstance();
         HitResult hit = mc.hitResult;
@@ -53,7 +45,6 @@ public class Utils {
         return null;
     }
 
-    @SKPFunction(description = "获取目标实体类型")
     public static String getTargetedEntityType() {
         var entity = getTargetedEntity();
         return entity != null ? toPathString(entity.getType().toString()) : null;
@@ -107,14 +98,17 @@ public class Utils {
         return result;
     }
 
+    @SKPFunction(description = "根据描述获取按键名称")
+    public static String getKeyByDesc(String desc) {
+        for (HUD.KeyBindingInfo keyBindingInfo : getAllKeyBindings()) {
+            if (keyBindingInfo.desc().equals(desc)) return keyBindingInfo.key();
+        }
+        return "key.keyboard.unknown";
+    }
+
     @SKPFunction(description = "获取Shift键名称")
     public static String getKeyShift() {
         return Minecraft.getInstance().options.keyShift.getKey().getName();
-    }
-
-    @SKPFunction(description = "获取潜行键名称")
-    public static String getKeySneak() {
-        return getKeyShift();
     }
 
     @SKPFunction(description = "获取使用键名称")
