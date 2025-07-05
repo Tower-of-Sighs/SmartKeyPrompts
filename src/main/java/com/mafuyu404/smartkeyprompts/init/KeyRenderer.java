@@ -13,8 +13,8 @@ public class KeyRenderer {
         int width = font.width(key) + 4;
         int height = 12;
 
-        int topColor    = 0xFF707070;  // 上亮面
-        int faceColor   = 0xFF505050;  // 主体灰色
+        int topColor = 0xFF707070;  // 上亮面
+        int faceColor = 0xFF505050;  // 主体灰色
         int bottomColor = 0xFF202020;  // 下阴影
 
         if (pressed) {

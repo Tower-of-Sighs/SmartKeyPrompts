@@ -2,11 +2,9 @@ package com.mafuyu404.smartkeyprompts.env;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import mezz.jei.api.IModPlugin;
-import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.NotNull;

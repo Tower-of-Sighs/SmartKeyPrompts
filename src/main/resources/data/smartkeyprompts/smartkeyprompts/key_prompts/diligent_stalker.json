@@ -1,0 +1,77 @@
+{
+  "modid": "diligentstalker",
+  "vars": {
+    "modLoaded": "isModLoaded('diligentstalker')",
+    "keyUse": "getKeyByDesc('key.use')",
+    "keyShift": "getKeyShift()",
+    "mainHandItem": "mainHandItem",
+    "targetedEntity": "targetedEntity",
+    "isCameraPlayer": "isCameraPlayer()",
+    "isTargetedDrone": "isTargetedEntityType('diligentstalker:drone_stalker')",
+    "screenOpen": "isScreenOpen()"
+  },
+  "entries": [
+    {
+      "when": {
+        "modLoaded": "true",
+        "mainHandItem": "diligentstalker:stalker_master",
+        "screenOpen": "false"
+      },
+      "then": [
+        "custom(modid, keyUse, 'key.diligentstalker.remote_connect')"
+      ]
+    },
+    {
+      "when": {
+        "modLoaded": "true",
+        "isCameraPlayer": "false",
+        "screenOpen": "false"
+      },
+      "then": [
+        "show(modid, 'key.diligentstalker.disconnect.desc')"
+      ]
+    },
+    {
+      "when": {
+        "modLoaded": "true",
+        "mainHandItem": "diligentstalker:stalker_core",
+        "screenOpen": "false"
+      },
+      "then": [
+        "custom(modid, keyUse, 'key.diligentstalker.connect')"
+      ]
+    },
+    {
+      "when": {
+        "modLoaded": "true",
+        "isTargetedDrone": "true",
+        "mainHandItem": "minecraft:sugar",
+        "screenOpen": "false"
+      },
+      "then": [
+        "custom(modid, keyShift + '+' + keyUse, 'key.diligentstalker.add_fuel')"
+      ]
+    },
+    {
+      "when": {
+        "modLoaded": "true",
+        "isTargetedDrone": "true",
+        "mainHandItem": "diligentstalker:stalker_master",
+        "screenOpen": "false"
+      },
+      "then": [
+        "custom(modid, keyShift + '+' + keyUse, 'key.diligentstalker.record')"
+      ]
+    },
+    {
+      "when": {
+        "modLoaded": "true",
+        "isTargetedDrone": "true",
+        "screenOpen": "false"
+      },
+      "then": [
+        "custom(modid, keyShift + '+' + keyUse, 'key.diligentstalker.container')"
+      ]
+    }
+  ]
+}

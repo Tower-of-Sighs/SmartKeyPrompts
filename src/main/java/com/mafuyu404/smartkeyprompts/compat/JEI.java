@@ -2,8 +2,6 @@ package com.mafuyu404.smartkeyprompts.compat;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.env.JeiCompat;
-import com.mafuyu404.smartkeyprompts.env.JeiPlugin;
-import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -24,6 +22,7 @@ public class JEI {
             SmartKeyPrompts.show(modid, "key.jei.focusSearch");
         }
     }
+
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
         if (!ModList.get().isLoaded("jei")) return;
