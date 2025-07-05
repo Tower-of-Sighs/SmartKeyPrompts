@@ -2,7 +2,7 @@ package com.mafuyu404.smartkeyprompts.init;
 
 import com.mafuyu404.smartkeyprompts.Config;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -17,7 +17,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.MODID;
 import static com.mafuyu404.smartkeyprompts.init.Utils.translateKey;
@@ -39,7 +40,6 @@ public class HUD {
     public static void tick(TickEvent.ClientTickEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) return;
-        System.out.print(Utils.getTargetedEntity()+"\n");
         if (event.phase == TickEvent.Phase.START) {
             if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
                 List<? extends String> blacklist = Config.BLACKLIST.get();
@@ -65,6 +65,7 @@ public class HUD {
             KeyMappingCache = null;
         }
     }
+
     @SubscribeEvent
     public static void onRenderGameOverlay(RenderGuiOverlayEvent.Post event) {
         if (Minecraft.getInstance().screen != null) return;
@@ -72,6 +73,7 @@ public class HUD {
             drawHud(event.getGuiGraphics());
         }
     }
+
     @SubscribeEvent
     public static void onRenderScreenOverlay(ScreenEvent.Render.Post event) {
         if (Minecraft.getInstance().player == null) return;
@@ -137,5 +139,6 @@ public class HUD {
     }
 
     // 按键绑定信息类
-    public record KeyBindingInfo(String id, String key, String desc, boolean custom) {}
+    public record KeyBindingInfo(String id, String key, String desc, boolean custom) {
+    }
 }
