@@ -55,7 +55,8 @@ public class HUD {
                         new KeyPrompt(MODID, "key.mouse.wheel", "key.smartkeyprompts.scale", true),
                         new KeyPrompt(MODID, "key.mouse.right", "key.smartkeyprompts.position", true)
                 ).forEach(keyPrompt -> {
-                    if (!KeyPromptList.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString())) KeyPromptList.add(keyPrompt);
+                    if (!KeyPromptList.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString()))
+                        KeyPromptList.add(keyPrompt);
                 });
             }
             KeyPromptCache.clear();
@@ -155,6 +156,7 @@ public class HUD {
             poseStack.popPose();
         }
     }
+
     private static void scaleHUD(PoseStack poseStack, int x, int y, float scale) {
         poseStack.translate(x, y, 0);
         poseStack.scale(scale, scale, 1.0f);
