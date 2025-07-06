@@ -10,14 +10,17 @@
     "isTargetedDrone": "isTargetedEntityType('diligentstalker:drone_stalker')",
     "screenOpen": "isScreenOpen()",
     "notHoldingSugarOrMaster": "mainHandItem != 'minecraft:sugar' && mainHandItem != 'diligentstalker:stalker_master'",
-    "hasTargetEntity": "hasTargetEntity()"
+    "hasTargetEntity": "hasTargetEntity()",
+    "stalkerMasterHasBind": "hasMainHandNBT('StalkerId')"
   },
   "entries": [
     {
       "when": {
         "modLoaded": "true",
         "mainHandItem": "diligentstalker:stalker_master",
-        "screenOpen": "false"
+        "stalkerMasterHasBind": "true",
+        "screenOpen": "false",
+        "isCameraPlayer": "true"
       },
       "then": [
         "custom(modid, keyUse, 'key.diligentstalker.remote_connect')"
