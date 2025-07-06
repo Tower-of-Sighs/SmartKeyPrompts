@@ -66,7 +66,6 @@ public class KeyPromptEngine {
 
         } catch (Exception e) {
             SmartKeyPrompts.LOGGER.error("Error registering MVEL functions: {}", e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -85,8 +84,6 @@ public class KeyPromptEngine {
     public static Map<String, Method> getRegisteredFunctions() {
         return new HashMap<>(registeredFunctions);
     }
-
-    private static String currentModId;
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
@@ -113,7 +110,6 @@ public class KeyPromptEngine {
     }
 
     private static void processKeyPromptData(KeyPromptData data, Player player) {
-        currentModId = data.modid();
 
         Map<String, Object> context = createContext(data.vars(), player, data.modid());
 
@@ -200,7 +196,8 @@ public class KeyPromptEngine {
             return MVEL.executeExpression(compiled, context);
         } catch (Exception e) {
             if (logErrors) {
-                e.printStackTrace();
+                SmartKeyPrompts.LOGGER.error("Failed to evaluate expression: {}", expression, e);
+                SmartKeyPrompts.LOGGER.debug("Evaluation context: {}", context);
             }
             throw e;
         }

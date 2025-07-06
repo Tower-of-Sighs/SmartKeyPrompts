@@ -122,26 +122,6 @@ public class Utils {
         return "key.keyboard.unknown";
     }
 
-    @SKPFunction(description = "获取Shift键名称")
-    public static String getKeyShift() {
-        return Minecraft.getInstance().options.keyShift.getKey().getName();
-    }
-
-    @SKPFunction(description = "获取使用键名称")
-    public static String getKeyUse() {
-        return Minecraft.getInstance().options.keyUse.getKey().getName();
-    }
-
-    @SKPFunction(description = "获取跳跃键名称")
-    public static String getKeyJump() {
-        return Minecraft.getInstance().options.keyJump.getKey().getName();
-    }
-
-    @SKPFunction(description = "获取背包键名称")
-    public static String getKeyInventory() {
-        return Minecraft.getInstance().options.keyInventory.getKey().getName();
-    }
-
     @SKPFunction(description = "检查玩家是否拥有指定物品")
     public static boolean hasItem(String itemId) {
         if (currentPlayer == null) return false;
@@ -158,6 +138,7 @@ public class Utils {
     public static String getTargetType() {
         return getTargetedEntityType();
     }
+
 
     @SKPFunction(description = "显示按键提示")
     public static void show(String modid, String desc) {
@@ -188,6 +169,11 @@ public class Utils {
     public static boolean isTargetedEntityType(String entityType) {
         String targetType = getTargetedEntityType();
         return targetType != null && targetType.equals(entityType);
+    }
+
+    @SKPFunction(description = "是否存在目标实体")
+    public static boolean hasTargetEntity() {
+        return getTargetedEntity() != null;
     }
 
     @SKPFunction(description = "检查摄像机实体是否为玩家")

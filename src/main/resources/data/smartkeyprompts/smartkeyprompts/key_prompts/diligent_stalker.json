@@ -3,12 +3,14 @@
   "vars": {
     "modLoaded": "isModLoaded('diligentstalker')",
     "keyUse": "getKeyByDesc('key.use')",
-    "keyShift": "getKeyShift()",
+    "keyShift": "getKeyByDesc('key.sneak')",
     "mainHandItem": "mainHandItem",
     "targetedEntity": "targetedEntity",
     "isCameraPlayer": "isCameraPlayer()",
     "isTargetedDrone": "isTargetedEntityType('diligentstalker:drone_stalker')",
-    "screenOpen": "isScreenOpen()"
+    "screenOpen": "isScreenOpen()",
+    "notHoldingSugarOrMaster": "mainHandItem != 'minecraft:sugar' && mainHandItem != 'diligentstalker:stalker_master'",
+    "hasTargetEntity": "hasTargetEntity()"
   },
   "entries": [
     {
@@ -35,6 +37,7 @@
       "when": {
         "modLoaded": "true",
         "mainHandItem": "diligentstalker:stalker_core",
+        "hasTargetEntity": "true",
         "screenOpen": "false"
       },
       "then": [
@@ -67,7 +70,8 @@
       "when": {
         "modLoaded": "true",
         "isTargetedDrone": "true",
-        "screenOpen": "false"
+        "screenOpen": "false",
+        "notHoldingSugarOrMaster": "true"
       },
       "then": [
         "custom(modid, keyShift + '+' + keyUse, 'key.diligentstalker.container')"
