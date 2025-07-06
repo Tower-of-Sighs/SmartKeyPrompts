@@ -1,6 +1,7 @@
 package com.mafuyu404.smartkeyprompts.data;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
+import com.mafuyu404.smartkeyprompts.api.FunctionRegistry;
 import com.mafuyu404.smartkeyprompts.init.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
@@ -14,7 +15,6 @@ import org.mvel2.ParserContext;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
@@ -24,9 +24,6 @@ public class KeyPromptEngine {
     private static final Map<String, Method> registeredFunctions = new HashMap<>();
     private static boolean functionsRegistered = false;
 
-    static {
-        registerFunctions();
-    }
 
     /**
      * 自动扫描并注册带有 @SKPFunction 注解的方法
@@ -38,27 +35,17 @@ public class KeyPromptEngine {
             registeredFunctions.clear();
             compiledExpressions.clear();
 
-            // 扫描Utils类的所有方法
-            Method[] methods = Utils.class.getDeclaredMethods();
+            FunctionRegistry.initialize();
 
-            for (Method method : methods) {
-                SKPFunction annotation = method.getAnnotation(SKPFunction.class);
-                if (annotation != null) {
-                    // 检查方法是否为静态方法
-                    if (!Modifier.isStatic(method.getModifiers())) {
-                        SmartKeyPrompts.LOGGER.warn("Warning: @SKPFunction method must be static: {}", method.getName());
-                        continue;
-                    }
+            Map<String, Method> allFunctions = FunctionRegistry.getAllFunctions();
 
-                    // 获取函数名称
-                    String functionName = annotation.value().isEmpty() ? method.getName() : annotation.value();
+            // 注册到 MVEL 上下文中
+            for (Map.Entry<String, Method> entry : allFunctions.entrySet()) {
+                String functionName = entry.getKey();
+                Method method = entry.getValue();
 
-                    // 注册到 MVEL
-                    parserContext.addImport(functionName, method);
-                    registeredFunctions.put(functionName, method);
-
-                    SmartKeyPrompts.LOGGER.info("Registered MVEL function: {}{}", functionName, annotation.description().isEmpty() ? "" : " - " + annotation.description());
-                }
+                parserContext.addImport(functionName, method);
+                registeredFunctions.put(functionName, method);
             }
 
             functionsRegistered = true;
@@ -69,11 +56,13 @@ public class KeyPromptEngine {
         }
     }
 
+
     /**
      * 热更新函数注册
      */
     public static void hotReloadFunctions() {
         SmartKeyPrompts.LOGGER.info("Hot reloading MVEL functions...");
+        FunctionRegistry.clear();
         registerFunctions();
         SmartKeyPrompts.LOGGER.info("MVEL functions hot reload completed.");
     }
@@ -89,11 +78,15 @@ public class KeyPromptEngine {
     public static void tick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
 
+        if (!functionsRegistered) {
+            registerFunctions();
+        }
+
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null || mc.screen != null || mc.getConnection() == null) return;
 
-        Utils.setCurrentPlayer(player);
+        DataPackFunctions.setCurrentPlayer(player);
 
         Optional<Registry<KeyPromptData>> optionalRegistry =
                 mc.getConnection().registryAccess().registry(KeyPromptDatapack.KEY_PROMPT_REGISTRY);
@@ -201,11 +194,5 @@ public class KeyPromptEngine {
             }
             throw e;
         }
-    }
-
-    // 热更新函数
-    @SKPFunction(value = "reload", description = "热更新MVEL函数")
-    public static void reloadMVELFunctions() {
-        hotReloadFunctions();
     }
 }
