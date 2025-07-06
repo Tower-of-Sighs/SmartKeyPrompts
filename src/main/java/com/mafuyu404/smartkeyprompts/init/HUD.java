@@ -31,7 +31,6 @@ public class HUD {
     public static KeyMapping[] KeyMappingCache;
 
     public static void addCache(KeyPrompt keyPrompt) {
-//        KeyPromptCache.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString())
         if (!KeyPromptCache.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString())) {
             KeyPromptCache.add(keyPrompt);
         }
@@ -146,8 +145,8 @@ public class HUD {
             String desc = Component.translatable(keyPrompt.desc).getString();
             boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
 
-            int x = screenWidth / 2 - (int) (font.width(key + " : " + desc) * scale / 2);
-            int y = screenHeight / 2 + 5 + (int) (16.0 * scale * i);
+            int x = screenWidth / 2 - (int) (font.width(key + "==" + desc) * scale / 2);
+            int y = screenHeight / 2 + 7 + (int) (16.0 * scale * i);
 
             scaleHUD(poseStack, x, y, scale);
             KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
@@ -161,4 +160,6 @@ public class HUD {
         poseStack.scale(scale, scale, 1.0f);
         poseStack.translate(-x, -y, 0);
     }
+
+    private static void drawKeyPrompts(List<KeyPrompt> keyPromptList) {}
 }
