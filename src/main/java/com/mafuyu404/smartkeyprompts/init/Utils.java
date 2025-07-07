@@ -114,6 +114,9 @@ public class Utils {
         if (text.contains("key.keyboard")) {
             text = text.split("\\.")[2].toUpperCase();
         }
+        if (text.contains("key.mouse")) {
+            text = Component.translatable("key.mouse.button").getString() + text.split("\\.")[2].toUpperCase();
+        }
         return text;
     }
 

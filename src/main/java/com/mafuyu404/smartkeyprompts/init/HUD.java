@@ -116,6 +116,9 @@ public class HUD {
 
             String key = translateKey(keyPrompt.key);
             String desc = Component.translatable(keyPrompt.desc).getString();
+            if (ModKeybindings.CONTROL_KEY.isDown()) {
+                desc += "(" + keyPrompt.group + ":" + keyPrompt.desc + ")";
+            }
             boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
 
             int x, y = y0 + (int) (16.0 * scale * i);
@@ -144,6 +147,9 @@ public class HUD {
 
             String key = translateKey(keyPrompt.key);
             String desc = Component.translatable(keyPrompt.desc).getString();
+            if (ModKeybindings.CONTROL_KEY.isDown()) {
+                desc += "(" + keyPrompt.group + ":" + keyPrompt.desc + ")";
+            }
             boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
 
             int x = screenWidth / 2 - (int) (font.width(key + "==" + desc) * scale / 2);
