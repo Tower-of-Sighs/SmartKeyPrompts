@@ -1,6 +1,7 @@
 package com.mafuyu404.smartkeyprompts.data;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
+import com.mafuyu404.smartkeyprompts.api.FunctionRegistry;
 import com.mafuyu404.smartkeyprompts.init.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
@@ -39,26 +40,14 @@ public class KeyPromptEngine {
             compiledExpressions.clear();
 
             // 扫描Utils类的所有方法
-            Method[] methods = Utils.class.getDeclaredMethods();
+            FunctionRegistry.initialize();
 
-            for (Method method : methods) {
-                SKPFunction annotation = method.getAnnotation(SKPFunction.class);
-                if (annotation != null) {
-                    // 检查方法是否为静态方法
-                    if (!Modifier.isStatic(method.getModifiers())) {
-                        SmartKeyPrompts.LOGGER.warn("Warning: @SKPFunction method must be static: {}", method.getName());
-                        continue;
-                    }
-
-                    // 获取函数名称
-                    String functionName = annotation.value().isEmpty() ? method.getName() : annotation.value();
-
-                    // 注册到 MVEL
-                    parserContext.addImport(functionName, method);
-                    registeredFunctions.put(functionName, method);
-
-                    SmartKeyPrompts.LOGGER.info("Registered MVEL function: {}{}", functionName, annotation.description().isEmpty() ? "" : " - " + annotation.description());
-                }
+            Map<String, Method> allFunctions = FunctionRegistry.getAllFunctions();
+            for (Map.Entry<String, Method> entry : allFunctions.entrySet()) {
+                String functionName = entry.getKey();
+                Method method = entry.getValue();
+                parserContext.addImport(functionName, method);
+                registeredFunctions.put(functionName, method);
             }
 
             functionsRegistered = true;
@@ -66,7 +55,6 @@ public class KeyPromptEngine {
 
         } catch (Exception e) {
             SmartKeyPrompts.LOGGER.error("Error registering MVEL functions: {}", e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -75,6 +63,7 @@ public class KeyPromptEngine {
      */
     public static void hotReloadFunctions() {
         SmartKeyPrompts.LOGGER.info("Hot reloading MVEL functions...");
+        FunctionRegistry.clear();
         registerFunctions();
         SmartKeyPrompts.LOGGER.info("MVEL functions hot reload completed.");
     }
@@ -86,16 +75,17 @@ public class KeyPromptEngine {
         return new HashMap<>(registeredFunctions);
     }
 
-    private static String currentModId;
-
     @SubscribeEvent
     public static void tick(ClientTickEvent.Pre event) {
+        if (!functionsRegistered) {
+            registerFunctions();
+        }
 
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
         if (player == null || mc.screen != null || mc.getConnection() == null) return;
 
-        Utils.setCurrentPlayer(player);
+        DataPackFunctions.setCurrentPlayer(player);
 
         Optional<Registry<KeyPromptData>> optionalRegistry =
                 mc.getConnection().registryAccess().registry(KeyPromptDatapack.KEY_PROMPT_REGISTRY);
@@ -112,7 +102,6 @@ public class KeyPromptEngine {
     }
 
     private static void processKeyPromptData(KeyPromptData data, Player player) {
-        currentModId = data.modid();
 
         Map<String, Object> context = createContext(data.vars(), player, data.modid());
 
@@ -129,8 +118,8 @@ public class KeyPromptEngine {
         // 添加基础变量
         context.put("modid", modid);
         context.put("player", player);
-        context.put("mainHandItem", Utils.getMainHandItemId(player));
-        context.put("vehicleType", Utils.getVehicleType(player));
+        context.put("mainHandItem", Utils.getMainHandItemId());
+        context.put("vehicleType", Utils.getVehicleType());
         context.put("targetedEntity", Utils.getTargetedEntityType());
         context.put("isInVehicle", player.getVehicle() != null);
         context.put("isSneaking", player.isShiftKeyDown());
@@ -199,15 +188,10 @@ public class KeyPromptEngine {
             return MVEL.executeExpression(compiled, context);
         } catch (Exception e) {
             if (logErrors) {
-                e.printStackTrace();
+                SmartKeyPrompts.LOGGER.error("Failed to evaluate expression: {}", expression, e);
+                SmartKeyPrompts.LOGGER.debug("Evaluation context: {}", context);
             }
             throw e;
         }
-    }
-
-    // 热更新函数
-    @SKPFunction(value = "reload", description = "热更新MVEL函数")
-    public static void reloadMVELFunctions() {
-        hotReloadFunctions();
     }
 }

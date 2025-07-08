@@ -23,14 +23,14 @@ import static com.mafuyu404.smartkeyprompts.init.Utils.translateKey;
 
 @EventBusSubscriber(modid = SmartKeyPrompts.MOD_ID)
 public class HUD {
-    public static List<KeyBindingInfo> bindingInfoList = new ArrayList<>();
-    public static List<KeyBindingInfo> bindingInfoCache = new ArrayList<>();
+    public static List<KeyPrompt> KeyPromptList = new ArrayList<>();
+    public static List<KeyPrompt> KeyPromptCache = new ArrayList<>();
     private static Font font;
     public static KeyMapping[] KeyMappingCache;
 
-    public static void addCache(KeyBindingInfo keyBindingInfo) {
-        if (!bindingInfoCache.contains(keyBindingInfo)) {
-            bindingInfoCache.add(keyBindingInfo);
+    public static void addCache(KeyPrompt keyPrompt) {
+        if (!KeyPromptCache.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString())) {
+            KeyPromptCache.add(keyPrompt);
         }
     }
 
@@ -41,22 +41,23 @@ public class HUD {
 
         if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
             List<? extends String> blacklist = Config.BLACKLIST.get();
-            bindingInfoList.clear();
-            bindingInfoCache.forEach(keyBindingInfo -> {
-                if (!blacklist.contains(keyBindingInfo.id())) {
-                    bindingInfoList.add(keyBindingInfo);
+            KeyPromptList.clear();
+            KeyPromptCache.forEach(keyPrompt -> {
+                if (!blacklist.contains(keyPrompt.getGroup())) {
+                    KeyPromptList.add(keyPrompt);
                 }
             });
         } else {
             List.of(
-                    new HUD.KeyBindingInfo(SmartKeyPrompts.MOD_ID, "key.mouse.left", "key.smartkeyprompts.keybinding", true),
-                    new HUD.KeyBindingInfo(SmartKeyPrompts.MOD_ID, "key.mouse.wheel", "key.smartkeyprompts.scale", true),
-                    new HUD.KeyBindingInfo(SmartKeyPrompts.MOD_ID, "key.mouse.right", "key.smartkeyprompts.position", true)
-            ).forEach(keyBindingInfo -> {
-                if (!bindingInfoList.contains(keyBindingInfo)) bindingInfoList.add(keyBindingInfo);
+                    new KeyPrompt(SmartKeyPrompts.MOD_ID, "key.mouse.left", "key.smartkeyprompts.keybinding", true),
+                    new KeyPrompt(SmartKeyPrompts.MOD_ID, "key.mouse.wheel", "key.smartkeyprompts.scale", true),
+                    new KeyPrompt(SmartKeyPrompts.MOD_ID, "key.mouse.right", "key.smartkeyprompts.position", true)
+            ).forEach(keyPrompt -> {
+                if (!KeyPromptList.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString()))
+                    KeyPromptList.add(keyPrompt);
             });
         }
-        bindingInfoCache.clear();
+        KeyPromptCache.clear();
         if (!(minecraft.screen instanceof KeyBindsScreen) && KeyMappingCache != null) {
             minecraft.options.keyMappings = KeyMappingCache;
             KeyMappingCache = null;
@@ -84,56 +85,85 @@ public class HUD {
 
         float scale = Config.SCALE.get().floatValue();
         int position = Config.POSITION.get();
-        int x = 0, y = 0;
+        int y0 = 0;
 
         if (position == 2 || position == 6) {
             return;
         }
         if (position == 1 || position == 3) {
-            y = 5;
+            y0 = 5;
         }
         if (position == 4 || position == 8) {
-            int totalHeight = bindingInfoList.size() * 14;
-            y = screenHeight / 2 - totalHeight / 2;
+            int totalHeight = KeyPromptList.size() * 14;
+            y0 = screenHeight / 2 - totalHeight / 2;
         }
         if (position == 5 || position == 7) {
-            y = screenHeight - 5 - bindingInfoList.size() * 14;
+            y0 = screenHeight - 5 - KeyPromptList.size() * 14;
         }
 
         PoseStack poseStack = guiGraphics.pose();
 
-        for (int i = 0; i < bindingInfoList.size(); i++) {
-            KeyBindingInfo keyBindingInfo = bindingInfoList.get(i);
+        List<KeyPrompt> defaultKeyPrompts = KeyPromptList.stream().filter(keyPrompt -> keyPrompt.getPosition().equals("default")).toList();
+
+        for (int i = 0; i < defaultKeyPrompts.size(); i++) {
+            KeyPrompt keyPrompt = defaultKeyPrompts.get(i);
+
             poseStack.pushPose();
 
-            String key = translateKey(keyBindingInfo.key);
-            String desc = Component.translatable(keyBindingInfo.desc).getString();
-            boolean pressed = Utils.isKeyPressedOfDesc(keyBindingInfo.desc);
+            String key = translateKey(keyPrompt.getKey());
+            String desc = Component.translatable(keyPrompt.getDesc()).getString();
+            if (ModKeybindings.CONTROL_KEY.isDown()) {
+                desc += "(" + keyPrompt.getGroup() + ":" + keyPrompt.getDesc() + ")";
+            }
+            boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.getDesc());
 
-            if (i != 0) y += (int) (16.0 * scale);
+            int x, y = y0 + (int) (16.0 * scale * i);
 
             if (position == 1 || position == 7 || position == 8) {
                 x = 5;
-                poseStack.translate(x, y, 0);
-                poseStack.scale(scale, scale, 1.0f);
-                poseStack.translate(-x, -y, 0);
+                scaleHUD(poseStack, x, y, scale);
                 KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
                 KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
             }
             if (position == 3 || position == 4 || position == 5) {
                 x = screenWidth - 8;
-                poseStack.translate(x, y, 0);
-                poseStack.scale(scale, scale, 1.0f);
-                poseStack.translate(-x, -y, 0);
+                scaleHUD(poseStack, x, y, scale);
                 KeyRenderer.drawText(guiGraphics, x - font.width(desc + key) - 3, y + 2, desc);
                 KeyRenderer.drawKeyBoardKey(guiGraphics, x - font.width(key), y, key, pressed);
             }
 
             poseStack.popPose();
         }
+
+        List<KeyPrompt> crosshairKeyPrompts = KeyPromptList.stream().filter(keyPrompt -> keyPrompt.getPosition().equals("crosshair")).toList();
+
+        for (int i = 0; i < crosshairKeyPrompts.size(); i++) {
+            KeyPrompt keyPrompt = crosshairKeyPrompts.get(i);
+            poseStack.pushPose();
+
+            String key = translateKey(keyPrompt.getKey());
+            String desc = Component.translatable(keyPrompt.getDesc()).getString();
+            if (ModKeybindings.CONTROL_KEY.isDown()) {
+                desc += "(" + keyPrompt.getGroup() + ":" + keyPrompt.getDesc() + ")";
+            }
+            boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.getDesc());
+
+            int x = screenWidth / 2 - (int) (font.width(key + "==" + desc) * scale / 2);
+            int y = screenHeight / 2 + 7 + (int) (16.0 * scale * i);
+
+            scaleHUD(poseStack, x, y, scale);
+            KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
+            KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
+
+            poseStack.popPose();
+        }
     }
 
-    // 按键绑定信息类
-    public record KeyBindingInfo(String id, String key, String desc, boolean custom) {
+    private static void scaleHUD(PoseStack poseStack, int x, int y, float scale) {
+        poseStack.translate(x, y, 0);
+        poseStack.scale(scale, scale, 1.0f);
+        poseStack.translate(-x, -y, 0);
     }
+
+    private static void drawKeyPrompts(List<KeyPrompt> keyPromptList) {}
 }

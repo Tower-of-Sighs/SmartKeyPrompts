@@ -24,6 +24,8 @@ public class JEI {
 
     @SubscribeEvent
     public static void tick(ClientTickEvent.Pre event) {
+        //        SmartKeyPrompts.addDesc("key.jei.showRecipe").atPosition("crosshair").toGroup("jei_skp");
+//        SmartKeyPrompts.addDesc("key.jei.bookmark").withCustom(true).forKey("key.mouse.4").atPosition("crosshair").toGroup("jei_skp");
         if (!ModList.get().isLoaded("jei")) return;
         if (JeiCompat.isEnabled()) {
             SmartKeyPrompts.show(modid, "key.jei.recipeBack");

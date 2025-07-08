@@ -23,9 +23,9 @@ public class ConfigAction {
         if (Minecraft.getInstance().player == null) return;
         if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
         if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-            List<String> currentKey = HUD.bindingInfoList.stream()
-                    .filter(keyBindingInfo -> !keyBindingInfo.custom() && Utils.getKeyByDesc(keyBindingInfo.desc()) != null)
-                    .map(HUD.KeyBindingInfo::desc).toList();
+            List<String> currentKey = HUD.KeyPromptList.stream()
+                    .filter(keyBindingInfo -> !keyBindingInfo.isCustom() && Utils.getKeyByDesc(keyBindingInfo.getDesc()) != null)
+                    .map(KeyPrompt::getDesc).toList();
             modifyKey(currentKey);
         }
         if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {

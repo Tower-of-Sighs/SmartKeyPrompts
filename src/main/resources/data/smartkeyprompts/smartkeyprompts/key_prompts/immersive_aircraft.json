@@ -3,9 +3,9 @@
   "vars": {
     "modLoaded": "isModLoaded('immersive_aircraft')",
     "vehicleType": "vehicleType",
-    "keyInventory": "getKeyInventory()",
-    "keyUse": "getKeyUse()",
-    "keyJump": "getKeyJump()",
+    "keyInventory": "getKeyByDesc('key.inventory')",
+    "keyUse": "getKeyByDesc('key.use')",
+    "keyJump": "getKeyByDesc('key.jump')",
     "fallbackUse": "keyUse == 'key.keyboard.unknown' ? 'key.mouse.right' : keyUse"
   },
   "entries": [
