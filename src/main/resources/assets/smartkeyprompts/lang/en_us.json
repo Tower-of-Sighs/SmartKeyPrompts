@@ -12,5 +12,32 @@
   "key.diligentstalker.container": "Container",
   "key.diligentstalker.record": "Record",
   "key.diligentstalker.add_fuel": "Add Fuel",
-  "key.diligentstalker.remote_connect": "Remote Connect"
+  "key.diligentstalker.remote_connect": "Remote Connect",
+
+  "key.slashblade.judgement_cut":"Judgement Cut",
+  "key.slashblade.sakura_end":"Sakura End",
+  "key.slashblade.void_slash":"Void Slash",
+  "key.slashblade.circle_slash":"Circle Slash",
+  "key.slashblade.drive_horizontal":"Drive",
+  "key.slashblade.drive_vertical":"Vertical Drive",
+  "key.slashblade.wave_edge":"Wave Edge",
+  "key.slashblade.piercing":"Piercing",
+  "key.slashblade_addon.rapid_blistering_swords": "Rapid Blistering Swords",
+  "key.slashblade_addon.spiral_edge": "Spiral Edge",
+  "key.slashblade_addon.gale_swords": "Gale Storm PhantomSwords",
+
+  "key.slashblade.air_trick": "Air Trick",
+  "key.slashblade.trick_down": "Trick Down",
+  "key.slashblade.trick_dodge": "Trick Dodge",
+  "key.slashblade.trick_up": "Trick Up",
+  "key.slashblade.guard": "Guard",
+  "key.slashblade.summonedswords": "Summoned Swords",
+  "key.slashblade.spiral_swords": "Spiral Swords",
+  "key.slashblade.storm_swords": "Storm Swords",
+  "key.slashblade.blistering_swords": "Blistering Swords",
+  "key.slashblade.heavy_rain_swords": "Heavy Rain Swords",
+  "key.slashblade.aerial_cleave": "Aerial Cleave",
+  "key.slashblade.rapid_slash": "Rapid Slash",
+  "key.slashblade.upperslash": "Upper Slash",
+  "key.slashblade.upperslash_jump": "Jumping Slash"
 }

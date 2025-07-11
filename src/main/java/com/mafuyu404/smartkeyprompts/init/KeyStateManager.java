@@ -16,14 +16,8 @@ import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.MODID;
 
 @Mod.EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
 public class KeyStateManager {
-
-    // 按键描述->按键状态的缓存
     private static final Map<String, Boolean> keyStateCache = new ConcurrentHashMap<>();
-
-    // 当前需要监控的按键描述集合
     private static final Set<String> activeKeys = ConcurrentHashMap.newKeySet();
-
-    // 上一次的按键状态，用于检测变化
     private static final Map<String, Boolean> previousStates = new ConcurrentHashMap<>();
 
     private static int cleanupCounter = 0;
@@ -51,7 +45,7 @@ public class KeyStateManager {
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.START) return;
-        
+
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) return;
 
@@ -68,7 +62,7 @@ public class KeyStateManager {
         for (String keyDesc : activeKeys) {
             boolean currentState = checkKeyState(keyDesc);
             Boolean previousState = previousStates.get(keyDesc);
-            
+
             // 只有状态改变时才更新缓存
             if (previousState == null || previousState != currentState) {
                 keyStateCache.put(keyDesc, currentState);
@@ -77,13 +71,10 @@ public class KeyStateManager {
         }
     }
 
-    /**
-     * 检查单个按键的实际状态
-     */
     private static boolean checkKeyState(String keyDesc) {
         Minecraft minecraft = Minecraft.getInstance();
         long windowHandle = minecraft.getWindow().getWindow();
-        
+
         for (KeyMapping keyMapping : minecraft.options.keyMappings) {
             if (keyDesc.equals(keyMapping.getName())) {
                 int keyCode = keyMapping.getKey().getValue();

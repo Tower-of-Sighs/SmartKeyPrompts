@@ -150,8 +150,8 @@ public class HUD {
         for (int i = 0; i < prompts.size(); i++) {
             KeyPrompt keyPrompt = prompts.get(i);
 
-            // 缓存翻译结果
-            String key = getCachedKeyTranslation(keyPrompt.key);
+            // 优先使用按键别名，如果没有则使用翻译后的按键
+            String key = keyPrompt.keyAlias != null ? keyPrompt.keyAlias : getCachedKeyTranslation(keyPrompt.key);
             String desc = getCachedTranslation(keyPrompt.desc);
             if (isControlDown) {
                 desc += "(" + keyPrompt.group + ":" + keyPrompt.desc + ")";

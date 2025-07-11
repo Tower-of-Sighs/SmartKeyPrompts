@@ -12,5 +12,32 @@
   "key.diligentstalker.container": "打开容器",
   "key.diligentstalker.record": "绑定对象",
   "key.diligentstalker.add_fuel": "补充燃料",
-  "key.diligentstalker.remote_connect": "远程连接"
+  "key.diligentstalker.remote_connect": "远程连接",
+
+  "key.slashblade.judgement_cut": "次元斩",
+  "key.slashblade.sakura_end": "终焉樱",
+  "key.slashblade.void_slash": "虚无刀界",
+  "key.slashblade.circle_slash": "円刃",
+  "key.slashblade.drive_horizontal": "幻影刃",
+  "key.slashblade.drive_vertical": "幻影刃纵",
+  "key.slashblade.wave_edge": "波刀龙胆",
+  "key.slashblade.piercing":"平突",
+  "key.slashblade_addon.rapid_blistering_swords": "急袭幻影剑",
+  "key.slashblade_addon.spiral_edge": "旋刃",
+  "key.slashblade_addon.gale_swords": "烈风幻影剑",
+  
+  "key.slashblade.air_trick": "隔空瞬步",
+  "key.slashblade.trick_down": "瞬步退行",
+  "key.slashblade.trick_dodge": "瞬步回避",
+  "key.slashblade.trick_up": "瞬步上行",
+  "key.slashblade.guard": "防御",
+  "key.slashblade.summonedswords": "幻影剑",
+  "key.slashblade.spiral_swords": "环形幻剑阵",
+  "key.slashblade.storm_swords": "怒风幻剑阵",
+  "key.slashblade.blistering_swords": "急袭幻剑阵",
+  "key.slashblade.heavy_rain_swords": "暴雨幻剑阵",
+  "key.slashblade.aerial_cleave": "空坠斩",
+  "key.slashblade.rapid_slash": "迅冲斩",
+  "key.slashblade.upperslash": "上斩",
+  "key.slashblade.upperslash_jump": "跃升斩"
 }

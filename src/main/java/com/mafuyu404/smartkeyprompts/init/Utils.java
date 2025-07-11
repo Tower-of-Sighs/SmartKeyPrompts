@@ -4,6 +4,8 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -150,5 +152,43 @@ public class Utils {
             if (keyPrompt.desc.equals(desc)) return keyPrompt.key;
         }
         return "key.keyboard.unknown";
+    }
+
+    /**
+     * 检查玩家是否在移动
+     */
+    public static boolean isPlayerMoving() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return false;
+        return player.getDeltaMovement().horizontalDistanceSqr() > 0.01;
+    }
+
+    /**
+     * 检查玩家是否在空中
+     */
+    public static boolean isPlayerInAir() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return false;
+        return !player.onGround();
+    }
+
+    /**
+     * 检查玩家是否在地面
+     */
+    public static boolean isPlayerOnGround() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return false;
+        return player.onGround();
+    }
+
+    /**
+     * 检查是否有敌对目标实体
+     */
+    public static boolean hasTargetedEntityIsMob() {
+        Entity entity = getTargetedEntity();
+        if (entity == null) return false;
+
+        return entity instanceof Enemy ||
+                (entity instanceof Mob mob && mob.getTarget() instanceof Player);
     }
 }

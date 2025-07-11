@@ -6,6 +6,7 @@ public class KeyPrompt {
     public String position = "default";
     public String group;
     public boolean isCustom = false;
+    public String keyAlias = null;
 
     public KeyPrompt(String id, String key, String desc, boolean isCustom) {
         this.key = key;
@@ -14,8 +15,21 @@ public class KeyPrompt {
         this.group = id;
     }
 
+    public KeyPrompt(String id, String key, String desc, boolean isCustom, String keyAlias) {
+        this.key = key;
+        this.desc = desc;
+        this.isCustom = isCustom;
+        this.group = id;
+        this.keyAlias = keyAlias;
+    }
+
     public KeyPrompt forKey(String key) {
         this.key = key;
+        return this;
+    }
+
+    public KeyPrompt withKeyAlias(String keyAlias) {
+        this.keyAlias = keyAlias;
         return this;
     }
 
