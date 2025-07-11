@@ -1,4 +1,4 @@
-package com.mafuyu404.smartkeyprompts.util;
+package com.mafuyu404.smartkeyprompts.utils;
 
 import com.mafuyu404.smartkeyprompts.init.Utils;
 import com.mojang.brigadier.StringReader;
@@ -10,12 +10,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * NBT工具类，用于实体和方块实体的NBT操作以及通用NBT路径解析
+ */
 public class NBTUtils {
 
     private static final Map<String, NbtPathArgument.NbtPath> pathCache = new ConcurrentHashMap<>();
@@ -132,18 +134,6 @@ public class NBTUtils {
     }
 
     /**
-     * 获取玩家主手物品的NBT
-     */
-    public static CompoundTag getMainHandNBT(Player player) {
-        if (player == null) return null;
-        try {
-            return player.getMainHandItem().getTag();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
      * 获取目标实体的NBT
      */
     public static CompoundTag getTargetEntityNBT() {
@@ -171,7 +161,7 @@ public class NBTUtils {
             var blockEntity = mc.level.getBlockEntity(pos);
             if (blockEntity == null) return null;
 
-            return blockEntity.saveWithoutMetadata();
+            return blockEntity.saveWithoutMetadata(mc.level.registryAccess());
         } catch (Exception e) {
             return null;
         }

@@ -3,11 +3,13 @@ package com.mafuyu404.smartkeyprompts.data;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.api.SKPFunction;
 import com.mafuyu404.smartkeyprompts.init.Utils;
-import com.mafuyu404.smartkeyprompts.util.NBTUtils;
+import com.mafuyu404.smartkeyprompts.utils.DataComponentUtils;
+import com.mafuyu404.smartkeyprompts.utils.NBTUtils;
 import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.fml.ModList;
 
 /**
@@ -91,34 +93,40 @@ public class DataPackFunctions {
         return Minecraft.getInstance().screen != null;
     }
 
-    @SKPFunction(description = "检查主手物品是否包含指定NBT路径")
-    public static boolean hasMainHandNBT(String nbtPath) {
-        CompoundTag nbt = NBTUtils.getMainHandNBT(currentPlayer);
-        return NBTUtils.checkNBTPath(nbt, nbtPath);
+    @SKPFunction(description = "检查主手物品是否包含指定数据组件")
+    public static boolean hasMainHandComponent(String componentId) {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.hasComponent(itemStack, componentId);
     }
 
-    @SKPFunction(description = "检查主手物品NBT路径的值是否匹配")
-    public static boolean checkMainHandNBT(String nbtPath, String expectedValue) {
-        CompoundTag nbt = NBTUtils.getMainHandNBT(currentPlayer);
-        return NBTUtils.checkNBTValue(nbt, nbtPath, expectedValue);
+    @SKPFunction(description = "检查主手物品数据组件的值是否匹配")
+    public static boolean checkMainHandComponent(String componentId, String expectedValue) {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.checkComponentValue(itemStack, componentId, expectedValue);
     }
 
-    @SKPFunction(description = "获取主手物品NBT路径的值")
-    public static String getMainHandNBTValue(String nbtPath) {
-        CompoundTag nbt = NBTUtils.getMainHandNBT(currentPlayer);
-        return NBTUtils.getNBTValue(nbt, nbtPath);
+    @SKPFunction(description = "获取主手物品数据组件的值")
+    public static String getMainHandComponentValue(String componentId) {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.getComponentValue(itemStack, componentId);
     }
 
-    @SKPFunction(description = "检查主手物品NBT是否匹配SNBT格式")
-    public static boolean matchMainHandSNBT(String snbt) {
-        CompoundTag nbt = NBTUtils.getMainHandNBT(currentPlayer);
-        return NBTUtils.matchSNBT(nbt, snbt);
+    @SKPFunction(description = "检查主手物品自定义数据是否包含指定键")
+    public static boolean hasMainHandCustomDataKey(String key) {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.hasCustomDataKey(itemStack, key);
     }
 
-    @SKPFunction(description = "获取主手物品的完整SNBT")
-    public static String getMainHandSNBT() {
-        CompoundTag nbt = NBTUtils.getMainHandNBT(currentPlayer);
-        return NBTUtils.getNBTAsString(nbt);
+    @SKPFunction(description = "获取主手物品的完整数据组件信息")
+    public static String getMainHandComponents() {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.getComponentsAsString(itemStack);
+    }
+
+    @SKPFunction(description = "获取主手物品的自定义数据字符串")
+    public static String getMainHandCustomDataString() {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.getCustomDataAsString(itemStack);
     }
 
     @SKPFunction(description = "检查目标实体是否包含指定NBT路径")

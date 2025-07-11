@@ -1,8 +1,5 @@
 package com.mafuyu404.smartkeyprompts.init;
 
-import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
-import com.mafuyu404.smartkeyprompts.data.SKPFunction;
-import lombok.Setter;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -12,7 +9,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.fml.ModList;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;

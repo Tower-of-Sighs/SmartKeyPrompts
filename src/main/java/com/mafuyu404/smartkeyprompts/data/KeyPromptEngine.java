@@ -15,7 +15,6 @@ import org.mvel2.ParserContext;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
 @EventBusSubscriber(modid = SmartKeyPrompts.MOD_ID, value = Dist.CLIENT)
@@ -25,9 +24,6 @@ public class KeyPromptEngine {
     private static final Map<String, Method> registeredFunctions = new HashMap<>();
     private static boolean functionsRegistered = false;
 
-    static {
-        registerFunctions();
-    }
 
     /**
      * 自动扫描并注册带有 @SKPFunction 注解的方法
@@ -39,13 +35,15 @@ public class KeyPromptEngine {
             registeredFunctions.clear();
             compiledExpressions.clear();
 
-            // 扫描Utils类的所有方法
             FunctionRegistry.initialize();
 
             Map<String, Method> allFunctions = FunctionRegistry.getAllFunctions();
+
+            // 注册到 MVEL 上下文中
             for (Map.Entry<String, Method> entry : allFunctions.entrySet()) {
                 String functionName = entry.getKey();
                 Method method = entry.getValue();
+
                 parserContext.addImport(functionName, method);
                 registeredFunctions.put(functionName, method);
             }
@@ -57,6 +55,7 @@ public class KeyPromptEngine {
             SmartKeyPrompts.LOGGER.error("Error registering MVEL functions: {}", e.getMessage());
         }
     }
+
 
     /**
      * 热更新函数注册
@@ -77,6 +76,7 @@ public class KeyPromptEngine {
 
     @SubscribeEvent
     public static void tick(ClientTickEvent.Pre event) {
+
         if (!functionsRegistered) {
             registerFunctions();
         }
