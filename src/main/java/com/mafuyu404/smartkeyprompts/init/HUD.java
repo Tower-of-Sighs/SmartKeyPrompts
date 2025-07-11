@@ -18,10 +18,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.MODID;
-import static com.mafuyu404.smartkeyprompts.init.Utils.translateKey;
 
 @Mod.EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
 public class HUD {
@@ -29,6 +30,11 @@ public class HUD {
     public static List<KeyPrompt> KeyPromptCache = new ArrayList<>();
     private static Font font;
     public static KeyMapping[] KeyMappingCache;
+    private static final Map<String, String> translationCache = new HashMap<>();
+    private static final Map<String, String> keyTranslationCache = new HashMap<>();
+    private static List<KeyPrompt> cachedDefaultPrompts = new ArrayList<>();
+    private static List<KeyPrompt> cachedCrosshairPrompts = new ArrayList<>();
+    private static int lastPromptListHash = 0;
 
     public static void addCache(KeyPrompt keyPrompt) {
         if (!KeyPromptCache.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString())) {
@@ -60,10 +66,26 @@ public class HUD {
                 });
             }
             KeyPromptCache.clear();
+
+            // 更新缓存的提示列表
+            updateCachedPrompts();
         }
         if (!(minecraft.screen instanceof KeyBindsScreen) && KeyMappingCache != null) {
             minecraft.options.keyMappings = KeyMappingCache;
             KeyMappingCache = null;
+        }
+    }
+
+    private static void updateCachedPrompts() {
+        int currentHash = KeyPromptList.hashCode();
+        if (currentHash != lastPromptListHash) {
+            cachedDefaultPrompts = KeyPromptList.stream()
+                    .filter(keyPrompt -> keyPrompt.position.equals("default"))
+                    .toList();
+            cachedCrosshairPrompts = KeyPromptList.stream()
+                    .filter(keyPrompt -> keyPrompt.position.equals("crosshair"))
+                    .toList();
+            lastPromptListHash = currentHash;
         }
     }
 
@@ -82,6 +104,8 @@ public class HUD {
     }
 
     private static void drawHud(GuiGraphics guiGraphics) {
+        if (KeyPromptList.isEmpty()) return;
+
         Window window = Minecraft.getInstance().getWindow();
         int screenWidth = window.getGuiScaledWidth();
         int screenHeight = window.getGuiScaledHeight();
@@ -90,77 +114,80 @@ public class HUD {
 
         float scale = Config.SCALE.get().floatValue();
         int position = Config.POSITION.get();
-        int y0 = 0;
 
         if (position == 2 || position == 6) {
             return;
         }
-        if (position == 1 || position == 3) {
-            y0 = 5;
-        }
-        if (position == 4 || position == 8) {
-            int totalHeight = KeyPromptList.size() * 14;
-            y0 = screenHeight / 2 - totalHeight / 2;
-        }
-        if (position == 5 || position == 7) {
-            y0 = screenHeight - 5 - KeyPromptList.size() * 14;
-        }
+
+        // 缓存计算结果
+        int y0 = calculateY0(position, screenHeight, cachedDefaultPrompts.size());
+        boolean isControlDown = ModKeybindings.CONTROL_KEY.isDown();
 
         PoseStack poseStack = guiGraphics.pose();
 
-        List<KeyPrompt> defaultKeyPrompts = KeyPromptList.stream().filter(keyPrompt -> keyPrompt.position.equals("default")).toList();
+        // 渲染默认位置的提示
+        renderKeyPrompts(guiGraphics, poseStack, cachedDefaultPrompts, position, screenWidth, y0, scale, isControlDown, false);
 
-        for (int i = 0; i < defaultKeyPrompts.size(); i++) {
-            KeyPrompt keyPrompt = defaultKeyPrompts.get(i);
-            poseStack.pushPose();
+        // 渲染十字准星位置的提示
+        renderKeyPrompts(guiGraphics, poseStack, cachedCrosshairPrompts, position, screenWidth, screenHeight / 2 + 7, scale, isControlDown, true);
+    }
 
-            String key = translateKey(keyPrompt.key);
-            String desc = Component.translatable(keyPrompt.desc).getString();
-            if (ModKeybindings.CONTROL_KEY.isDown()) {
+    private static int calculateY0(int position, int screenHeight, int promptCount) {
+        return switch (position) {
+            case 1, 3 -> 5;
+            case 4, 8 -> screenHeight / 2 - (promptCount * 14) / 2;
+            case 5, 7 -> screenHeight - 5 - promptCount * 14;
+            default -> 0;
+        };
+    }
+
+    private static void renderKeyPrompts(GuiGraphics guiGraphics, PoseStack poseStack, List<KeyPrompt> prompts,
+                                         int position, int screenWidth, int baseY, float scale, boolean isControlDown, boolean isCrosshair) {
+        for (int i = 0; i < prompts.size(); i++) {
+            KeyPrompt keyPrompt = prompts.get(i);
+
+            // 缓存翻译结果
+            String key = getCachedKeyTranslation(keyPrompt.key);
+            String desc = getCachedTranslation(keyPrompt.desc);
+            if (isControlDown) {
                 desc += "(" + keyPrompt.group + ":" + keyPrompt.desc + ")";
             }
             boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
 
-            int x, y = y0 + (int) (16.0 * scale * i);
+            int y = baseY + (int) (16.0 * scale * i);
+            int x;
 
-            if (position == 1 || position == 7 || position == 8) {
-                x = 5;
+            poseStack.pushPose();
+
+            if (isCrosshair) {
+                x = screenWidth / 2 - (int) (font.width(key + "==" + desc) * scale / 2);
                 scaleHUD(poseStack, x, y, scale);
                 KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
                 KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
-            }
-            if (position == 3 || position == 4 || position == 5) {
-                x = screenWidth - 8;
-                scaleHUD(poseStack, x, y, scale);
-                KeyRenderer.drawText(guiGraphics, x - font.width(desc + key) - 3, y + 2, desc);
-                KeyRenderer.drawKeyBoardKey(guiGraphics, x - font.width(key), y, key, pressed);
+            } else {
+                if (position == 1 || position == 7 || position == 8) {
+                    x = 5;
+                    scaleHUD(poseStack, x, y, scale);
+                    KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
+                    KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
+                } else if (position == 3 || position == 4 || position == 5) {
+                    x = screenWidth - 8;
+                    scaleHUD(poseStack, x, y, scale);
+                    KeyRenderer.drawText(guiGraphics, x - font.width(desc + key) - 3, y + 2, desc);
+                    KeyRenderer.drawKeyBoardKey(guiGraphics, x - font.width(key), y, key, pressed);
+                }
             }
 
             poseStack.popPose();
         }
+    }
 
-        List<KeyPrompt> crosshairKeyPrompts = KeyPromptList.stream().filter(keyPrompt -> keyPrompt.position.equals("crosshair")).toList();
+    private static String getCachedTranslation(String key) {
+        return translationCache.computeIfAbsent(key, k -> Component.translatable(k).getString());
+    }
 
-        for (int i = 0; i < crosshairKeyPrompts.size(); i++) {
-            KeyPrompt keyPrompt = crosshairKeyPrompts.get(i);
-            poseStack.pushPose();
-
-            String key = translateKey(keyPrompt.key);
-            String desc = Component.translatable(keyPrompt.desc).getString();
-            if (ModKeybindings.CONTROL_KEY.isDown()) {
-                desc += "(" + keyPrompt.group + ":" + keyPrompt.desc + ")";
-            }
-            boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
-
-            int x = screenWidth / 2 - (int) (font.width(key + "==" + desc) * scale / 2);
-            int y = screenHeight / 2 + 7 + (int) (16.0 * scale * i);
-
-            scaleHUD(poseStack, x, y, scale);
-            KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
-            KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
-
-            poseStack.popPose();
-        }
+    private static String getCachedKeyTranslation(String key) {
+        return keyTranslationCache.computeIfAbsent(key, Utils::translateKey);
     }
 
     private static void scaleHUD(PoseStack poseStack, int x, int y, float scale) {
@@ -169,5 +196,10 @@ public class HUD {
         poseStack.translate(-x, -y, 0);
     }
 
-    private static void drawKeyPrompts(List<KeyPrompt> keyPromptList) {}
+    // 清理缓存
+    public static void clearCache() {
+        translationCache.clear();
+        keyTranslationCache.clear();
+        lastPromptListHash = 0;
+    }
 }
