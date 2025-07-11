@@ -17,10 +17,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.MODID;
 
@@ -67,13 +65,21 @@ public class HUD {
             }
             KeyPromptCache.clear();
 
-            // 更新缓存的提示列表
             updateCachedPrompts();
+
+            registerActiveKeys();
         }
         if (!(minecraft.screen instanceof KeyBindsScreen) && KeyMappingCache != null) {
             minecraft.options.keyMappings = KeyMappingCache;
             KeyMappingCache = null;
         }
+    }
+
+    private static void registerActiveKeys() {
+        Set<String> activeKeyDescs = KeyPromptList.stream()
+                .map(keyPrompt -> keyPrompt.desc)
+                .collect(Collectors.toSet());
+        KeyStateManager.registerKeys(activeKeyDescs);
     }
 
     private static void updateCachedPrompts() {
@@ -125,10 +131,8 @@ public class HUD {
 
         PoseStack poseStack = guiGraphics.pose();
 
-        // 渲染默认位置的提示
         renderKeyPrompts(guiGraphics, poseStack, cachedDefaultPrompts, position, screenWidth, y0, scale, isControlDown, false);
 
-        // 渲染十字准星位置的提示
         renderKeyPrompts(guiGraphics, poseStack, cachedCrosshairPrompts, position, screenWidth, screenHeight / 2 + 7, scale, isControlDown, true);
     }
 
@@ -152,7 +156,8 @@ public class HUD {
             if (isControlDown) {
                 desc += "(" + keyPrompt.group + ":" + keyPrompt.desc + ")";
             }
-            boolean pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
+
+            boolean pressed = KeyStateManager.isKeyPressed(keyPrompt.desc);
 
             int y = baseY + (int) (16.0 * scale * i);
             int x;
@@ -182,6 +187,7 @@ public class HUD {
         }
     }
 
+
     private static String getCachedTranslation(String key) {
         return translationCache.computeIfAbsent(key, k -> Component.translatable(k).getString());
     }
@@ -196,10 +202,10 @@ public class HUD {
         poseStack.translate(-x, -y, 0);
     }
 
-    // 清理缓存
     public static void clearCache() {
         translationCache.clear();
         keyTranslationCache.clear();
         lastPromptListHash = 0;
+        KeyStateManager.clearAllCache();
     }
 }
