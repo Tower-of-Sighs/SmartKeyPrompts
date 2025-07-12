@@ -1,0 +1,108 @@
+name: Build CI - master
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get current date
+        id: get_date
+        run: echo "DATE=$(TZ=Asia/Shanghai date +'%y%m%d')" >> $GITHUB_ENV
+
+      - name: Get Git SHA
+        id: get_sha
+        run: echo "SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Read mod_name and mod_version from gradle.properties
+        id: read_properties
+        run: |
+          MOD_NAME=$(grep "^mod_name=" gradle.properties | sed -E "s/mod_name=['\"]?([0-9a-zA-Z\.\-_]+)['\"]?/\1/")
+          MOD_VERSION=$(grep "^mod_version=" gradle.properties | sed -E "s/mod_version=['\"]?([0-9a-zA-Z\.\-_]+)['\"]?/\1/")
+          MINECRAFT_VERSION=$(grep "^minecraft_version=" gradle.properties | sed -E "s/minecraft_version=['\"]?([0-9.]+)['\"]?/\1/")
+          echo "MOD_NAME=$MOD_NAME" >> $GITHUB_ENV
+          echo "MOD_VERSION=$MOD_VERSION" >> $GITHUB_ENV
+          echo "MINECRAFT_VERSION=$MINECRAFT_VERSION" >> $GITHUB_ENV
+          # The VERSION variable will be used to construct the final JAR name
+          echo "VERSION=${MOD_VERSION}-${{ env.DATE }}-${{ env.SHA }}" >> $GITHUB_ENV
+          echo "VERSION_CHECK=${MOD_VERSION}-*-${{ env.SHA }}" >> $GITHUB_ENV
+
+      - name: Check tags and commit messages
+        id: check_all
+        run: |
+          git fetch --tags
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+          BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
+
+          if [ -n "$(git tag -l "${{ env.VERSION_CHECK }}")" ]; then
+            echo "SKIP_BUILD=true" >> $GITHUB_ENV
+          else
+            echo "SKIP_BUILD=false" >> $GITHUB_ENV
+          fi
+
+          if [[ "$COMMIT_MESSAGE" == "[skip]"* || ("$BRANCH_NAME" != "master" && "$COMMIT_MESSAGE" != "[ci]"*) ]]; then
+            echo "PRE_RELEASE=true" >> $GITHUB_ENV
+          else
+            echo "PRE_RELEASE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Update version in gradle.properties
+        if: env.SKIP_BUILD == 'false'
+        run: |
+          # Removed single quotes from around ${{ env.VERSION }} to prevent them from being
+          # written into gradle.properties and subsequently into mod.toml.
+          sed -i "s/^\(mod_version=\).*/\1${{ env.VERSION }}/" gradle.properties
+
+      - name: Set up Java 17 (Zulu)
+        if: env.SKIP_BUILD == 'false'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+
+      - name: Make gradlew executable
+        if: env.SKIP_BUILD == 'false'
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        if: env.SKIP_BUILD == 'false'
+        run: ./gradlew build
+
+      - name: Rename JAR file
+        if: env.SKIP_BUILD == 'false'
+        id: rename_file
+        run: |
+          # Corrected pattern to match the actual JAR file name structure.
+          # It now includes the Minecraft version and no longer expects single quotes around the version string.
+          EXPECTED_JAR_PATTERN="SmartKeyPrompts-${{ env.MINECRAFT_VERSION }}-forge-${{ env.VERSION }}-all.jar"
+          SOURCE_JAR=$(find build/libs -name "$EXPECTED_JAR_PATTERN" | head -n 1)
+          
+          if [ -z "$SOURCE_JAR" ]; then
+            echo "::error file=build.gradle::无法找到最终的反混淆 JAR。"
+            echo "::error file=build.gradle::预期模式：$EXPECTED_JAR_PATTERN"
+            echo "::error file=build.gradle::在 build/libs/ 中找到的 JARs："
+            find build/libs -name "*.jar" -exec basename {} \;
+            exit 1
+          fi
+          
+          TARGET_JAR_BASE="SmartKeyPrompts-${{ env.VERSION }}"
+          mv "$SOURCE_JAR" "${TARGET_JAR_BASE}.jar"
+          echo "FINAL_JAR_NAME=$TARGET_JAR_BASE" >> $GITHUB_ENV
+
+
+      - name: Upload Artifact
+        if: env.SKIP_BUILD == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.FINAL_JAR_NAME }}
+          path: ${{ env.FINAL_JAR_NAME }}.jar
