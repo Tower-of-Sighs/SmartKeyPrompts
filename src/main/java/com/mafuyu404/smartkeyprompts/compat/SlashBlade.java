@@ -48,7 +48,7 @@ public class SlashBlade {
 
                 showSlashArtKeys(mainHandItem);
 
-                showPhantomSwordKeys(mainHandItem);
+                canUseSummonedSwordKeys(mainHandItem);
 
             } else {
                 if (!lastSlashArt.isEmpty()) {
@@ -134,8 +134,8 @@ public class SlashBlade {
         }
     }
 
-    private static void showPhantomSwordKeys(ItemStack itemStack) {
-        if (!canUsePhantomSword(itemStack)) {
+    private static void canUseSummonedSwordKeys(ItemStack itemStack) {
+        if (!canUseSummonedSword(itemStack)) {
             return;
         }
 
@@ -176,7 +176,7 @@ public class SlashBlade {
         }
     }
 
-    private static boolean canUsePhantomSword(ItemStack itemStack) {
+    private static boolean canUseSummonedSword(ItemStack itemStack) {
         try {
             if (!SwordType.from(itemStack).contains(SwordType.BEWITCHED)) {
                 return false;
