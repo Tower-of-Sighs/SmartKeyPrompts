@@ -6,7 +6,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.Map;
 import java.util.Set;
@@ -72,13 +71,9 @@ public class KeyStateManager {
     }
 
     private static boolean checkKeyState(String keyDesc) {
-        Minecraft minecraft = Minecraft.getInstance();
-        long windowHandle = minecraft.getWindow().getWindow();
-
-        for (KeyMapping keyMapping : minecraft.options.keyMappings) {
+        for (KeyMapping keyMapping : Minecraft.getInstance().options.keyMappings) {
             if (keyDesc.equals(keyMapping.getName())) {
-                int keyCode = keyMapping.getKey().getValue();
-                return GLFW.glfwGetKey(windowHandle, keyCode) == GLFW.GLFW_PRESS;
+                return keyMapping.isDown();
             }
         }
         return false;

@@ -135,15 +135,13 @@ public class Utils {
      * 根据描述检查按键是否被按下
      */
     public static boolean isKeyPressedOfDesc(String key) {
-        boolean result = false;
         for (KeyMapping keyMapping : Minecraft.getInstance().options.keyMappings) {
-            if (key.equals(keyMapping.getName()) && isKeyPressed(keyMapping.getKey().getValue())) {
-                result = true;
+            if (key.equals(keyMapping.getName()) && keyMapping.isDown()) {
+                return true;
             }
         }
-        return result;
+        return false;
     }
-
     /**
      * 根据描述获取按键名称
      */
@@ -190,5 +188,37 @@ public class Utils {
 
         return entity instanceof Enemy ||
                 (entity instanceof Mob mob && mob.getTarget() instanceof Player);
+    }
+
+    /**
+     * 获取按键的翻译文本（不带任何前缀）
+     */
+    public static String getKeyDisplayName(String keyDesc) {
+        String keyName = getKeyByDesc(keyDesc);
+        return translateKey(keyName);
+    }
+
+    /**
+     * 获取多个按键的翻译文本，用+连接
+     */
+    public static String getKeysDisplayName(String... keyDescs) {
+        if (keyDescs == null || keyDescs.length == 0) {
+            return "";
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < keyDescs.length; i++) {
+            if (i > 0) result.append("+");
+            result.append(getKeyDisplayName(keyDescs[i]));
+        }
+        return result.toString();
+    }
+
+    /**
+     * 检查按键是否为右键相关
+     */
+    public static boolean isRightClickKey(String keyDesc) {
+        String keyName = getKeyByDesc(keyDesc);
+        return keyName.equals("key.mouse.right") || keyName.equals("key.use");
     }
 }

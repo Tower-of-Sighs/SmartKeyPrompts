@@ -58,6 +58,7 @@ public class SlashBlade {
         }
     }
 
+
     private static void showBasicKeys(ItemStack itemStack) {
         String keyShift = Utils.getKeyByDesc("key.sneak");
         String keyForward = Utils.getKeyByDesc("key.forward");
@@ -65,68 +66,72 @@ public class SlashBlade {
         String keyUse = Utils.getKeyByDesc("key.use");
         String keyV = Utils.getKeyByDesc("key.slashblade.special_move");
 
+        // 防御
         SmartKeyPrompts.addDesc("key.slashblade.guard")
                 .forKey(keyShift)
-                .withKeyAlias("按住Shift")
+                .withKeyAlias("按住" + Utils.getKeyDisplayName("key.sneak"))
                 .toGroup(modid);
 
+        // 瞬步/空中技巧
         if (Utils.hasTargetedEntityIsMob()) {
             SmartKeyPrompts.addDesc("key.slashblade.air_trick")
                     .forKey(keyShift + "+" + keyForward + "+" + keyV)
-                    .withKeyAlias("按住Shift+W+V ")
+                    .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.forward", "key.slashblade.special_move"))
                     .toGroup(modid);
         } else {
             SmartKeyPrompts.addDesc("key.slashblade.trick_up")
                     .forKey(keyShift + "+" + keyForward + "+" + keyV)
-                    .withKeyAlias("按住Shift+W+V ")
+                    .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.forward", "key.slashblade.special_move"))
                     .toGroup(modid);
         }
 
+        // 闪避
         if (Utils.isPlayerMoving()) {
             SmartKeyPrompts.addDesc("key.slashblade.trick_dodge")
                     .forKey(keyV)
                     .toGroup(modid);
         }
 
+        // 空中技能
         if (Utils.isPlayerInAir()) {
             SmartKeyPrompts.addDesc("key.slashblade.trick_down")
                     .forKey(keyShift + "+" + keyBack + "+" + keyV)
-                    .withKeyAlias("按住Shift+S+V")
+                    .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.back", "key.slashblade.special_move"))
                     .toGroup(modid);
 
             SmartKeyPrompts.addDesc("key.slashblade.aerial_cleave")
                     .forKey(keyShift + "+" + keyBack + "+" + keyUse)
-                    .withKeyAlias("按住Shift+S+右键")
+                    .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.back", "key.use"))
                     .toGroup(modid);
         } else if (Utils.isPlayerOnGround()) {
+            // 地面技能
             SmartKeyPrompts.addDesc("key.slashblade.upperslash")
                     .forKey(keyShift + "+" + keyBack + "+" + keyUse)
-                    .withKeyAlias("按住Shift+S+右键")
+                    .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.back", "key.use"))
                     .toGroup(modid);
 
             SmartKeyPrompts.addDesc("key.slashblade.rapid_slash")
                     .forKey(keyShift + "+" + keyForward + "+" + keyUse)
-                    .withKeyAlias("按住Shift+W+右键")
+                    .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.forward", "key.use"))
                     .toGroup(modid);
 
+            // 跃升斩 - 按住Shift+S+长按右键
             SmartKeyPrompts.addDesc("key.slashblade.upperslash_jump")
                     .forKey(keyShift + "+" + keyBack + "+" + keyUse)
-                    .withKeyAlias("按住Shift+S+长按右键")
+                    .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.back") + "+长按" + 
+                                 (Utils.isRightClickKey("key.use") ? "右键" : Utils.getKeyDisplayName("key.use")))
                     .toGroup(modid);
         }
     }
-
     private static void showSlashArtKeys(ItemStack itemStack) {
         ResourceLocation slashArtKey = getSlashArtKey(itemStack);
 
         if (slashArtKey != null && !isDefaultOrNoneSA(slashArtKey)) {
             String slashArtString = slashArtKey.toString();
-            // 只有当SA改变时才更新显示
             if (!slashArtString.equals(lastSlashArt)) {
                 showSlashArtKey(slashArtKey);
                 lastSlashArt = slashArtString;
             } else {
-                // SA没有改变，继续显示当前SA
                 showSlashArtKey(slashArtKey);
             }
         } else {
@@ -142,40 +147,40 @@ public class SlashBlade {
         String keyShift = Utils.getKeyByDesc("key.sneak");
         String keyForward = Utils.getKeyByDesc("key.forward");
         String keyBack = Utils.getKeyByDesc("key.back");
-        String keyMiddle = Utils.getKeyByDesc("key.pickItem");
+        String keyMiddle = Utils.getKeyByDesc("key.slashblade.summon_blade");
 
         int proudSoul = getProudSoul(itemStack);
 
         if (proudSoul >= 2) {
+            // 基础幻影剑
             SmartKeyPrompts.addDesc("key.slashblade.summonedswords")
                     .forKey(keyMiddle)
                     .toGroup(modid);
 
             if (proudSoul >= 20) {
-                // proudSoul>=20时，显示更多幻影剑技能
+                // 高级幻影剑技能
                 SmartKeyPrompts.addDesc("key.slashblade.spiral_swords")
                         .forKey(keyMiddle)
-                        .withKeyAlias("按住中键")
+                        .withKeyAlias("按住" + Utils.getKeyDisplayName("key.slashblade.summon_blade"))
                         .toGroup(modid);
 
                 SmartKeyPrompts.addDesc("key.slashblade.storm_swords")
                         .forKey(keyShift + "+" + keyBack + "+" + keyMiddle)
-                        .withKeyAlias("按住Shift+S+中键")
+                        .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.back", "key.slashblade.summon_blade"))
                         .toGroup(modid);
 
                 SmartKeyPrompts.addDesc("key.slashblade.blistering_swords")
                         .forKey(keyShift + "+" + keyForward + "+" + keyMiddle)
-                        .withKeyAlias("按住Shift+W+中键")
+                        .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.forward", "key.slashblade.summon_blade"))
                         .toGroup(modid);
 
                 SmartKeyPrompts.addDesc("key.slashblade.heavy_rain_swords")
                         .forKey(keyShift + "+" + keyBack + "+" + keyForward + "+" + keyMiddle)
-                        .withKeyAlias("按住Shift+S+W+中键")
+                        .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.back", "key.forward", "key.slashblade.summon_blade"))
                         .toGroup(modid);
             }
         }
     }
-
     private static boolean canUseSummonedSword(ItemStack itemStack) {
         try {
             if (!SwordType.from(itemStack).contains(SwordType.BEWITCHED)) {
@@ -267,7 +272,7 @@ public class SlashBlade {
 
         SmartKeyPrompts.addDesc(keyTranslationKey)
                 .forKey("key.mouse.right")
-                .withKeyAlias("长按右键后松开")
+                .withKeyAlias("长按" + (Utils.isRightClickKey("key.use") ? "右键" : Utils.getKeyDisplayName("key.use")) + "后松开")
                 .toGroup(modid);
     }
 }
