@@ -20,7 +20,7 @@ public class Config {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> BLACKLIST = BUILDER
             .comment("标识ID黑名单")
             .defineList("blacklist",
-                    List.of("jei_skp"),
+                    List.of("jei_skp", "emi_skp"),
                     entry -> entry instanceof String
             );
 
