@@ -18,7 +18,6 @@ public class NetworkHandler {
     public static void register() {
         int id = 0;
 
-        // 注册分片数据包
         INSTANCE.registerMessage(id++, KeyPromptSyncChunkPacket.class,
                 KeyPromptSyncChunkPacket::encode,
                 KeyPromptSyncChunkPacket::decode,

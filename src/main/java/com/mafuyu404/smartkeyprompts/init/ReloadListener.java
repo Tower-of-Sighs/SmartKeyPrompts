@@ -11,12 +11,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ReloadListener {
 
-    @SubscribeEvent
-    public static void onCommonSetup(FMLCommonSetupEvent event) {
-        // 注册网络处理器
-        event.enqueueWork(NetworkHandler::register);
-    }
-
     /**
      * 当接收到服务端同步的数据包时，强制重载客户端缓存
      */

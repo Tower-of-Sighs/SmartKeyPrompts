@@ -9,19 +9,13 @@ import java.util.function.Supplier;
 
 /**
  * 分片数据包，用于传输大型数据包
+ *
+ * @param sessionId   会话ID，用于标识同一次传输
+ * @param chunkIndex  当前分片索引
+ * @param totalChunks 总分片数
+ * @param chunkData   分片数据
  */
-public class KeyPromptSyncChunkPacket {
-    private final UUID sessionId;      // 会话ID，用于标识同一次传输
-    private final int chunkIndex;      // 当前分片索引
-    private final int totalChunks;     // 总分片数
-    private final byte[] chunkData;    // 分片数据
-
-    public KeyPromptSyncChunkPacket(UUID sessionId, int chunkIndex, int totalChunks, byte[] chunkData) {
-        this.sessionId = sessionId;
-        this.chunkIndex = chunkIndex;
-        this.totalChunks = totalChunks;
-        this.chunkData = chunkData;
-    }
+public record KeyPromptSyncChunkPacket(UUID sessionId, int chunkIndex, int totalChunks, byte[] chunkData) {
 
     public static void encode(KeyPromptSyncChunkPacket packet, FriendlyByteBuf buf) {
         buf.writeUUID(packet.sessionId);
@@ -38,7 +32,7 @@ public class KeyPromptSyncChunkPacket {
         int dataLength = buf.readInt();
         byte[] chunkData = new byte[dataLength];
         buf.readBytes(chunkData);
-        
+
         return new KeyPromptSyncChunkPacket(sessionId, chunkIndex, totalChunks, chunkData);
     }
 
@@ -52,9 +46,4 @@ public class KeyPromptSyncChunkPacket {
         });
         ctx.get().setPacketHandled(true);
     }
-
-    public UUID getSessionId() { return sessionId; }
-    public int getChunkIndex() { return chunkIndex; }
-    public int getTotalChunks() { return totalChunks; }
-    public byte[] getChunkData() { return chunkData; }
 }

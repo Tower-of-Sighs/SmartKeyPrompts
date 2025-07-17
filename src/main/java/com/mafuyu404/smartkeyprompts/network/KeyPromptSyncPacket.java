@@ -1,25 +1,18 @@
 package com.mafuyu404.smartkeyprompts.network;
 
-import com.google.gson.Gson;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.data.KeyPromptData;
-import net.minecraft.network.FriendlyByteBuf;
+import com.mafuyu404.smartkeyprompts.util.GsonUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.Supplier;
 
-/**
- * 主同步包，负责将数据分片并发送
- */
 public class KeyPromptSyncPacket {
-    private static final Gson GSON = new Gson();
-    private static final int MAX_CHUNK_SIZE = 30000; // 每个分片最大30KB，确保不超过网络包限制
+    private static final int MAX_CHUNK_SIZE = 30000; // 30KB
 
     private final Map<ResourceLocation, KeyPromptData> data;
 
@@ -27,39 +20,24 @@ public class KeyPromptSyncPacket {
         this.data = data;
     }
 
-    /**
-     * 发送数据到指定玩家
-     */
     public void sendTo(ServerPlayer player) {
         sendToTarget(PacketDistributor.PLAYER.with(() -> player));
     }
 
-    /**
-     * 发送数据到所有玩家
-     */
     public void sendToAll() {
         sendToTarget(PacketDistributor.ALL.noArg());
     }
 
-    /**
-     * 发送数据到指定目标
-     */
     private void sendToTarget(PacketDistributor.PacketTarget target) {
         try {
-            // 将数据序列化为JSON
-            String jsonData = GSON.toJson(data);
+            String jsonData = GsonUtils.getGson().toJson(data);
             byte[] dataBytes = jsonData.getBytes(StandardCharsets.UTF_8);
 
             SmartKeyPrompts.LOGGER.info("Sending key prompt data: {} files, {} bytes", data.size(), dataBytes.length);
 
             if (dataBytes.length <= MAX_CHUNK_SIZE) {
-                // 数据较小，直接发送单个分片
-                UUID sessionId = UUID.randomUUID();
-                KeyPromptSyncChunkPacket chunk = new KeyPromptSyncChunkPacket(sessionId, 0, 1, dataBytes);
-                NetworkHandler.INSTANCE.send(target, chunk);
-                SmartKeyPrompts.LOGGER.debug("Sent single chunk for session {}", sessionId);
+                sendSingleChunk(target, dataBytes);
             } else {
-                // 数据较大，分片发送
                 sendChunked(target, dataBytes);
             }
 
@@ -68,9 +46,13 @@ public class KeyPromptSyncPacket {
         }
     }
 
-    /**
-     * 分片发送数据
-     */
+    private void sendSingleChunk(PacketDistributor.PacketTarget target, byte[] dataBytes) {
+        UUID sessionId = UUID.randomUUID();
+        KeyPromptSyncChunkPacket chunk = new KeyPromptSyncChunkPacket(sessionId, 0, 1, dataBytes);
+        NetworkHandler.INSTANCE.send(target, chunk);
+        SmartKeyPrompts.LOGGER.debug("Sent single chunk for session {}", sessionId);
+    }
+
     private void sendChunked(PacketDistributor.PacketTarget target, byte[] data) {
         UUID sessionId = UUID.randomUUID();
         int totalChunks = (int) Math.ceil((double) data.length / MAX_CHUNK_SIZE);

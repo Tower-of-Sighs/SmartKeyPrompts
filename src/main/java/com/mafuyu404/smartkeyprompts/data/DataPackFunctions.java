@@ -20,21 +20,26 @@ public class DataPackFunctions {
         currentPlayer = player;
     }
 
-    @SKPFunction(description = "检查指定按键是否被按下")
-    public static boolean isKeyPressedOfDesc(String key) {
-        return Utils.isKeyPressedOfDesc(key);
+    // ========== 基础变量函数 ==========
+
+    @SKPFunction(description = "获取当前玩家")
+    public static Player player() {
+        return currentPlayer;
     }
 
-    @SKPFunction(description = "根据描述获取按键名称")
-    public static String getKeyByDesc(String desc) {
-        return Utils.getKeyByDesc(desc);
+    @SKPFunction(description = "获取主手物品ID")
+    public static String mainHandItem() {
+        return Utils.getMainHandItemId();
     }
 
-    @SKPFunction(description = "检查玩家是否拥有指定物品")
-    public static boolean hasItem(String itemId) {
-        if (currentPlayer == null) return false;
-        return currentPlayer.getInventory().items.stream()
-                .anyMatch(stack -> Utils.toPathString(stack.getItem().getDescriptionId()).equals(itemId));
+    @SKPFunction(description = "获取载具类型")
+    public static String vehicleType() {
+        return Utils.getVehicleType();
+    }
+
+    @SKPFunction(description = "获取目标实体类型")
+    public static String targetedEntity() {
+        return Utils.getTargetedEntityType();
     }
 
     @SKPFunction(description = "检查玩家是否在载具中")
@@ -42,35 +47,29 @@ public class DataPackFunctions {
         return currentPlayer != null && currentPlayer.getVehicle() != null;
     }
 
-    @SKPFunction(description = "获取目标实体类型")
-    public static String getTargetType() {
-        return Utils.getTargetedEntityType();
+    @SKPFunction(description = "检查玩家是否在游泳")
+    public static boolean isSwimming() {
+        return currentPlayer != null && currentPlayer.isSwimming();
     }
 
-    @SKPFunction(description = "显示按键提示")
-    public static void show(String modid, String desc) {
-        SmartKeyPrompts.show(modid, desc);
+    @SKPFunction(description = "检查玩家是否在飞行")
+    public static boolean isFlying() {
+        return currentPlayer != null && currentPlayer.getAbilities().flying;
     }
 
-    @SKPFunction(description = "显示自定义按键提示")
-    public static void custom(String modid, String key, String desc) {
-        SmartKeyPrompts.custom(modid, key, desc);
+    // ========== 按键相关函数 ==========
+
+    @SKPFunction(description = "根据描述获取按键名称")
+    public static String getKeyByDesc(String desc) {
+        return Utils.getKeyByDesc(desc);
     }
 
-    @SKPFunction(description = "显示按键别名提示")
-    public static void alias(String modid, String key, String desc) {
-        SmartKeyPrompts.alias(modid, key, desc);
+    @SKPFunction(description = "检查指定按键是否被按下")
+    public static boolean isKeyPressedOfDesc(String key) {
+        return Utils.isKeyPressedOfDesc(key);
     }
 
-    @SKPFunction(description = "获取当前时间戳")
-    public static long getCurrentTime() {
-        return System.currentTimeMillis();
-    }
-
-    @SKPFunction(description = "检查玩家是否在创造模式")
-    public static boolean isCreativeMode() {
-        return currentPlayer != null && currentPlayer.getAbilities().instabuild;
-    }
+    // ========== 实体和环境检查函数 ==========
 
     @SKPFunction(description = "检查目标实体是否为指定类型")
     public static boolean isTargetedEntityType(String entityType) {
@@ -91,6 +90,20 @@ public class DataPackFunctions {
     @SKPFunction(description = "检查游戏界面是否打开")
     public static boolean isScreenOpen() {
         return Minecraft.getInstance().screen != null;
+    }
+
+    @SKPFunction(description = "检查玩家是否在创造模式")
+    public static boolean isCreativeMode() {
+        return currentPlayer != null && currentPlayer.getAbilities().instabuild;
+    }
+
+    // ========== 物品和NBT相关函数 ==========
+
+    @SKPFunction(description = "检查玩家是否拥有指定物品")
+    public static boolean hasItem(String itemId) {
+        if (currentPlayer == null) return false;
+        return currentPlayer.getInventory().items.stream()
+                .anyMatch(stack -> Utils.toPathString(stack.getItem().getDescriptionId()).equals(itemId));
     }
 
     @SKPFunction(description = "检查主手物品是否包含指定NBT路径")
@@ -123,6 +136,8 @@ public class DataPackFunctions {
         return NBTUtils.getNBTAsString(nbt);
     }
 
+    // ========== 目标实体NBT函数 ==========
+
     @SKPFunction(description = "检查目标实体是否包含指定NBT路径")
     public static boolean hasTargetEntityNBT(String nbtPath) {
         CompoundTag nbt = NBTUtils.getTargetEntityNBT();
@@ -147,6 +162,8 @@ public class DataPackFunctions {
         return NBTUtils.getNBTAsString(nbt);
     }
 
+    // ========== 目标方块实体NBT函数 ==========
+
     @SKPFunction(description = "检查目标方块实体是否包含指定NBT路径")
     public static boolean hasTargetBlockEntityNBT(String nbtPath) {
         CompoundTag nbt = NBTUtils.getTargetBlockEntityNBT();
@@ -159,10 +176,36 @@ public class DataPackFunctions {
         return NBTUtils.checkNBTValue(nbt, nbtPath, expectedValue);
     }
 
+    // ========== 模组和系统函数 ==========
+
     @SKPFunction(description = "检查指定mod是否已加载")
     public static boolean isModLoaded(String modid) {
         return ModList.get().isLoaded(modid);
     }
+
+    @SKPFunction(description = "获取当前时间戳")
+    public static long getCurrentTime() {
+        return System.currentTimeMillis();
+    }
+
+    // ========== 显示函数 ==========
+
+    @SKPFunction(description = "显示按键提示")
+    public static void show(String modid, String desc) {
+        SmartKeyPrompts.show(modid, desc);
+    }
+
+    @SKPFunction(description = "显示自定义按键提示")
+    public static void custom(String modid, String key, String desc) {
+        SmartKeyPrompts.custom(modid, key, desc);
+    }
+
+    @SKPFunction(description = "显示按键别名提示")
+    public static void alias(String modid, String key, String desc) {
+        SmartKeyPrompts.alias(modid, key, desc);
+    }
+
+    // ========== 系统函数 ==========
 
     @SKPFunction(value = "reload", description = "热更新MVEL函数")
     public static void reloadMVELFunctions() {

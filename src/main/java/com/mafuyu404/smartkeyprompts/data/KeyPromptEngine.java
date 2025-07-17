@@ -2,7 +2,6 @@ package com.mafuyu404.smartkeyprompts.data;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.api.FunctionRegistry;
-import com.mafuyu404.smartkeyprompts.init.Utils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -99,7 +98,7 @@ public class KeyPromptEngine {
     }
 
     private static void processKeyPromptData(KeyPromptData data, Player player) {
-        Map<String, Object> context = createContext(data.vars(), player, data.modid());
+        Map<String, Object> context = createContext(data.vars());
 
         for (KeyPromptData.Entry entry : data.entries()) {
             if (checkConditions(entry.when(), context)) {
@@ -108,19 +107,8 @@ public class KeyPromptEngine {
         }
     }
 
-    private static Map<String, Object> createContext(Map<String, String> vars, Player player, String modid) {
+    private static Map<String, Object> createContext(Map<String, String> vars) {
         Map<String, Object> context = new HashMap<>();
-
-        // 添加基础变量
-        context.put("modid", modid);
-        context.put("player", player);
-        context.put("mainHandItem", Utils.getMainHandItemId());
-        context.put("vehicleType", Utils.getVehicleType());
-        context.put("targetedEntity", Utils.getTargetedEntityType());
-        context.put("isInVehicle", player.getVehicle() != null);
-        context.put("isSneaking", player.isShiftKeyDown());
-        context.put("isSwimming", player.isSwimming());
-        context.put("isFlying", player.getAbilities().flying);
 
         // 解析自定义变量
         for (Map.Entry<String, String> var : vars.entrySet()) {

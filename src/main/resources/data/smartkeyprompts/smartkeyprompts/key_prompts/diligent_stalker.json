@@ -1,15 +1,17 @@
 {
   "modid": "diligentstalker",
   "vars": {
+    "modid": "'diligentstalker'",
     "modLoaded": "isModLoaded('diligentstalker')",
     "keyUse": "getKeyByDesc('key.use')",
     "keyShift": "getKeyByDesc('key.sneak')",
-    "mainHandItem": "mainHandItem",
-    "targetedEntity": "targetedEntity",
+    "mainHandItem": "mainHandItem()",
+    "targetedEntity": "targetedEntity()",
     "isCameraPlayer": "isCameraPlayer()",
     "isTargetedDrone": "isTargetedEntityType('diligentstalker:drone_stalker')",
+    "isTargetedStalker": "isTargetedEntityType('diligentstalker:drone_stalker') || isTargetedEntityType('diligentstalker:camera_stalker')",
     "screenOpen": "isScreenOpen()",
-    "notHoldingSugarOrMaster": "mainHandItem != 'minecraft:sugar' && mainHandItem != 'diligentstalker:stalker_master'",
+    "notHoldingSugarOrMaster": "mainHandItem() != 'minecraft:sugar' && mainHandItem() != 'diligentstalker:stalker_master'",
     "hasTargetEntity": "hasTargetEntity()",
     "stalkerMasterHasBind": "hasMainHandNBT('StalkerId')"
   },
@@ -41,6 +43,16 @@
         "modLoaded": "true",
         "mainHandItem": "diligentstalker:stalker_core",
         "hasTargetEntity": "true",
+        "screenOpen": "false"
+      },
+      "then": [
+        "custom(modid, keyUse, 'key.diligentstalker.connect')"
+      ]
+    },
+    {
+      "when": {
+        "modLoaded": "true",
+        "isTargetedStalker": "true",
         "screenOpen": "false"
       },
       "then": [

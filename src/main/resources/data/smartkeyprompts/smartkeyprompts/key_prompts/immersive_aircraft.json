@@ -2,32 +2,34 @@
   "modid": "immersive_aircraft_skp",
   "vars": {
     "modLoaded": "isModLoaded('immersive_aircraft')",
-    "vehicleType": "vehicleType",
+    "vehicleType": "vehicleType()",
     "keyInventory": "getKeyByDesc('key.inventory')",
     "keyUse": "getKeyByDesc('key.use')",
     "keyJump": "getKeyByDesc('key.jump')",
-    "fallbackUse": "keyUse == 'key.keyboard.unknown' ? 'key.mouse.right' : keyUse"
+    "fallbackUse": "getKeyByDesc('key.use') == 'key.keyboard.unknown' ? 'key.mouse.right' : getKeyByDesc('key.use')",
+    "isInImmersiveAircraft": "vehicleType() != null && vehicleType().startsWith('immersive_aircraft:')",
+    "isInBiplane": "vehicleType() == 'immersive_aircraft:biplane'"
   },
   "entries": [
     {
       "when": {
         "modLoaded": "true",
-        "vehicleType": "immersive_aircraft:*"
+        "isInImmersiveAircraft": "true"
       },
       "then": [
-        "custom(modid, keyInventory, 'immersive_aircraft.slot.upgrade')",
-        "show(modid, 'key.immersive_aircraft.dismount')",
-        "show(modid, 'key.immersive_aircraft.boost')",
-        "custom(modid, fallbackUse, 'item.immersive_aircraft.item.weapon')"
+        "custom('immersive_aircraft_skp', keyInventory, 'immersive_aircraft.slot.upgrade')",
+        "show('immersive_aircraft_skp', 'key.immersive_aircraft.dismount')",
+        "show('immersive_aircraft_skp', 'key.immersive_aircraft.boost')",
+        "custom('immersive_aircraft_skp', fallbackUse, 'item.immersive_aircraft.item.weapon')"
       ]
     },
     {
       "when": {
         "modLoaded": "true",
-        "vehicleType": "immersive_aircraft:biplane"
+        "isInBiplane": "true"
       },
       "then": [
-        "custom(modid, keyJump, 'item.immersive_aircraft.engine')"
+        "custom('immersive_aircraft_skp', keyJump, 'item.immersive_aircraft.engine')"
       ]
     }
   ]

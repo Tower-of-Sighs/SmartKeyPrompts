@@ -2,15 +2,18 @@
   "modid": "tacz_skp",
   "vars": {
     "modLoaded": "isModLoaded('tacz')",
-    "hasTaczGun": "mainHandItem == 'tacz:modern_kinetic_gun'",
-    "isNotInVehicle": "!isInVehicle()"
+    "mainHandItem": "mainHandItem()",
+    "hasTaczGun": "mainHandItem() == 'tacz:modern_kinetic_gun'",
+    "isNotInVehicle": "!isInVehicle()",
+    "screenOpen": "isScreenOpen()"
   },
   "entries": [
     {
       "when": {
         "modLoaded": "true",
         "hasTaczGun": "true",
-        "isNotInVehicle": "true"
+        "isNotInVehicle": "true",
+        "screenOpen": "false"
       },
       "then": [
         "show('tacz_skp', 'key.tacz.shoot.desc')",
