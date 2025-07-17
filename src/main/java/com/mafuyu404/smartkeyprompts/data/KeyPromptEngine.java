@@ -4,7 +4,7 @@ import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.api.FunctionRegistry;
 import com.mafuyu404.smartkeyprompts.init.Utils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -23,9 +23,6 @@ public class KeyPromptEngine {
     private static ParserContext parserContext = new ParserContext();
     private static final Map<String, Method> registeredFunctions = new HashMap<>();
     private static boolean functionsRegistered = false;
-
-    private static Set<String> lastDatapackKeys = new HashSet<>();
-    private static boolean datapackChanged = false;
 
     public static void registerFunctions() {
         try {
@@ -65,9 +62,11 @@ public class KeyPromptEngine {
         SmartKeyPrompts.LOGGER.info("MVEL functions hot reload completed.");
     }
 
-    public static void markDatapackChanged() {
-        datapackChanged = true;
-        SmartKeyPrompts.LOGGER.info("Datapack change detected, will clear caches on next tick.");
+    public static void forceReload() {
+        SmartKeyPrompts.LOGGER.info("Force reloading due to datapack sync...");
+        compiledExpressions.clear();
+        hotReloadFunctions();
+        SmartKeyPrompts.LOGGER.info("Force reload completed.");
     }
 
     /**
@@ -87,44 +86,19 @@ public class KeyPromptEngine {
 
         Minecraft mc = Minecraft.getInstance();
         Player player = mc.player;
-        if (player == null || mc.screen != null || mc.getConnection() == null) return;
+        if (player == null || mc.screen != null) return;
 
         DataPackFunctions.setCurrentPlayer(player);
 
-        Optional<Registry<KeyPromptData>> optionalRegistry =
-                mc.getConnection().registryAccess().registry(KeyPromptDatapack.KEY_PROMPT_REGISTRY);
+        // 从客户端缓存的数据中获取数据包内容
+        Map<ResourceLocation, KeyPromptData> loadedData = KeyPromptDatapack.getLoadedData();
 
-        if (optionalRegistry.isEmpty()) {
-            return;
-        }
-
-        Registry<KeyPromptData> registry = optionalRegistry.get();
-
-        // 检测数据包是否发生变化
-        Set<String> currentDatapackKeys = new HashSet<>();
-        for (KeyPromptData data : registry) {
-            currentDatapackKeys.add(data.toString());
-        }
-
-        // 如果数据包内容发生变化或者被标记为已更改
-        if (!currentDatapackKeys.equals(lastDatapackKeys) || datapackChanged) {
-            if (!lastDatapackKeys.isEmpty()) {
-                SmartKeyPrompts.LOGGER.info("Datapack content changed detected, clearing all caches...");
-                compiledExpressions.clear();
-                hotReloadFunctions();
-                SmartKeyPrompts.LOGGER.info("Caches cleared and functions reloaded due to datapack change.");
-            }
-            lastDatapackKeys = new HashSet<>(currentDatapackKeys);
-            datapackChanged = false;
-        }
-
-        for (KeyPromptData data : registry) {
+        for (KeyPromptData data : loadedData.values()) {
             processKeyPromptData(data, player);
         }
     }
 
     private static void processKeyPromptData(KeyPromptData data, Player player) {
-
         Map<String, Object> context = createContext(data.vars(), player, data.modid());
 
         for (KeyPromptData.Entry entry : data.entries()) {
