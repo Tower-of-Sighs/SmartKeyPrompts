@@ -24,10 +24,9 @@ public class KeyPromptEngine {
     private static final Map<String, Method> registeredFunctions = new HashMap<>();
     private static boolean functionsRegistered = false;
 
+    private static Set<String> lastDatapackKeys = new HashSet<>();
+    private static boolean datapackChanged = false;
 
-    /**
-     * 自动扫描并注册带有 @SKPFunction 注解的方法
-     */
     public static void registerFunctions() {
         try {
             // 清空现有注册
@@ -56,7 +55,6 @@ public class KeyPromptEngine {
         }
     }
 
-
     /**
      * 热更新函数注册
      */
@@ -65,6 +63,11 @@ public class KeyPromptEngine {
         FunctionRegistry.clear();
         registerFunctions();
         SmartKeyPrompts.LOGGER.info("MVEL functions hot reload completed.");
+    }
+
+    public static void markDatapackChanged() {
+        datapackChanged = true;
+        SmartKeyPrompts.LOGGER.info("Datapack change detected, will clear caches on next tick.");
     }
 
     /**
@@ -96,6 +99,24 @@ public class KeyPromptEngine {
         }
 
         Registry<KeyPromptData> registry = optionalRegistry.get();
+
+        // 检测数据包是否发生变化
+        Set<String> currentDatapackKeys = new HashSet<>();
+        for (KeyPromptData data : registry) {
+            currentDatapackKeys.add(data.toString());
+        }
+
+        // 如果数据包内容发生变化或者被标记为已更改
+        if (!currentDatapackKeys.equals(lastDatapackKeys) || datapackChanged) {
+            if (!lastDatapackKeys.isEmpty()) {
+                SmartKeyPrompts.LOGGER.info("Datapack content changed detected, clearing all caches...");
+                compiledExpressions.clear();
+                hotReloadFunctions();
+                SmartKeyPrompts.LOGGER.info("Caches cleared and functions reloaded due to datapack change.");
+            }
+            lastDatapackKeys = new HashSet<>(currentDatapackKeys);
+            datapackChanged = false;
+        }
 
         for (KeyPromptData data : registry) {
             processKeyPromptData(data, player);
@@ -177,12 +198,10 @@ public class KeyPromptEngine {
 
     private static Object evaluateExpression(String expression, Map<String, Object> context, boolean logErrors) {
         try {
-            // 确保函数已注册
             if (!functionsRegistered) {
                 registerFunctions();
             }
 
-            // 使用缓存的编译表达式
             Serializable compiled = compiledExpressions.computeIfAbsent(expression,
                     expr -> MVEL.compileExpression(expr, parserContext));
 
