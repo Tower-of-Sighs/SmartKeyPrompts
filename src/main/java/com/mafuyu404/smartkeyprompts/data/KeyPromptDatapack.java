@@ -7,14 +7,17 @@ import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.network.KeyPromptSyncPacket;
 import com.mafuyu404.smartkeyprompts.network.NetworkHandler;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +27,7 @@ public class KeyPromptDatapack extends SimpleJsonResourceReloadListener {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Map<ResourceLocation, KeyPromptData> loadedData = new HashMap<>();
     private static KeyPromptDatapack instance;
+    private static boolean serverStarted = false;
 
     public KeyPromptDatapack() {
         super(GSON, SmartKeyPrompts.MODID);
@@ -49,14 +53,38 @@ public class KeyPromptDatapack extends SimpleJsonResourceReloadListener {
 
         SmartKeyPrompts.LOGGER.info("Loaded {} key prompt data files", loadedData.size());
 
-        // 同步到所有在线玩家
-        syncToAllPlayers();
+        if (serverStarted) {
+            syncToAllPlayers();
+        } else {
+            SmartKeyPrompts.LOGGER.info("Server not fully started yet, data sync will be performed when server is ready");
+        }
     }
 
     private void syncToAllPlayers() {
-        if (!loadedData.isEmpty()) {
-            KeyPromptSyncPacket packet = new KeyPromptSyncPacket(new HashMap<>(loadedData));
-            packet.sendToAll();
+        try {
+            MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+            if (server == null) {
+                SmartKeyPrompts.LOGGER.warn("Cannot sync data: server instance is null");
+                return;
+            }
+
+            if (!loadedData.isEmpty()) {
+                KeyPromptSyncPacket packet = new KeyPromptSyncPacket(new HashMap<>(loadedData));
+                packet.sendToAll();
+                SmartKeyPrompts.LOGGER.info("Successfully synced key prompt data to all players");
+            }
+        } catch (Exception e) {
+            SmartKeyPrompts.LOGGER.error("Failed to sync data to all players: {}", e.getMessage(), e);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStarted(ServerStartedEvent event) {
+        serverStarted = true;
+        SmartKeyPrompts.LOGGER.info("Server started, ready for data synchronization");
+
+        if (!loadedData.isEmpty() && instance != null) {
+            instance.syncToAllPlayers();
         }
     }
 
@@ -68,9 +96,14 @@ public class KeyPromptDatapack extends SimpleJsonResourceReloadListener {
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player && !loadedData.isEmpty()) {
-            // 向新加入的玩家同步数据
-            KeyPromptSyncPacket packet = new KeyPromptSyncPacket(new HashMap<>(loadedData));
-            packet.sendTo(player);
+            try {
+                KeyPromptSyncPacket packet = new KeyPromptSyncPacket(new HashMap<>(loadedData));
+                packet.sendTo(player);
+                SmartKeyPrompts.LOGGER.debug("Synced key prompt data to player: {}", player.getName().getString());
+            } catch (Exception e) {
+                SmartKeyPrompts.LOGGER.error("Failed to sync data to player {}: {}",
+                        player.getName().getString(), e.getMessage(), e);
+            }
         }
     }
 
