@@ -104,7 +104,7 @@ public class DataPackFunctions {
 
     @SKPFunction(description = "检查游戏界面是否打开")
     public static boolean isScreenOpen() {
-        return Minecraft.getInstance().screen != null;
+        return Utils.isScreenOpen();
     }
 
     @SKPFunction(description = "检查玩家是否在创造模式")

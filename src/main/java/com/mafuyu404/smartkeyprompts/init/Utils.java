@@ -160,6 +160,13 @@ public class Utils {
     }
 
     /**
+     * 检查游戏界面是否打开
+     */
+    public static boolean isScreenOpen() {
+        return Minecraft.getInstance().screen != null;
+    }
+
+    /**
      * 检查玩家是否在移动
      */
     public static boolean isPlayerMoving() {
