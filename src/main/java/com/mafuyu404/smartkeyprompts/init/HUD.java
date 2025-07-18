@@ -35,9 +35,12 @@ public class HUD {
     private static int lastPromptListHash = 0;
 
     public static void addCache(KeyPrompt keyPrompt) {
-        if (!KeyPromptCache.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString())) {
-            KeyPromptCache.add(keyPrompt);
+        for (KeyPrompt prompt : KeyPromptCache) {
+            if (prompt.getString().equals(keyPrompt.getString())) {
+                return;
+            }
         }
+        KeyPromptCache.add(keyPrompt);
     }
 
     @SubscribeEvent
