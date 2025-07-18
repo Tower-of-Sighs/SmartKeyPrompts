@@ -108,7 +108,7 @@ public class FunctionRegistry {
         }
 
         initialized = true;
-        SmartKeyPrompts.LOGGER.info("MVEL 函数注册完成，总数：{}", functionMap.size());
+        SmartKeyPrompts.LOGGER.debug("Function registry initialized with {} available functions", functionMap.size());
     }
 
     /**
@@ -147,7 +147,7 @@ public class FunctionRegistry {
             }
 
             functionMap.put(name, method);
-            SmartKeyPrompts.LOGGER.debug("注册函数：{} ({})", name, clazz.getSimpleName());
+            SmartKeyPrompts.LOGGER.debug("包含函数：{} ({})", name, clazz.getSimpleName());
         }
     }
 

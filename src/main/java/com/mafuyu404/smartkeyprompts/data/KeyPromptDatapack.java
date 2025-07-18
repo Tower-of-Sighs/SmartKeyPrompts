@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.network.KeyPromptSyncPacket;
-import com.mafuyu404.smartkeyprompts.network.NetworkHandler;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -45,7 +44,7 @@ public class KeyPromptDatapack extends SimpleJsonResourceReloadListener {
             try {
                 KeyPromptData data = GSON.fromJson(json, KeyPromptData.class);
                 loadedData.put(location, data);
-                SmartKeyPrompts.LOGGER.info("Loaded key prompt data: {}", location);
+                SmartKeyPrompts.LOGGER.debug("Loaded key prompt data: {}", location);
             } catch (Exception e) {
                 SmartKeyPrompts.LOGGER.error("Failed to parse key prompt data: {}", location, e);
             }
@@ -55,8 +54,6 @@ public class KeyPromptDatapack extends SimpleJsonResourceReloadListener {
 
         if (serverStarted) {
             syncToAllPlayers();
-        } else {
-            SmartKeyPrompts.LOGGER.info("Server not fully started yet, data sync will be performed when server is ready");
         }
     }
 
@@ -71,7 +68,7 @@ public class KeyPromptDatapack extends SimpleJsonResourceReloadListener {
             if (!loadedData.isEmpty()) {
                 KeyPromptSyncPacket packet = new KeyPromptSyncPacket(new HashMap<>(loadedData));
                 packet.sendToAll();
-                SmartKeyPrompts.LOGGER.info("Successfully synced key prompt data to all players");
+                SmartKeyPrompts.LOGGER.debug("Synced key prompt data to all players");
             }
         } catch (Exception e) {
             SmartKeyPrompts.LOGGER.error("Failed to sync data to all players: {}", e.getMessage(), e);
@@ -81,8 +78,6 @@ public class KeyPromptDatapack extends SimpleJsonResourceReloadListener {
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
         serverStarted = true;
-        SmartKeyPrompts.LOGGER.info("Server started, ready for data synchronization");
-
         if (!loadedData.isEmpty() && instance != null) {
             instance.syncToAllPlayers();
         }
@@ -114,6 +109,6 @@ public class KeyPromptDatapack extends SimpleJsonResourceReloadListener {
     public static void updateClientData(Map<ResourceLocation, KeyPromptData> data) {
         loadedData.clear();
         loadedData.putAll(data);
-        SmartKeyPrompts.LOGGER.info("Updated client key prompt data: {} files", data.size());
+        SmartKeyPrompts.LOGGER.debug("Updated client key prompt data: {} files", data.size());
     }
 }
