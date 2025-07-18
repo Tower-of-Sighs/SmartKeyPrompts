@@ -22,13 +22,14 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.MODID;
 
 @Mod.EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
 public class HUD {
     public static final List<KeyPrompt> KeyPromptList = Collections.synchronizedList(new ArrayList<>());
-    public static final Set<KeyPrompt> KeyPromptCache = ConcurrentHashMap.newKeySet();
+    public static final Set<KeyPrompt> KeyPromptCache = new CopyOnWriteArraySet<>();
     private static volatile Font font;
     public static volatile KeyMapping[] KeyMappingCache;
 
@@ -154,19 +155,16 @@ public class HUD {
         drawHud(event.getGuiGraphics());
     }
 
-    // 语言/资源包重载时清理缓存
     @SubscribeEvent
     public static void onResourceReload(AddReloadListenerEvent event) {
         clearCache();
     }
 
-    // 玩家登出时清理缓存
     @SubscribeEvent
     public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         clearCache();
     }
 
-    // 玩家登入时也可以清理一次，确保状态干净
     @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         clearCache();

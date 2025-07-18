@@ -147,10 +147,16 @@ public class KeyPromptEngine {
         for (Map.Entry<ResourceLocation, KeyPromptData> entry : loadedData.entrySet()) {
             KeyPromptData data = entry.getValue();
 
-            // 检查数据包对应的模组是否已加载
-            if (data.modid() != null && !data.modid().isEmpty()) {
-                if (!DataPackFunctions.isModLoaded(data.modid())) {
-                    continue;
+            if (data.vars() != null && data.vars().containsKey("modLoaded")) {
+                try {
+                    Map<String, Object> tempContext = new HashMap<>();
+                    Object modLoadedResult = evaluateExpression(data.vars().get("modLoaded"), tempContext, false);
+
+                    if (Boolean.FALSE.equals(modLoadedResult)) {
+                        continue;
+                    }
+                } catch (Exception e) {
+                    SmartKeyPrompts.LOGGER.debug("Failed to evaluate modLoaded for {}: {}", entry.getKey(), e.getMessage());
                 }
             }
 
