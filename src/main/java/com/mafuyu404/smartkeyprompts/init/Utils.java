@@ -187,6 +187,33 @@ public class Utils {
     }
 
     /**
+     * 获取玩家生命值百分比
+     */
+    public static float getHealthPercentage() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return 0.0f;
+        return player.getHealth() / player.getMaxHealth();
+    }
+
+    /**
+     * 获取玩家饥饿值
+     */
+    public static int getFoodLevel() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return 0;
+        return player.getFoodData().getFoodLevel();
+    }
+
+    /**
+     * 获取玩家经验等级
+     */
+    public static int getExperienceLevel() {
+        Player player = Minecraft.getInstance().player;
+        if (player == null) return 0;
+        return player.experienceLevel;
+    }
+
+    /**
      * 检查是否有敌对目标实体
      */
     public static boolean hasTargetedEntityIsMob() {

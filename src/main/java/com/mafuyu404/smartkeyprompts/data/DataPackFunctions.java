@@ -57,6 +57,21 @@ public class DataPackFunctions {
         return currentPlayer != null && currentPlayer.getAbilities().flying;
     }
 
+    @SKPFunction(description = "获取玩家生命值百分比")
+    public static float healthPercentage() {
+        return Utils.getHealthPercentage();
+    }
+
+    @SKPFunction(description = "获取玩家饥饿值")
+    public static int foodLevel() {
+        return Utils.getFoodLevel();
+    }
+
+    @SKPFunction(description = "获取玩家经验等级")
+    public static int experienceLevel() {
+        return Utils.getExperienceLevel();
+    }
+
     // ========== 按键相关函数 ==========
 
     @SKPFunction(description = "根据描述获取按键名称")

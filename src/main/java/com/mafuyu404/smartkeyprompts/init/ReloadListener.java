@@ -2,11 +2,8 @@ package com.mafuyu404.smartkeyprompts.init;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.data.KeyPromptEngine;
-import com.mafuyu404.smartkeyprompts.network.NetworkHandler;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ReloadListener {
@@ -17,5 +14,6 @@ public class ReloadListener {
     public static void onDataSyncReceived() {
         SmartKeyPrompts.LOGGER.info("Received datapack sync from server, reloading client cache...");
         KeyPromptEngine.forceReload();
+        HUD.clearCache();
     }
 }

@@ -4,7 +4,6 @@ import com.mafuyu404.smartkeyprompts.init.HUD;
 import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
 import com.mafuyu404.smartkeyprompts.init.Utils;
 import com.mafuyu404.smartkeyprompts.network.NetworkHandler;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;

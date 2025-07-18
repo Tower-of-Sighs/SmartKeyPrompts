@@ -1,6 +1,7 @@
 package com.mafuyu404.smartkeyprompts.init;
 
 import com.mafuyu404.smartkeyprompts.Config;
+import com.mafuyu404.smartkeyprompts.util.NBTUtils;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
@@ -13,84 +14,128 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.MODID;
 
 @Mod.EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
 public class HUD {
-    public static List<KeyPrompt> KeyPromptList = new ArrayList<>();
-    public static List<KeyPrompt> KeyPromptCache = new ArrayList<>();
-    private static Font font;
-    public static KeyMapping[] KeyMappingCache;
-    private static final Map<String, String> translationCache = new HashMap<>();
-    private static final Map<String, String> keyTranslationCache = new HashMap<>();
-    private static List<KeyPrompt> cachedDefaultPrompts = new ArrayList<>();
-    private static List<KeyPrompt> cachedCrosshairPrompts = new ArrayList<>();
-    private static int lastPromptListHash = 0;
+    public static final List<KeyPrompt> KeyPromptList = Collections.synchronizedList(new ArrayList<>());
+    public static final Set<KeyPrompt> KeyPromptCache = ConcurrentHashMap.newKeySet();
+    private static volatile Font font;
+    public static volatile KeyMapping[] KeyMappingCache;
+
+    private static final Map<String, String> translationCache = new ConcurrentHashMap<>();
+    private static final Map<String, String> keyTranslationCache = new ConcurrentHashMap<>();
+
+    private static volatile List<KeyPrompt> cachedDefaultPrompts = Collections.emptyList();
+    private static volatile List<KeyPrompt> cachedCrosshairPrompts = Collections.emptyList();
+    private static volatile int lastPromptListHash = 0;
 
     public static void addCache(KeyPrompt keyPrompt) {
-        if (!KeyPromptCache.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString())) {
-            KeyPromptCache.add(keyPrompt);
-        }
+        if (keyPrompt == null) return;
+        KeyPromptCache.add(keyPrompt);
     }
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.player == null) return;
+
         if (event.phase == TickEvent.Phase.START) {
             if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
                 List<? extends String> blacklist = Config.BLACKLIST.get();
-                KeyPromptList.clear();
-                KeyPromptCache.forEach(keyPrompt -> {
-                    if (!blacklist.contains(keyPrompt.group)) {
-                        KeyPromptList.add(keyPrompt);
+
+                List<KeyPrompt> toAdd = new ArrayList<>();
+                for (KeyPrompt keyPrompt : KeyPromptCache) {
+                    if (keyPrompt != null && !blacklist.contains(keyPrompt.group)) {
+                        toAdd.add(keyPrompt);
                     }
-                });
+                }
+
+                synchronized (KeyPromptList) {
+                    KeyPromptList.clear();
+                    KeyPromptList.addAll(toAdd);
+                }
             } else {
-                List.of(
+                KeyPrompt[] controlPrompts = {
                         new KeyPrompt(MODID, "key.mouse.left", "key.smartkeyprompts.keybinding", true),
                         new KeyPrompt(MODID, "key.mouse.wheel", "key.smartkeyprompts.scale", true),
                         new KeyPrompt(MODID, "key.mouse.right", "key.smartkeyprompts.position", true)
-                ).forEach(keyPrompt -> {
-                    if (!KeyPromptList.stream().map(KeyPrompt::getString).toList().contains(keyPrompt.getString()))
-                        KeyPromptList.add(keyPrompt);
-                });
+                };
+
+                synchronized (KeyPromptList) {
+                    for (KeyPrompt keyPrompt : controlPrompts) {
+                        if (!containsKeyPrompt(KeyPromptList, keyPrompt)) {
+                            KeyPromptList.add(keyPrompt);
+                        }
+                    }
+                }
             }
+
             KeyPromptCache.clear();
 
             updateCachedPrompts();
-
             registerActiveKeys();
         }
+
         if (!(minecraft.screen instanceof KeyBindsScreen) && KeyMappingCache != null) {
             minecraft.options.keyMappings = KeyMappingCache;
             KeyMappingCache = null;
         }
     }
 
+    private static boolean containsKeyPrompt(List<KeyPrompt> list, KeyPrompt target) {
+        for (KeyPrompt prompt : list) {
+            if (prompt != null && prompt.equals(target)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static void registerActiveKeys() {
-        Set<String> activeKeyDescs = KeyPromptList.stream()
-                .map(keyPrompt -> keyPrompt.desc)
-                .collect(Collectors.toSet());
+        Set<String> activeKeyDescs = new HashSet<>();
+        synchronized (KeyPromptList) {
+            for (KeyPrompt keyPrompt : KeyPromptList) {
+                if (keyPrompt != null && keyPrompt.desc != null) {
+                    activeKeyDescs.add(keyPrompt.desc);
+                }
+            }
+        }
         KeyStateManager.registerKeys(activeKeyDescs);
     }
 
     private static void updateCachedPrompts() {
-        int currentHash = KeyPromptList.hashCode();
+        List<KeyPrompt> currentList;
+        synchronized (KeyPromptList) {
+            currentList = new ArrayList<>(KeyPromptList);
+        }
+
+        int currentHash = currentList.hashCode();
         if (currentHash != lastPromptListHash) {
-            cachedDefaultPrompts = KeyPromptList.stream()
-                    .filter(keyPrompt -> keyPrompt.position.equals("default"))
-                    .toList();
-            cachedCrosshairPrompts = KeyPromptList.stream()
-                    .filter(keyPrompt -> keyPrompt.position.equals("crosshair"))
-                    .toList();
+            List<KeyPrompt> defaultPrompts = new ArrayList<>();
+            List<KeyPrompt> crosshairPrompts = new ArrayList<>();
+
+            for (KeyPrompt keyPrompt : currentList) {
+                if (keyPrompt != null) {
+                    if ("default".equals(keyPrompt.position)) {
+                        defaultPrompts.add(keyPrompt);
+                    } else if ("crosshair".equals(keyPrompt.position)) {
+                        crosshairPrompts.add(keyPrompt);
+                    }
+                }
+            }
+
+            cachedDefaultPrompts = List.copyOf(defaultPrompts);
+            cachedCrosshairPrompts = List.copyOf(crosshairPrompts);
             lastPromptListHash = currentHash;
         }
     }
@@ -109,8 +154,30 @@ public class HUD {
         drawHud(event.getGuiGraphics());
     }
 
+    // 语言/资源包重载时清理缓存
+    @SubscribeEvent
+    public static void onResourceReload(AddReloadListenerEvent event) {
+        clearCache();
+    }
+
+    // 玩家登出时清理缓存
+    @SubscribeEvent
+    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
+        clearCache();
+    }
+
+    // 玩家登入时也可以清理一次，确保状态干净
+    @SubscribeEvent
+    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        clearCache();
+    }
+
+
     private static void drawHud(GuiGraphics guiGraphics) {
-        if (KeyPromptList.isEmpty()) return;
+        List<KeyPrompt> defaultPrompts = cachedDefaultPrompts;
+        List<KeyPrompt> crosshairPrompts = cachedCrosshairPrompts;
+
+        if (defaultPrompts.isEmpty() && crosshairPrompts.isEmpty()) return;
 
         Window window = Minecraft.getInstance().getWindow();
         int screenWidth = window.getGuiScaledWidth();
@@ -125,15 +192,13 @@ public class HUD {
             return;
         }
 
-        // 缓存计算结果
-        int y0 = calculateY0(position, screenHeight, cachedDefaultPrompts.size());
+        int y0 = calculateY0(position, screenHeight, defaultPrompts.size());
         boolean isControlDown = ModKeybindings.CONTROL_KEY.isDown();
 
         PoseStack poseStack = guiGraphics.pose();
 
-        renderKeyPrompts(guiGraphics, poseStack, cachedDefaultPrompts, position, screenWidth, y0, scale, isControlDown, false);
-
-        renderKeyPrompts(guiGraphics, poseStack, cachedCrosshairPrompts, position, screenWidth, screenHeight / 2 + 7, scale, isControlDown, true);
+        renderKeyPrompts(guiGraphics, poseStack, defaultPrompts, position, screenWidth, y0, scale, isControlDown, false);
+        renderKeyPrompts(guiGraphics, poseStack, crosshairPrompts, position, screenWidth, screenHeight / 2 + 7, scale, isControlDown, true);
     }
 
     private static int calculateY0(int position, int screenHeight, int promptCount) {
@@ -149,6 +214,7 @@ public class HUD {
                                          int position, int screenWidth, int baseY, float scale, boolean isControlDown, boolean isCrosshair) {
         for (int i = 0; i < prompts.size(); i++) {
             KeyPrompt keyPrompt = prompts.get(i);
+            if (keyPrompt == null) continue;
 
             // 优先使用按键别名，如果没有则使用翻译后的按键
             String key = keyPrompt.keyAlias != null ? keyPrompt.keyAlias : getCachedKeyTranslation(keyPrompt.key);
@@ -187,12 +253,13 @@ public class HUD {
         }
     }
 
-
     private static String getCachedTranslation(String key) {
+        if (key == null) return "";
         return translationCache.computeIfAbsent(key, k -> Component.translatable(k).getString());
     }
 
     private static String getCachedKeyTranslation(String key) {
+        if (key == null) return "";
         return keyTranslationCache.computeIfAbsent(key, Utils::translateKey);
     }
 
@@ -203,9 +270,12 @@ public class HUD {
     }
 
     public static void clearCache() {
+        NBTUtils.clearCache();
         translationCache.clear();
         keyTranslationCache.clear();
         lastPromptListHash = 0;
         KeyStateManager.clearAllCache();
+        cachedDefaultPrompts = Collections.emptyList();
+        cachedCrosshairPrompts = Collections.emptyList();
     }
 }
