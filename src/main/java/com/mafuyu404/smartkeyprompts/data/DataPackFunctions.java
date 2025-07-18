@@ -5,6 +5,9 @@ import com.mafuyu404.smartkeyprompts.api.SKPFunction;
 import com.mafuyu404.smartkeyprompts.init.Utils;
 import com.mafuyu404.smartkeyprompts.util.NBTUtils;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.fml.ModList;
@@ -105,6 +108,57 @@ public class DataPackFunctions {
     @SKPFunction(description = "检查游戏界面是否打开")
     public static boolean isScreenOpen() {
         return Utils.isScreenOpen();
+    }
+
+    @SKPFunction(description = "检查是否在物品栏界面")
+    public static boolean isInventoryScreen() {
+        return Minecraft.getInstance().screen instanceof InventoryScreen;
+    }
+
+    @SKPFunction(description = "检查是否在创造模式物品栏界面")
+    public static boolean isCreativeInventoryScreen() {
+        return Minecraft.getInstance().screen instanceof CreativeModeInventoryScreen;
+    }
+
+    @SKPFunction(description = "检查是否在容器界面（箱子、熔炉等）")
+    public static boolean isContainerScreen() {
+        return Minecraft.getInstance().screen instanceof AbstractContainerScreen;
+    }
+
+    @SKPFunction(description = "检查是否有物品被悬停（适用于物品提示显示）")
+    public static boolean hasHoveredItem() {
+        if (!isScreenOpen()) return false;
+
+        // 检查是否在容器界面且有悬停的物品
+        if (Minecraft.getInstance().screen instanceof AbstractContainerScreen<?> containerScreen) {
+            return containerScreen.getSlotUnderMouse() != null &&
+                    containerScreen.getSlotUnderMouse().hasItem();
+        }
+
+        return false;
+    }
+
+    @SKPFunction(description = "获取悬停物品的ID")
+    public static String getHoveredItemId() {
+        if (!hasHoveredItem()) return "";
+
+        if (Minecraft.getInstance().screen instanceof AbstractContainerScreen<?> containerScreen) {
+            var slot = containerScreen.getSlotUnderMouse();
+            if (slot != null && slot.hasItem()) {
+                return Utils.toPathString(slot.getItem().getItem().getDescriptionId());
+            }
+        }
+        return "";
+    }
+
+    @SKPFunction(description = "检查悬停物品是否为指定类型")
+    public static boolean isHoveredItemType(String itemId) {
+        return itemId.equals(getHoveredItemId());
+    }
+
+    @SKPFunction(description = "检查是否适合显示物品相关按键提示（有界面打开且有物品悬停）")
+    public static boolean shouldShowItemTooltips() {
+        return isScreenOpen() && hasHoveredItem();
     }
 
     @SKPFunction(description = "检查玩家是否在创造模式")
