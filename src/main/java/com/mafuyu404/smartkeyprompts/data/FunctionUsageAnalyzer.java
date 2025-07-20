@@ -4,7 +4,9 @@ import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.api.FunctionRegistry;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

@@ -29,7 +29,7 @@ public class KeyPromptEngine {
         registerFunctions(loadedData);
     }
 
-     //根据数据包内容选择性注册函数
+    //根据数据包内容选择性注册函数
     public static void registerFunctions(Map<ResourceLocation, KeyPromptData> dataPackData) {
         try {
             parserContext = new ParserContext();
@@ -62,7 +62,7 @@ public class KeyPromptEngine {
             functionsRegistered = true;
 
             SmartKeyPrompts.LOGGER.info("Registered {} MVEL functions ({}% optimization)",
-                    registeredCount, Math.round((1.0 - (double)registeredCount / allFunctions.size()) * 100));
+                    registeredCount, Math.round((1.0 - (double) registeredCount / allFunctions.size()) * 100));
 
         } catch (Exception e) {
             SmartKeyPrompts.LOGGER.error("Error registering MVEL functions: {}", e.getMessage(), e);

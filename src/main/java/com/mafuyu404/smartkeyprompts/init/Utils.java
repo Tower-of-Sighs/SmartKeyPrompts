@@ -15,9 +15,7 @@ import net.minecraft.world.phys.HitResult;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Utils {
 
@@ -152,6 +150,7 @@ public class Utils {
         }
         return false;
     }
+
     /**
      * 根据描述获取按键名称
      */

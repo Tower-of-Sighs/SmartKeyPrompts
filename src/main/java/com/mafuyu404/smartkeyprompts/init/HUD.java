@@ -231,15 +231,11 @@ public class HUD {
             }
 
             boolean pressed;
-            if (keyPrompt.isCustom) {
-                pressed = false;
-            } else {
-                // 只有最复杂的匹配按键才显示为按下
-                pressed = shouldShowAsPressed(keyPrompt.key, mostComplexPressedKey);
+            // 只有最复杂的匹配按键才显示为按下
+            pressed = shouldShowAsPressed(keyPrompt.key, mostComplexPressedKey);
 
-                if (!pressed) {
-                    pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
-                }
+            if (!pressed) {
+                pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
             }
 
             int y = baseY + (int) (16.0 * scale * i);
@@ -346,7 +342,6 @@ public class HUD {
 
         return simpleKeys.length < complexKeys.length;
     }
-
 
 
     private static String getCachedTranslation(String key) {

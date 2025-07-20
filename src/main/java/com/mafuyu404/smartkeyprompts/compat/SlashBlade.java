@@ -37,6 +37,7 @@ public class SlashBlade {
             ItemStack mainHandItem = player.getMainHandItem();
 
             if (mainHandItem.getItem() instanceof ItemSlashBlade) {
+                showBasicKeys(mainHandItem);
                 if (isBladeUnavailable(mainHandItem)) {
                     if (!lastSlashArt.isEmpty()) {
                         lastSlashArt = "";
@@ -44,7 +45,6 @@ public class SlashBlade {
                     return;
                 }
 
-                showBasicKeys(mainHandItem);
 
                 showSlashArtKeys(mainHandItem);
 
@@ -118,11 +118,12 @@ public class SlashBlade {
             // 跃升斩 - 按住Shift+S+长按右键
             SmartKeyPrompts.addDesc("key.slashblade.upperslash_jump")
                     .forKey(keyShift + "+" + keyBack + "+" + keyUse)
-                    .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.back") + "+长按" + 
-                                 (Utils.isRightClickKey("key.use") ? "右键" : Utils.getKeyDisplayName("key.use")))
+                    .withKeyAlias("按住" + Utils.getKeysDisplayName("key.sneak", "key.back") + "+长按" +
+                            (Utils.isRightClickKey("key.use") ? "右键" : Utils.getKeyDisplayName("key.use")))
                     .toGroup(modid);
         }
     }
+
     private static void showSlashArtKeys(ItemStack itemStack) {
         ResourceLocation slashArtKey = getSlashArtKey(itemStack);
 
@@ -138,6 +139,7 @@ public class SlashBlade {
             lastSlashArt = "";
         }
     }
+
 
     private static void canUseSummonedSwordKeys(ItemStack itemStack) {
         if (!canUseSummonedSword(itemStack)) {
@@ -181,6 +183,7 @@ public class SlashBlade {
             }
         }
     }
+
     private static boolean canUseSummonedSword(ItemStack itemStack) {
         try {
             if (!SwordType.from(itemStack).contains(SwordType.BEWITCHED)) {
