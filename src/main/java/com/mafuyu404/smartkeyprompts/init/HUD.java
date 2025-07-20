@@ -74,7 +74,7 @@ public class HUD {
 
                 synchronized (KeyPromptList) {
                     for (KeyPrompt keyPrompt : controlPrompts) {
-                        if (!containsKeyPrompt(KeyPromptList, keyPrompt)) {
+                        if (!containsKeyPrompt(keyPrompt)) {
                             KeyPromptList.add(keyPrompt);
                         }
                     }
@@ -93,8 +93,8 @@ public class HUD {
         }
     }
 
-    private static boolean containsKeyPrompt(List<KeyPrompt> list, KeyPrompt target) {
-        for (KeyPrompt prompt : list) {
+    private static boolean containsKeyPrompt(KeyPrompt target) {
+        for (KeyPrompt prompt : HUD.KeyPromptList) {
             if (prompt != null && prompt.equals(target)) {
                 return true;
             }
@@ -106,8 +106,13 @@ public class HUD {
         Set<String> activeKeyDescs = new HashSet<>();
         synchronized (KeyPromptList) {
             for (KeyPrompt keyPrompt : KeyPromptList) {
-                if (keyPrompt != null && keyPrompt.desc != null) {
-                    activeKeyDescs.add(keyPrompt.desc);
+                if (keyPrompt != null) {
+                    if (keyPrompt.desc != null) {
+                        activeKeyDescs.add(keyPrompt.desc);
+                    }
+                    if (keyPrompt.key != null) {
+                        activeKeyDescs.add(keyPrompt.key);
+                    }
                 }
             }
         }
@@ -210,6 +215,10 @@ public class HUD {
 
     private static void renderKeyPrompts(GuiGraphics guiGraphics, PoseStack poseStack, List<KeyPrompt> prompts,
                                          int position, int screenWidth, int baseY, float scale, boolean isControlDown, boolean isCrosshair) {
+
+        // 找出当前按下的最复杂的按键组合
+        String mostComplexPressedKey = findMostComplexPressedKey(prompts);
+
         for (int i = 0; i < prompts.size(); i++) {
             KeyPrompt keyPrompt = prompts.get(i);
             if (keyPrompt == null) continue;
@@ -221,7 +230,17 @@ public class HUD {
                 desc += "(" + keyPrompt.group + ":" + keyPrompt.desc + ")";
             }
 
-            boolean pressed = KeyStateManager.isKeyPressed(keyPrompt.desc);
+            boolean pressed;
+            if (keyPrompt.isCustom) {
+                pressed = false;
+            } else {
+                // 只有最复杂的匹配按键才显示为按下
+                pressed = shouldShowAsPressed(keyPrompt.key, mostComplexPressedKey);
+
+                if (!pressed) {
+                    pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
+                }
+            }
 
             int y = baseY + (int) (16.0 * scale * i);
             int x;
@@ -250,6 +269,85 @@ public class HUD {
             poseStack.popPose();
         }
     }
+
+    /**
+     * 找出当前按下的最复杂的按键组合
+     */
+    private static String findMostComplexPressedKey(List<KeyPrompt> prompts) {
+        String mostComplexKey = null;
+        int maxComplexity = 0;
+
+        for (KeyPrompt keyPrompt : prompts) {
+            if (keyPrompt == null || keyPrompt.key == null || keyPrompt.isCustom) continue;
+
+            if (Utils.isPhysicalKeyPressed(keyPrompt.key)) {
+                int complexity = getKeyComplexity(keyPrompt.key);
+                if (complexity > maxComplexity) {
+                    maxComplexity = complexity;
+                    mostComplexKey = keyPrompt.key;
+                }
+            }
+        }
+
+        return mostComplexKey;
+    }
+
+    private static boolean shouldShowAsPressed(String keyName, String mostComplexPressedKey) {
+        if (keyName == null) return false;
+
+        // 如果没有找到最复杂的按键，使用原来的检测方式
+        if (mostComplexPressedKey == null) {
+            return Utils.isPhysicalKeyPressed(keyName);
+        }
+
+        // 只有当前按键就是最复杂的按键时才显示为按下
+        if (keyName.equals(mostComplexPressedKey)) {
+            return true;
+        }
+
+        // 如果当前按键被包含在最复杂的按键中，则不显示为按下
+        if (isKeyContainedIn(keyName, mostComplexPressedKey)) {
+            return false;
+        }
+
+        // 其他情况使用原来的检测方式
+        return Utils.isPhysicalKeyPressed(keyName);
+    }
+
+    /**
+     * 计算按键组合的复杂度（按键数量）
+     */
+    private static int getKeyComplexity(String keyName) {
+        if (keyName == null) return 0;
+        return keyName.contains("+") ? keyName.split("\\+").length : 1;
+    }
+
+    /**
+     * 检查一个按键是否被另一个按键组合包含
+     */
+    private static boolean isKeyContainedIn(String simpleKey, String complexKey) {
+        if (simpleKey == null || complexKey == null) return false;
+        if (!complexKey.contains("+")) return false;
+
+        String[] complexKeys = complexKey.split("\\+");
+        String[] simpleKeys = simpleKey.split("\\+");
+
+        // 检查 simpleKey 的所有按键是否都在 complexKey 中
+        for (String simple : simpleKeys) {
+            boolean found = false;
+            for (String complex : complexKeys) {
+                if (simple.trim().equals(complex.trim())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) return false;
+        }
+
+        return simpleKeys.length < complexKeys.length;
+    }
+
+
 
     private static String getCachedTranslation(String key) {
         if (key == null) return "";

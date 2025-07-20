@@ -1,5 +1,6 @@
 package com.mafuyu404.smartkeyprompts.init;
 
+import com.mafuyu404.smartkeyprompts.util.KeyMap;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -14,7 +15,9 @@ import net.minecraft.world.phys.HitResult;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Utils {
 
@@ -261,5 +264,61 @@ public class Utils {
     public static boolean isRightClickKey(String keyDesc) {
         String keyName = getKeyByDesc(keyDesc);
         return keyName.equals("key.mouse.right") || keyName.equals("key.use");
+    }
+
+    /**
+     * 通过物理按键名称检查按键是否被按下（支持组合键）
+     */
+    public static boolean isPhysicalKeyPressed(String keyName) {
+        if (keyName == null || keyName.isEmpty()) {
+            return false;
+        }
+
+        // 处理组合键
+        if (keyName.contains("+")) {
+            String[] keys = keyName.split("\\+");
+            for (String key : keys) {
+                if (!isPhysicalKeyPressed(key.trim())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // 处理单个按键
+        return isPhysicalKeySinglePressed(keyName);
+    }
+
+
+    /**
+     * 检查单个物理按键是否被按下
+     */
+    private static boolean isPhysicalKeySinglePressed(String keyName) {
+        if (keyName == null || keyName.isEmpty()) {
+            return false;
+        }
+
+        Minecraft minecraft = Minecraft.getInstance();
+        long windowHandle = minecraft.getWindow().getWindow();
+        if (windowHandle == 0L) return false;
+
+        try {
+            Integer glfwKey = KeyMap.getGLFWKey(keyName);
+            if (glfwKey == null) {
+                return false;
+            }
+
+            if (keyName.startsWith("key.mouse.")) {
+                return GLFW.glfwGetMouseButton(windowHandle, glfwKey) == GLFW.GLFW_PRESS;
+            }
+
+            if (keyName.startsWith("key.keyboard.")) {
+                return GLFW.glfwGetKey(windowHandle, glfwKey) == GLFW.GLFW_PRESS;
+            }
+
+            return false;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

@@ -24,6 +24,12 @@ public class KeyStateManager {
 
     public static void registerKeys(Set<String> keyDescs) {
         activeKeys.addAll(keyDescs);
+        for (String desc : keyDescs) {
+            String key = Utils.getKeyByDesc(desc);
+            if (key != null && !key.isEmpty()) {
+                activeKeys.add(key);
+            }
+        }
     }
 
     public static boolean isKeyPressed(String keyDesc) {
