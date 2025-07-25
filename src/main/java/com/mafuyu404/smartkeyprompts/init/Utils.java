@@ -1,17 +1,22 @@
 package com.mafuyu404.smartkeyprompts.init;
 
+import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.util.KeyMap;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -32,8 +37,23 @@ public class Utils {
      * 获取主手物品ID
      */
     public static String getMainHandItemId() {
-        return toPathString(Minecraft.getInstance().player.getMainHandItem().getItem().getDescriptionId());
+        try {
+            ItemStack stack = Minecraft.getInstance().player.getMainHandItem();
+            Item item = stack.getItem();
+            ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
+
+            if (id == null) {
+                SmartKeyPrompts.LOGGER.warn("[SKP] 主手物品注册名异常：{}", item.toString());
+                return "unknown:unknown";
+            }
+
+            return id.toString();
+        } catch (Exception e) {
+            SmartKeyPrompts.LOGGER.error("[SKP] 获取主手物品ID失败", e);
+            return "unknown:unknown";
+        }
     }
+
 
     /**
      * 将描述ID转换为路径字符串格式
