@@ -9,6 +9,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.fml.ModList;
 
+import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.LOGGER;
+
 /**
  * 用于数据包MVEL表达式的函数类
  * 所有带@SKPFunction注解的方法都应该放在这里
@@ -189,6 +191,18 @@ public class DataPackFunctions {
     public static boolean checkTargetBlockEntityNBT(String nbtPath, String expectedValue) {
         CompoundTag nbt = NBTUtils.getTargetBlockEntityNBT();
         return NBTUtils.checkNBTValue(nbt, nbtPath, expectedValue);
+    }
+
+    @SKPFunction(description = "获取目标实体NBT路径的值")
+    public static String getTargetBlockEntityNBTValue(String nbtPath) {
+        CompoundTag nbt = NBTUtils.getTargetBlockEntityNBT();
+        return NBTUtils.getNBTValue(nbt, nbtPath);
+    }
+
+    @SKPFunction(description = "获取目标实体的完整SNBT")
+    public static String getTargetBlockEntitySNBT() {
+        CompoundTag nbt = NBTUtils.getTargetBlockEntityNBT();
+        return NBTUtils.getNBTAsString(nbt);
     }
 
     // ========== 模组和系统函数 ==========
