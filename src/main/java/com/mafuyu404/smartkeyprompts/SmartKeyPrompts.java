@@ -32,19 +32,15 @@ public class SmartKeyPrompts {
     }
 
     public static void show(String id, String desc) {
-        Utils.getAllKeyBindings().forEach(keyPrompt -> {
-            if (keyPrompt.desc.equals(desc)) {
-                HUD.addCache(new KeyPrompt(id, keyPrompt.key, keyPrompt.desc, false));
-            }
-        });
+        addDesc(desc).toGroup(id);
     }
 
     public static void custom(String id, String key, String desc) {
-        HUD.addCache(new KeyPrompt(id, key, desc, true));
+        addDesc(desc).forKey(key).withCustom(true).toGroup(id);
     }
 
-    public static void alias(String id, String key, String desc) {
-        HUD.addCache(new KeyPrompt(id, key, desc, false));
+    public static void alias(String id, String desc, String alias) {
+        addDesc(desc).withKeyAlias(alias).toGroup(id);
     }
 
     public static KeyPrompt addDesc(String desc) {

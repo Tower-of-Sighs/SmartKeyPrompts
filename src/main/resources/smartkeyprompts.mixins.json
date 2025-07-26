@@ -5,6 +5,8 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "smartkeyprompts.refmap.json",
   "mixins": [
+    "InputConstants$TypeMixin",
+    "KeyMappingMixin"
   ],
   "client": [
     "MouseHandlerMixin"
