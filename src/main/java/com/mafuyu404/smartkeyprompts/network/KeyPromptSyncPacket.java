@@ -2,7 +2,7 @@ package com.mafuyu404.smartkeyprompts.network;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.data.KeyPromptData;
-import com.mafuyu404.smartkeyprompts.util.GsonUtils;
+import com.mafuyu404.smartkeyprompts.util.CodecUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -41,7 +41,12 @@ public class KeyPromptSyncPacket {
 
     private void sendToTarget(PacketDistributor.PacketTarget target) {
         try {
-            String jsonData = GsonUtils.getGson().toJson(data);
+            String jsonData = CodecUtils.encodeToJson(data);
+            if (jsonData == null) {
+                SmartKeyPrompts.LOGGER.error("Failed to encode data to JSON");
+                return;
+            }
+
             byte[] dataBytes = jsonData.getBytes(StandardCharsets.UTF_8);
 
             SmartKeyPrompts.LOGGER.info("Sending key prompt data: {} files, {} bytes", data.size(), dataBytes.length);

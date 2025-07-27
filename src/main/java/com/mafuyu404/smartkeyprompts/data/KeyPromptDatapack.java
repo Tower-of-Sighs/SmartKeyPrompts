@@ -5,11 +5,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.network.KeyPromptSyncPacket;
+import com.mafuyu404.smartkeyprompts.util.CodecUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -23,13 +25,14 @@ import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class KeyPromptDatapack extends SimpleJsonResourceReloadListener {
-    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Map<ResourceLocation, KeyPromptData> loadedData = new HashMap<>();
+
+    private static final Gson LENIENT_GSON = new GsonBuilder().setLenient().create();
     private static KeyPromptDatapack instance;
     private static boolean serverStarted = false;
 
     public KeyPromptDatapack() {
-        super(GSON, SmartKeyPrompts.MODID);
+        super(LENIENT_GSON, SmartKeyPrompts.MODID);
         instance = this;
     }
 
@@ -42,9 +45,13 @@ public class KeyPromptDatapack extends SimpleJsonResourceReloadListener {
             JsonElement json = entry.getValue();
 
             try {
-                KeyPromptData data = GSON.fromJson(json, KeyPromptData.class);
-                loadedData.put(location, data);
-                SmartKeyPrompts.LOGGER.debug("Loaded key prompt data: {}", location);
+                KeyPromptData data = CodecUtils.decodeKeyPromptData(json);
+                if (data != null) {
+                    loadedData.put(location, data);
+                    SmartKeyPrompts.LOGGER.debug("Loaded key prompt data: {}", location);
+                } else {
+                    SmartKeyPrompts.LOGGER.error("Failed to parse key prompt data (null result): {}", location);
+                }
             } catch (Exception e) {
                 SmartKeyPrompts.LOGGER.error("Failed to parse key prompt data: {}", location, e);
             }
