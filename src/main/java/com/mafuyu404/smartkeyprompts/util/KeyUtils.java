@@ -1,6 +1,7 @@
 package com.mafuyu404.smartkeyprompts.util;
 
 import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -173,13 +174,14 @@ public class KeyUtils {
         list.forEach(KeyUtils::enableKeyMapping);
     }
     public static void enableAllKeyMapping() {
-        getAllKeyBindings().clear();
+        DisabledKeyMappingList.clear();
     }
 
     private static final HashMap<String, Integer> KEY_MAP = new HashMap<>();
     public static void addKeyMap(String key, int code) {
         KEY_MAP.put(key, code);
     }
+    public static InputConstants.Key unknownKey;
 
     /**
      * 获取按键的翻译文本（不带任何前缀）

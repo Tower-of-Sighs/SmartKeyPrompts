@@ -7,6 +7,7 @@ import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(targets = "com.mojang.blaze3d.platform.InputConstants$Type")
 public class InputConstants$TypeMixin {
@@ -16,8 +17,9 @@ public class InputConstants$TypeMixin {
         return map;
     }
 
-    @Inject(method = "addKey", at = @At("HEAD"))
-    private static void q(InputConstants.Type p_84900_, String key, int code, CallbackInfo ci) {
+    @Inject(method = "addKey", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;put(ILjava/lang/Object;)Ljava/lang/Object;"), locals = LocalCapture.CAPTURE_FAILHARD)
+    private static void q(InputConstants.Type p_84900_, String key, int code, CallbackInfo ci, InputConstants.Key inputconstants$key) {
         KeyUtils.addKeyMap(key, code);
+        if (code == 1) KeyUtils.unknownKey = inputconstants$key;
     }
 }
