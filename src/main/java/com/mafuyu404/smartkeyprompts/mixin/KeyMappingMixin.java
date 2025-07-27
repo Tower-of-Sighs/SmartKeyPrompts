@@ -14,15 +14,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class KeyMappingMixin {
     @Shadow @Final private String name;
 
-//    @Inject(method = {"isDown", "consumeClick", "matches", "same"}, at = @At("RETURN"), cancellable = true)
-//    private void a(CallbackInfoReturnable<Boolean> cir) {
-//        cir.setReturnValue(false);
-//    }
-
-    @Inject(method = "getKey", at = @At("HEAD"), cancellable = true, remap = false)
-    private void b(CallbackInfoReturnable<InputConstants.Key> cir) {
+    @Inject(method = {"isDown", "consumeClick", "matches", "same"}, at = @At("RETURN"), cancellable = true)
+    private void a(CallbackInfoReturnable<Boolean> cir) {
         if (KeyUtils.isKeyDisabled(this.name)) {
-            cir.setReturnValue(InputConstants.Type.KEYSYM.getOrCreate(-1));
+            cir.setReturnValue(false);
         }
     }
+
+//    @Inject(method = "getKey", at = @At("HEAD"), cancellable = true, remap = false)
+//    private void b(CallbackInfoReturnable<InputConstants.Key> cir) {
+//        if (KeyUtils.isKeyDisabled(this.name)) {
+//            cir.setReturnValue(KeyUtils.unknownKey);
+//        }
+//    }
 }
