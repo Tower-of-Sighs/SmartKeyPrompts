@@ -247,17 +247,17 @@ public class HUD {
                 x = screenWidth / 2 - (int) (font.width(key + "==" + desc) * scale / 2);
                 scaleHUD(poseStack, x, y, scale);
                 KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
-                KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
+                KeyRenderer.drawText(guiGraphics, x + font.width(key) + 12, y + 3, desc);
             } else {
                 if (position == 1 || position == 7 || position == 8) {
                     x = 5;
                     scaleHUD(poseStack, x, y, scale);
                     KeyRenderer.drawKeyBoardKey(guiGraphics, x, y, key, pressed);
-                    KeyRenderer.drawText(guiGraphics, x + font.width(key) + 7, y + 2, desc);
+                    KeyRenderer.drawText(guiGraphics, x + font.width(key) + 12, y + 3, desc);
                 } else if (position == 3 || position == 4 || position == 5) {
                     x = screenWidth - 8;
                     scaleHUD(poseStack, x, y, scale);
-                    KeyRenderer.drawText(guiGraphics, x - font.width(desc + key) - 3, y + 2, desc);
+                    KeyRenderer.drawText(guiGraphics, x - font.width(desc + key) + 2, y + 3, desc);
                     KeyRenderer.drawKeyBoardKey(guiGraphics, x - font.width(key), y, key, pressed);
                 }
             }

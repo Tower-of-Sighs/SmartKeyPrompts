@@ -17,6 +17,31 @@ public class KeyRenderer {
     public static void drawKeyBoardKey(GuiGraphics guiGraphics, int x, int y, String key, boolean pressed) {
         Font font = getFont();
 
+        int width = font.width(key);
+        int height = 12;
+
+        KeyDrawer.drawImage(guiGraphics.pose(),
+                x, y,
+                6, KeyDrawer.TEXTURE_HEIGHT,
+                0, 0,
+                6, KeyDrawer.TEXTURE_HEIGHT);
+        KeyDrawer.drawImage(guiGraphics.pose(),
+                x + 6, y,
+                width - 1, KeyDrawer.TEXTURE_HEIGHT,
+                6, 0,
+                20, KeyDrawer.TEXTURE_HEIGHT);
+        KeyDrawer.drawImage(guiGraphics.pose(),
+                x + 6 + width - 1, y,
+                6, KeyDrawer.TEXTURE_HEIGHT,
+                26, 0,
+                6, KeyDrawer.TEXTURE_HEIGHT);
+
+        guiGraphics.drawCenteredString(font, key, x + width / 2 + 6, y + (height - 8) / 2 + 1, 0xFFFFFFFF);
+    }
+
+    public static void drawImage(int x, int y, String key, boolean pressed) {
+        Font font = getFont();
+
         // 按键尺寸
         int width = font.width(key) + 4;
         int height = 12;
@@ -24,15 +49,6 @@ public class KeyRenderer {
         int topColor = pressed ? 0xFF505050 : 0xFF707070;
         int faceColor = pressed ? 0xFF202020 : 0xFF505050;
         int bottomColor = pressed ? 0xFF000000 : 0xFF202020;
-
-        guiGraphics.fill(x, y, x + width, y + height, faceColor);
-
-        guiGraphics.fill(x, y, x + width, y + 1, topColor); // 顶部线
-        guiGraphics.fill(x, y, x + 1, y + height, topColor); // 左边线
-        guiGraphics.fill(x, y + height - 1, x + width, y + height, bottomColor); // 底部线
-        guiGraphics.fill(x + width - 1, y, x + width, y + height, bottomColor); // 右边线
-
-        guiGraphics.drawCenteredString(font, key, x + width / 2, y + (height - 8) / 2, 0xFFFFFFFF);
     }
 
     public static void drawText(GuiGraphics guiGraphics, int x, int y, String text) {
