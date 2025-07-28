@@ -2,7 +2,8 @@ package com.mafuyu404.smartkeyprompts.compat;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.env.JeiCompat;
-import com.mafuyu404.smartkeyprompts.init.Utils;
+import com.mafuyu404.smartkeyprompts.util.CommonUtils;
+import com.mafuyu404.smartkeyprompts.util.PromptUtils;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -17,23 +18,23 @@ public class JEI {
     @SubscribeEvent
     public static void itemTooltip(ItemTooltipEvent event) {
         if (ModList.get().isLoaded("jei")) {
-            if (Utils.isScreenOpen()) {
-                SmartKeyPrompts.show(modid, "key.jei.showRecipe");
-                SmartKeyPrompts.show(modid, "key.jei.showUses");
-                SmartKeyPrompts.show(modid, "key.jei.bookmark");
+            if (CommonUtils.isScreenOpen()) {
+                PromptUtils.show(modid, "key.jei.showRecipe");
+                PromptUtils.show(modid, "key.jei.showUses");
+                PromptUtils.show(modid, "key.jei.bookmark");
             }
         }
     }
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
-        if (Utils.isScreenOpen()) {
+        if (CommonUtils.isScreenOpen()) {
 //        SmartKeyPrompts.addDesc("key.jei.showRecipe").atPosition("crosshair").toGroup("jei_skp");
 //        SmartKeyPrompts.addDesc("key.jei.bookmark").withCustom(true).forKey("key.mouse.4").atPosition("crosshair").toGroup("jei_skp");
             if (!ModList.get().isLoaded("jei")) return;
             if (JeiCompat.isEnabled()) {
-                SmartKeyPrompts.show(modid, "key.jei.recipeBack");
-                SmartKeyPrompts.show(modid, "key.jei.toggleOverlay");
+                PromptUtils.show(modid, "key.jei.recipeBack");
+                PromptUtils.show(modid, "key.jei.toggleOverlay");
             }
         }
     }

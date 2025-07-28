@@ -1,6 +1,7 @@
 package com.mafuyu404.smartkeyprompts.init;
 
 import com.mafuyu404.smartkeyprompts.Config;
+import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mafuyu404.smartkeyprompts.util.NBTUtils;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -51,7 +52,7 @@ public class HUD {
         if (minecraft.player == null) return;
 
         if (event.phase == TickEvent.Phase.START) {
-            if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
+            if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
                 List<? extends String> blacklist = Config.BLACKLIST.get();
 
                 List<KeyPrompt> toAdd = new ArrayList<>();
@@ -235,7 +236,7 @@ public class HUD {
             pressed = shouldShowAsPressed(keyPrompt.key, mostComplexPressedKey);
 
             if (!pressed) {
-                pressed = Utils.isKeyPressedOfDesc(keyPrompt.desc);
+                pressed = KeyUtils.isKeyPressedOfDesc(keyPrompt.desc);
             }
 
             int y = baseY + (int) (16.0 * scale * i);
@@ -276,7 +277,7 @@ public class HUD {
         for (KeyPrompt keyPrompt : prompts) {
             if (keyPrompt == null || keyPrompt.key == null || keyPrompt.isCustom) continue;
 
-            if (Utils.isPhysicalKeyPressed(keyPrompt.key)) {
+            if (KeyUtils.isPhysicalKeyPressed(keyPrompt.key)) {
                 int complexity = getKeyComplexity(keyPrompt.key);
                 if (complexity > maxComplexity) {
                     maxComplexity = complexity;
@@ -293,7 +294,7 @@ public class HUD {
 
         // 如果没有找到最复杂的按键，使用原来的检测方式
         if (mostComplexPressedKey == null) {
-            return Utils.isPhysicalKeyPressed(keyName);
+            return KeyUtils.isPhysicalKeyPressed(keyName);
         }
 
         // 只有当前按键就是最复杂的按键时才显示为按下
@@ -307,7 +308,7 @@ public class HUD {
         }
 
         // 其他情况使用原来的检测方式
-        return Utils.isPhysicalKeyPressed(keyName);
+        return KeyUtils.isPhysicalKeyPressed(keyName);
     }
 
     /**
@@ -351,7 +352,7 @@ public class HUD {
 
     private static String getCachedKeyTranslation(String key) {
         if (key == null) return "";
-        return keyTranslationCache.computeIfAbsent(key, Utils::translateKey);
+        return keyTranslationCache.computeIfAbsent(key, KeyUtils::translateKey);
     }
 
     private static void scaleHUD(PoseStack poseStack, int x, int y, float scale) {

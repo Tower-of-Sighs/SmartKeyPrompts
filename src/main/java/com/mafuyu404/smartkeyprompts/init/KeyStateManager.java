@@ -1,5 +1,6 @@
 package com.mafuyu404.smartkeyprompts.init;
 
+import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,7 +26,7 @@ public class KeyStateManager {
     public static void registerKeys(Set<String> keyDescs) {
         activeKeys.addAll(keyDescs);
         for (String desc : keyDescs) {
-            String key = Utils.getKeyByDesc(desc);
+            String key = KeyUtils.getKeyByDesc(desc);
             if (key != null && !key.isEmpty()) {
                 activeKeys.add(key);
             }

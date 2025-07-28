@@ -1,15 +1,11 @@
 package com.mafuyu404.smartkeyprompts.data;
 
-import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import com.mafuyu404.smartkeyprompts.api.SKPFunction;
-import com.mafuyu404.smartkeyprompts.init.Utils;
-import com.mafuyu404.smartkeyprompts.util.NBTUtils;
+import com.mafuyu404.smartkeyprompts.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.fml.ModList;
-
-import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.LOGGER;
 
 /**
  * 用于数据包MVEL表达式的函数类
@@ -31,17 +27,17 @@ public class DataPackFunctions {
 
     @SKPFunction(description = "获取主手物品ID")
     public static String mainHandItem() {
-        return Utils.getMainHandItemId();
+        return PlayerUtils.getMainHandItemId();
     }
 
     @SKPFunction(description = "获取载具类型")
     public static String vehicleType() {
-        return Utils.getVehicleType();
+        return PlayerUtils.getVehicleType();
     }
 
     @SKPFunction(description = "获取目标实体类型")
     public static String targetedEntity() {
-        return Utils.getTargetedEntityType();
+        return PlayerUtils.getTargetedEntityType();
     }
 
     @SKPFunction(description = "检查玩家是否在载具中")
@@ -61,42 +57,42 @@ public class DataPackFunctions {
 
     @SKPFunction(description = "获取玩家生命值百分比")
     public static float healthPercentage() {
-        return Utils.getHealthPercentage();
+        return PlayerUtils.getHealthPercentage();
     }
 
     @SKPFunction(description = "获取玩家饥饿值")
     public static int foodLevel() {
-        return Utils.getFoodLevel();
+        return PlayerUtils.getFoodLevel();
     }
 
     @SKPFunction(description = "获取玩家经验等级")
     public static int experienceLevel() {
-        return Utils.getExperienceLevel();
+        return PlayerUtils.getExperienceLevel();
     }
 
     // ========== 按键相关函数 ==========
 
     @SKPFunction(description = "根据描述获取按键名称")
     public static String getKeyByDesc(String desc) {
-        return Utils.getKeyByDesc(desc);
+        return KeyUtils.getKeyByDesc(desc);
     }
 
     @SKPFunction(description = "检查指定按键是否被按下")
     public static boolean isKeyPressedOfDesc(String key) {
-        return Utils.isKeyPressedOfDesc(key);
+        return KeyUtils.isKeyPressedOfDesc(key);
     }
 
     // ========== 实体和环境检查函数 ==========
 
     @SKPFunction(description = "检查目标实体是否为指定类型")
     public static boolean isTargetedEntityType(String entityType) {
-        String targetType = Utils.getTargetedEntityType();
+        String targetType = PlayerUtils.getTargetedEntityType();
         return targetType != null && targetType.equals(entityType);
     }
 
     @SKPFunction(description = "是否存在目标实体")
     public static boolean hasTargetEntity() {
-        return Utils.getTargetedEntity() != null;
+        return PlayerUtils.getTargetedEntity() != null;
     }
 
     @SKPFunction(description = "检查摄像机实体是否为玩家")
@@ -106,7 +102,7 @@ public class DataPackFunctions {
 
     @SKPFunction(description = "检查游戏界面是否打开")
     public static boolean isScreenOpen() {
-        return Utils.isScreenOpen();
+        return CommonUtils.isScreenOpen();
     }
 
     @SKPFunction(description = "检查玩家是否在创造模式")
@@ -120,7 +116,7 @@ public class DataPackFunctions {
     public static boolean hasItem(String itemId) {
         if (currentPlayer == null) return false;
         return currentPlayer.getInventory().items.stream()
-                .anyMatch(stack -> Utils.toPathString(stack.getItem().getDescriptionId()).equals(itemId));
+                .anyMatch(stack -> CommonUtils.toPathString(stack.getItem().getDescriptionId()).equals(itemId));
     }
 
     @SKPFunction(description = "检查主手物品是否包含指定NBT路径")
@@ -221,17 +217,17 @@ public class DataPackFunctions {
 
     @SKPFunction(description = "显示按键提示")
     public static void show(String modid, String desc) {
-        SmartKeyPrompts.show(modid, desc);
+        PromptUtils.show(modid, desc);
     }
 
     @SKPFunction(description = "显示自定义按键提示")
     public static void custom(String modid, String key, String desc) {
-        SmartKeyPrompts.custom(modid, key, desc);
+        PromptUtils.custom(modid, key, desc);
     }
 
     @SKPFunction(description = "显示按键别名提示")
     public static void alias(String modid, String key, String desc) {
-        SmartKeyPrompts.alias(modid, key, desc);
+        PromptUtils.alias(modid, key, desc);
     }
 
     // ========== 系统函数 ==========

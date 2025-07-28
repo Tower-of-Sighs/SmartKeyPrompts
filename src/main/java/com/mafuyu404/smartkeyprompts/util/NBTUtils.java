@@ -1,6 +1,5 @@
 package com.mafuyu404.smartkeyprompts.util;
 
-import com.mafuyu404.smartkeyprompts.init.Utils;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.client.Minecraft;
@@ -148,7 +147,7 @@ public class NBTUtils {
      */
     public static CompoundTag getTargetEntityNBT() {
         try {
-            Entity entity = Utils.getTargetedEntity();
+            Entity entity = PlayerUtils.getTargetedEntity();
             if (entity == null) return null;
 
             CompoundTag nbt = new CompoundTag();
