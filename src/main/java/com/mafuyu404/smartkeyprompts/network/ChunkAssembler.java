@@ -5,7 +5,7 @@ import com.mafuyu404.smartkeyprompts.data.KeyPromptData;
 import com.mafuyu404.smartkeyprompts.data.KeyPromptDatapack;
 import com.mafuyu404.smartkeyprompts.data.KeyPromptEngine;
 import com.mafuyu404.smartkeyprompts.init.HUD;
-import com.mafuyu404.smartkeyprompts.util.GsonUtils;
+import com.mafuyu404.smartkeyprompts.util.CodecUtils;
 import net.minecraft.resources.ResourceLocation;
 
 import java.io.ByteArrayOutputStream;
@@ -39,11 +39,15 @@ public class ChunkAssembler {
                 String jsonData = new String(completeData);
                 Map<ResourceLocation, KeyPromptData> data = parseJsonData(jsonData, sessionId);
 
-                KeyPromptDatapack.updateClientData(data);
-                KeyPromptEngine.forceReloadWithData(data);
-                HUD.clearCache();
+                if (data != null) {
+                    KeyPromptDatapack.updateClientData(data);
+                    KeyPromptEngine.forceReloadWithData(data);
+                    HUD.clearCache();
 
-                SmartKeyPrompts.LOGGER.info("Successfully processed {} key prompt data files", data.size());
+                    SmartKeyPrompts.LOGGER.info("Successfully processed {} key prompt data files", data.size());
+                } else {
+                    SmartKeyPrompts.LOGGER.error("Failed to parse JSON data for session {}", sessionId);
+                }
 
             } catch (Exception e) {
                 SmartKeyPrompts.LOGGER.error("Failed to assemble chunk data for session {}: {}", sessionId, e.getMessage(), e);
@@ -55,9 +59,15 @@ public class ChunkAssembler {
 
     private static Map<ResourceLocation, KeyPromptData> parseJsonData(String jsonData, UUID sessionId) {
         try {
-            return GsonUtils.getGson().fromJson(jsonData, GsonUtils.KEY_PROMPT_DATA_MAP_TYPE);
-        } catch (com.google.gson.JsonSyntaxException e) {
-            SmartKeyPrompts.LOGGER.error("JSON parsing failed for session {}: {}", sessionId, e.getMessage());
+            Map<ResourceLocation, KeyPromptData> result = CodecUtils.decodeFromJson(jsonData);
+            if (result == null) {
+                SmartKeyPrompts.LOGGER.error("Codec parsing returned null for session {}", sessionId);
+                CodecUtils.analyzeJsonContent(jsonData, sessionId.toString());
+            }
+            return result;
+        } catch (Exception e) {
+            SmartKeyPrompts.LOGGER.error("Codec parsing failed for session {}: {}", sessionId, e.getMessage(), e);
+            CodecUtils.analyzeJsonContent(jsonData, sessionId.toString());
             throw new RuntimeException("Failed to parse JSON data for session " + sessionId, e);
         }
     }
