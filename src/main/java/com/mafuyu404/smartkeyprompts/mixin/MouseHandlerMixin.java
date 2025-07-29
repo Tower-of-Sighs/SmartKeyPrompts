@@ -16,7 +16,7 @@ public class MouseHandlerMixin {
     private void ddd(long p_91527_, double p_91528_, double offset, CallbackInfo ci) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.screen != null && minecraft.player != null) {
-            if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
+            if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.key.getValue())) return;
             ConfigAction.scaleHUD(offset);
         }
     }

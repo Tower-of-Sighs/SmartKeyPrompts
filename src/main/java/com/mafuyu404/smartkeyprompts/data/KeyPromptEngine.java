@@ -4,19 +4,22 @@ import com.mafuyu404.oelib.core.DataManager;
 import com.mafuyu404.oelib.core.DataRegistry;
 import com.mafuyu404.oelib.core.ExpressionEngine;
 import com.mafuyu404.oelib.event.DataReloadEvent;
-import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
+import com.mafuyu404.oelib.event.EventPriority;
+import com.mafuyu404.oelib.event.Events;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
-@Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class KeyPromptEngine {
+    private static final Logger LOGGER = LoggerFactory.getLogger("SmartKeyPrompts");
     private static final KeyPromptDataExtractor dataExtractor = new KeyPromptDataExtractor();
     private static DataManager<KeyPromptData> dataManager;
     private static boolean initialized = false;
@@ -29,46 +32,43 @@ public class KeyPromptEngine {
             DataRegistry.register(KeyPromptData.class);
             DataRegistry.registerExtractor(KeyPromptData.class, dataExtractor);
 
+            Events.on(DataReloadEvent.EVENT)
+                    .normal()
+                    .register(KeyPromptEngine::handleDataReload);
+
+            ClientTickEvents.END_CLIENT_TICK.register(KeyPromptEngine::onClientTick);
+
             initialized = true;
-            SmartKeyPrompts.LOGGER.info("KeyPromptEngine initialized with OELib");
+            LOGGER.info("KeyPromptEngine initialized with OELib (Fabric)");
         }
     }
 
-    @SubscribeEvent
-    public static void onDataReload(DataReloadEvent event) {
-        if (event.getDataClass() == KeyPromptData.class) {
-            SmartKeyPrompts.LOGGER.info("KeyPrompt data reloaded: {} entries loaded, {} invalid",
-                    event.getLoadedCount(), event.getInvalidCount());
+    private static void handleDataReload(Class<?> dataClass, int loadedCount, int invalidCount) {
+        if (dataClass == KeyPromptData.class) {
 
             dataLoaded = true;
-
             checkAndInitializeExpressionEngine();
         }
     }
 
     private static void checkAndInitializeExpressionEngine() {
         if (dataLoaded && !DataRegistry.isExpressionEngineInitialized()) {
-            SmartKeyPrompts.LOGGER.info("Triggering smart function registration...");
+            LOGGER.info("Triggering smart function registration...");
             DataRegistry.initializeExpressionEngine();
         }
     }
 
-    @SubscribeEvent
-    public static void tick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
-
+    public static void onClientTick(Minecraft client) {
         if (!initialized) {
             initialize();
         }
-
 
         if (!DataRegistry.isExpressionEngineInitialized()) {
             return;
         }
 
-        Minecraft mc = Minecraft.getInstance();
-        Player player = mc.player;
-        if (player == null || mc.screen != null || dataManager == null) return;
+        Player player = client.player;
+        if (player == null || client.screen != null || dataManager == null) return;
 
         DataPackFunctions.setCurrentPlayer(player);
 
@@ -83,6 +83,7 @@ public class KeyPromptEngine {
             processKeyPromptData(data, player);
         }
     }
+
 
     private static void processKeyPromptData(KeyPromptData data, Player player) {
         Map<String, Object> context = ExpressionEngine.createContext(data.vars());
@@ -101,6 +102,7 @@ public class KeyPromptEngine {
         }
         return dataManager;
     }
+
 
     public static void forceReload() {
         if (dataManager != null) {

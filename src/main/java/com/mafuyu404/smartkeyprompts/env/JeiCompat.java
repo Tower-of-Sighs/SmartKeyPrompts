@@ -1,16 +1,16 @@
 package com.mafuyu404.smartkeyprompts.env;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.ModList;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.loader.api.FabricLoader;
 
-@OnlyIn(Dist.CLIENT)
+@Environment(EnvType.CLIENT)
 public class JeiCompat {
     private static final String MOD_ID = "jei";
     private static boolean INSTALLED = false;
 
     public static void init() {
-        INSTALLED = ModList.get().isLoaded(MOD_ID);
+        INSTALLED = FabricLoader.getInstance().isModLoaded(MOD_ID);
     }
 
     public static boolean isEnabled() {

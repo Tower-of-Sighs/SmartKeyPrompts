@@ -5,7 +5,6 @@ import com.mafuyu404.smartkeyprompts.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.fml.ModList;
 
 /**
  * 用于数据包MVEL表达式的函数类

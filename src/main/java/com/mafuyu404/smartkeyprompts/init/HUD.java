@@ -1,25 +1,24 @@
 package com.mafuyu404.smartkeyprompts.init;
 
-import com.mafuyu404.smartkeyprompts.Config;
+import com.mafuyu404.smartkeyprompts.ModConfig;
 import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mafuyu404.smartkeyprompts.util.NBTUtils;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.ScreenEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.AddReloadListenerEvent;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +26,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.MODID;
 
-@Mod.EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
 public class HUD {
     public static final List<KeyPrompt> KeyPromptList = Collections.synchronizedList(new ArrayList<>());
     public static final Set<KeyPrompt> KeyPromptCache = new CopyOnWriteArraySet<>();
@@ -41,19 +39,12 @@ public class HUD {
     private static volatile List<KeyPrompt> cachedCrosshairPrompts = Collections.emptyList();
     private static volatile int lastPromptListHash = 0;
 
-    public static void addCache(KeyPrompt keyPrompt) {
-        if (keyPrompt == null) return;
-        KeyPromptCache.add(keyPrompt);
-    }
+    public static void init() {
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.player == null) return;
 
-    @SubscribeEvent
-    public static void tick(TickEvent.ClientTickEvent event) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null) return;
-
-        if (event.phase == TickEvent.Phase.START) {
-            if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
-                List<? extends String> blacklist = Config.BLACKLIST.get();
+            if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.key.getValue())) {
+                List<String> blacklist = ModConfig.getInstance().blacklist;
 
                 List<KeyPrompt> toAdd = new ArrayList<>();
                 for (KeyPrompt keyPrompt : KeyPromptCache) {
@@ -86,12 +77,41 @@ public class HUD {
 
             updateCachedPrompts();
             registerActiveKeys();
-        }
 
-        if (!(minecraft.screen instanceof KeyBindsScreen) && KeyMappingCache != null) {
-            minecraft.options.keyMappings = KeyMappingCache;
-            KeyMappingCache = null;
-        }
+            if (!(client.screen instanceof KeyBindsScreen) && KeyMappingCache != null) {
+                client.options.keyMappings = KeyMappingCache;
+                KeyMappingCache = null;
+            }
+        });
+
+        HudRenderCallback.EVENT.register((guiGraphics, tickDelta) -> {
+            if (Minecraft.getInstance().screen != null) return;
+            drawHud(guiGraphics);
+        });
+
+        ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+            ScreenEvents.afterRender(screen).register((screen1, guiGraphics, mouseX, mouseY, tickDelta) -> {
+                if (Minecraft.getInstance().player == null) return;
+                drawHud(guiGraphics);
+            });
+        });
+
+        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+            @Override
+            public ResourceLocation getFabricId() {
+                return new ResourceLocation(MODID, "hud_cache_clearer");
+            }
+
+            @Override
+            public void onResourceManagerReload(ResourceManager resourceManager) {
+                clearCache();
+            }
+        });
+    }
+
+    public static void addCache(KeyPrompt keyPrompt) {
+        if (keyPrompt == null) return;
+        KeyPromptCache.add(keyPrompt);
     }
 
     private static boolean containsKeyPrompt(KeyPrompt target) {
@@ -147,36 +167,6 @@ public class HUD {
         }
     }
 
-    @SubscribeEvent
-    public static void onRenderGameOverlay(RenderGuiOverlayEvent.Post event) {
-        if (Minecraft.getInstance().screen != null) return;
-        if (event.getOverlay().id().equals(VanillaGuiOverlay.DEBUG_TEXT.id())) {
-            drawHud(event.getGuiGraphics());
-        }
-    }
-
-    @SubscribeEvent
-    public static void onRenderScreenOverlay(ScreenEvent.Render.Post event) {
-        if (Minecraft.getInstance().player == null) return;
-        drawHud(event.getGuiGraphics());
-    }
-
-    @SubscribeEvent
-    public static void onResourceReload(AddReloadListenerEvent event) {
-        clearCache();
-    }
-
-    @SubscribeEvent
-    public static void onPlayerLogout(PlayerEvent.PlayerLoggedOutEvent event) {
-        clearCache();
-    }
-
-    @SubscribeEvent
-    public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-        clearCache();
-    }
-
-
     private static void drawHud(GuiGraphics guiGraphics) {
         List<KeyPrompt> defaultPrompts = cachedDefaultPrompts;
         List<KeyPrompt> crosshairPrompts = cachedCrosshairPrompts;
@@ -189,8 +179,9 @@ public class HUD {
 
         if (font == null) font = Minecraft.getInstance().font;
 
-        float scale = Config.SCALE.get().floatValue();
-        int position = Config.POSITION.get();
+        float scale = (float) ModConfig.getInstance().scale;
+        int position = ModConfig.getInstance().position;
+
 
         if (position == 2 || position == 6) {
             return;
@@ -343,7 +334,6 @@ public class HUD {
 
         return simpleKeys.length < complexKeys.length;
     }
-
 
     private static String getCachedTranslation(String key) {
         if (key == null) return "";

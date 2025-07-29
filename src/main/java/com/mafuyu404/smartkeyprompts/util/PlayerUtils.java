@@ -2,6 +2,7 @@ package com.mafuyu404.smartkeyprompts.util;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
@@ -13,7 +14,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class PlayerUtils {
     /**
@@ -137,12 +137,7 @@ public class PlayerUtils {
         try {
             ItemStack stack = Minecraft.getInstance().player.getMainHandItem();
             Item item = stack.getItem();
-            ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
-
-            if (id == null) {
-                SmartKeyPrompts.LOGGER.warn("[SKP] 主手物品注册名异常：{}", item.toString());
-                return "unknown:unknown";
-            }
+            ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
 
             return id.toString();
         } catch (Exception e) {

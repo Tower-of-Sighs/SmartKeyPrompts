@@ -6,6 +6,7 @@ import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mafuyu404.smartkeyprompts.util.PlayerUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -18,7 +19,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class Utils {
         try {
             ItemStack stack = Minecraft.getInstance().player.getMainHandItem();
             Item item = stack.getItem();
-            ResourceLocation id = ForgeRegistries.ITEMS.getKey(item);
+            ResourceLocation id = BuiltInRegistries.ITEM.getKey(item);
 
             if (id == null) {
                 SmartKeyPrompts.LOGGER.warn("[SKP] 主手物品注册名异常：{}", item.toString());
@@ -115,7 +115,7 @@ public class Utils {
         for (KeyMapping binding : mc.options.keyMappings) {
             KeyPrompt info = new KeyPrompt(
                     "",
-                    binding.getKey().getName(),
+                    binding.key.getName(),
                     binding.getName(),
                     false
             );

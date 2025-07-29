@@ -1,30 +1,22 @@
 package com.mafuyu404.smartkeyprompts;
 
-import com.mafuyu404.smartkeyprompts.data.KeyPromptEngine;
 import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
 import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mafuyu404.smartkeyprompts.util.PromptUtils;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.fabricmc.api.ModInitializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Mod(SmartKeyPrompts.MODID)
-public class SmartKeyPrompts {
+public class SmartKeyPrompts implements ModInitializer {
 
     public static final String MODID = "smartkeyprompts";
+    public static final Logger LOGGER = LoggerFactory.getLogger(SmartKeyPrompts.class);
 
-    public static final Logger LOGGER = LogManager.getLogger(SmartKeyPrompts.MODID);
-
-    public SmartKeyPrompts() {
-        var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.SPEC);
-
-        KeyPromptEngine.initialize();
+    @Override
+    public void onInitialize() {
+        ModConfig.register();
     }
+
 
     @Deprecated
     public static void show(String id, String desc) {

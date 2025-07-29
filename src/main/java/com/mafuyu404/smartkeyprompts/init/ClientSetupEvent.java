@@ -1,16 +1,25 @@
 package com.mafuyu404.smartkeyprompts.init;
 
-import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
+import com.mafuyu404.smartkeyprompts.compat.EMI;
+import com.mafuyu404.smartkeyprompts.compat.IceAndFire;
+import com.mafuyu404.smartkeyprompts.compat.JEI;
+import com.mafuyu404.smartkeyprompts.data.KeyPromptEngine;
+import com.mafuyu404.smartkeyprompts.data.SmartKeyPromptsFunctionRegistration;
 import com.mafuyu404.smartkeyprompts.env.JeiCompat;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.fabricmc.api.ClientModInitializer;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT, modid = SmartKeyPrompts.MODID)
-public class ClientSetupEvent {
-    @SubscribeEvent
-    public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(JeiCompat::init);
+public class ClientSetupEvent implements ClientModInitializer {
+    @Override
+    public void onInitializeClient() {
+        ModKeybindings.register();
+        KeyStateManager.init();
+        HUD.init();
+        ConfigAction.init();
+        JeiCompat.init();
+        JEI.init();
+        EMI.init();
+        IceAndFire.init();
+        SmartKeyPromptsFunctionRegistration.initialize();
+        KeyPromptEngine.initialize();
     }
 }

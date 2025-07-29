@@ -1,16 +1,13 @@
 package com.mafuyu404.smartkeyprompts.init;
 
-import com.mafuyu404.smartkeyprompts.Config;
-import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
+import com.mafuyu404.smartkeyprompts.ModConfig;
 import com.mafuyu404.smartkeyprompts.util.KeyUtils;
-import com.mojang.blaze3d.platform.InputConstants;
+import me.shedaniel.autoconfig.AutoConfig;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -20,49 +17,55 @@ import java.util.Set;
 
 import static com.mafuyu404.smartkeyprompts.init.HUD.KeyMappingCache;
 
-@Mod.EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
 public class ConfigAction {
 
-    @SubscribeEvent
-    public static void mouseAction(InputEvent.MouseButton.Pre event) {
-        if (event.getAction() != InputConstants.PRESS) return;
-        if (Minecraft.getInstance().player == null) return;
-        if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
+    public static void init() {
+        ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+            ScreenMouseEvents.allowMouseClick(screen).register((screen1, mouseX, mouseY, button) -> {
+                if (button != GLFW.GLFW_MOUSE_BUTTON_LEFT && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT) return true;
+                if (Minecraft.getInstance().player == null) return true;
+                if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.key.getValue())) return true;
 
-        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-            List<String> currentKey = getCurrentKeyDescs();
-            modifyKey(currentKey);
-        }
-        if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-            int position = Config.POSITION.get();
-            if (position == 8) {
-                Config.POSITION.set(1);
-            } else {
-                Config.POSITION.set(position + 1);
-            }
-            Config.POSITION.save();
-        }
-        event.setCanceled(true);
-    }
+                if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+                    List<String> currentKey = getCurrentKeyDescs();
+                    modifyKey(currentKey);
+                }
+                if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
+                    int position = ModConfig.getInstance().position;
+                    if (position == 8) {
+                        ModConfig.getInstance().position = 1;
+                    } else {
+                        ModConfig.getInstance().position = position + 1;
+                    }
+                    AutoConfig.getConfigHolder(ModConfig.class).save();
 
-    @SubscribeEvent
-    public static void wheelAction(InputEvent.MouseScrollingEvent event) {
-        if (Minecraft.getInstance().player == null) return;
-        if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
-        scaleHUD(event.getScrollDelta());
-        event.setCanceled(true);
+                }
+                return false;
+            });
+
+            ScreenMouseEvents.allowMouseScroll(screen).register((screen1, mouseX, mouseY, horizontalAmount, verticalAmount) -> {
+                if (Minecraft.getInstance().player == null) return true;
+                if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.key.getValue())) return true;
+                scaleHUD(verticalAmount);
+                return false;
+            });
+        });
     }
 
     public static void scaleHUD(double delta) {
-        double scale = Config.SCALE.get();
+        ModConfig config = ModConfig.getInstance();
+        double scale = config.scale;
+
         if (delta < 0) {
             scale = Math.max(scale - 0.1, 0);
         } else {
             scale = Math.min(scale + 0.1, 10);
         }
-        Config.SCALE.set(scale);
-        Config.SCALE.save();
+
+        config.scale = scale;
+        AutoConfig.getConfigHolder(ModConfig.class).save();
     }
+
 
     private static List<String> getCurrentKeyDescs() {
         List<String> currentKey = new ArrayList<>();

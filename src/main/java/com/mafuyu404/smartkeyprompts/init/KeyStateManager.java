@@ -1,20 +1,14 @@
 package com.mafuyu404.smartkeyprompts.init;
 
 import com.mafuyu404.smartkeyprompts.util.KeyUtils;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.MODID;
-
-@Mod.EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
 public class KeyStateManager {
     private static final Map<String, Boolean> keyStateCache = new ConcurrentHashMap<>();
     private static final Set<String> activeKeys = ConcurrentHashMap.newKeySet();
@@ -22,6 +16,20 @@ public class KeyStateManager {
 
     private static int cleanupCounter = 0;
     private static final int CLEANUP_INTERVAL = 100;
+
+    public static void init() {
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            if (client.player == null) return;
+
+            updateKeyStates();
+
+            cleanupCounter++;
+            if (cleanupCounter >= CLEANUP_INTERVAL) {
+                clearUnusedCache();
+                cleanupCounter = 0;
+            }
+        });
+    }
 
     public static void registerKeys(Set<String> keyDescs) {
         activeKeys.addAll(keyDescs);
@@ -46,22 +54,6 @@ public class KeyStateManager {
         keyStateCache.clear();
         previousStates.clear();
         activeKeys.clear();
-    }
-
-    @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.START) return;
-
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null) return;
-
-        updateKeyStates();
-
-        cleanupCounter++;
-        if (cleanupCounter >= CLEANUP_INTERVAL) {
-            clearUnusedCache();
-            cleanupCounter = 0;
-        }
     }
 
     private static void updateKeyStates() {

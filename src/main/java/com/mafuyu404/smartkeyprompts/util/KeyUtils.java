@@ -19,7 +19,7 @@ public class KeyUtils {
         for (KeyMapping binding : mc.options.keyMappings) {
             KeyPrompt info = new KeyPrompt(
                     "",
-                    binding.getKey().getName(),
+                    binding.key.getName(),
                     binding.getName(),
                     false
             );
