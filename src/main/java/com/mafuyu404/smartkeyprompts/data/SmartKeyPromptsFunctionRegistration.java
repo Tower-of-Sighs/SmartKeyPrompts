@@ -1,7 +1,7 @@
 package com.mafuyu404.smartkeyprompts.data;
 
+import com.mafuyu404.oelib.event.FunctionRegistryEvent;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
-import com.mafuyu404.smartkeyprompts.api.FunctionRegistryEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -12,6 +12,9 @@ public class SmartKeyPromptsFunctionRegistration {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onFunctionRegistration(FunctionRegistryEvent event) {
-        event.registerFunctionClass(DataPackFunctions.class, SmartKeyPrompts.MODID);
+        event.registerFunctionClassSmart(DataPackFunctions.class, SmartKeyPrompts.MODID);
+
+        SmartKeyPrompts.LOGGER.info("Registered SmartKeyPrompts functions to OELib (smart: {})",
+                event.isSmartRegistration());
     }
 }

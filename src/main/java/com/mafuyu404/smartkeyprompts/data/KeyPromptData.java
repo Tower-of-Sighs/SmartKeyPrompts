@@ -1,11 +1,18 @@
 package com.mafuyu404.smartkeyprompts.data;
 
+import com.mafuyu404.oelib.api.DataDriven;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import java.util.List;
 import java.util.Map;
 
+@DataDriven(
+        modid = "smartkeyprompts",
+        folder = "key_prompts",
+        syncToClient = true,
+        supportArray = true
+)
 public record KeyPromptData(
         String modid,
         Map<String, String> vars,
