@@ -1,7 +1,8 @@
 package com.mafuyu404.smartkeyprompts.compat;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
-import com.mafuyu404.smartkeyprompts.init.Utils;
+import com.mafuyu404.smartkeyprompts.util.PlayerUtils;
+import com.mafuyu404.smartkeyprompts.util.PromptUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
@@ -19,12 +20,12 @@ public class IceAndFire {
         if (!ModList.get().isLoaded("iceandfire")) return;
         Player player = Minecraft.getInstance().player;
         if (player == null || Minecraft.getInstance().screen != null) return;
-        String vehicle = Utils.getVehicleType();
+        String vehicle = PlayerUtils.getVehicleType();
         if (vehicle != null && vehicle.startsWith("iceandfire:") && vehicle.endsWith("_dragon")) {
-            SmartKeyPrompts.show(modid, "key.dragon_strike");
-            SmartKeyPrompts.show(modid, "key.dragon_fireAttack");
-            SmartKeyPrompts.show(modid, "key.dragon_down");
-            SmartKeyPrompts.show(modid, "key.dragon_change_view");
+            PromptUtils.show(modid, "key.dragon_strike");
+            PromptUtils.show(modid, "key.dragon_fireAttack");
+            PromptUtils.show(modid, "key.dragon_down");
+            PromptUtils.show(modid, "key.dragon_change_view");
         }
     }
 }

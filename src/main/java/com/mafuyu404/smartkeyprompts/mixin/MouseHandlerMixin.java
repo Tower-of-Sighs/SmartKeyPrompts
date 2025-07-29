@@ -2,7 +2,7 @@ package com.mafuyu404.smartkeyprompts.mixin;
 
 import com.mafuyu404.smartkeyprompts.init.ConfigAction;
 import com.mafuyu404.smartkeyprompts.init.ModKeybindings;
-import com.mafuyu404.smartkeyprompts.init.Utils;
+import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,7 +16,7 @@ public class MouseHandlerMixin {
     private void ddd(long p_91527_, double p_91528_, double offset, CallbackInfo ci) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.screen != null && minecraft.player != null) {
-            if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
+            if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
             ConfigAction.scaleHUD(offset);
         }
     }

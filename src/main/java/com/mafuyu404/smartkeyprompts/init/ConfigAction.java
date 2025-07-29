@@ -2,6 +2,7 @@ package com.mafuyu404.smartkeyprompts.init;
 
 import com.mafuyu404.smartkeyprompts.Config;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
+import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -26,7 +27,7 @@ public class ConfigAction {
     public static void mouseAction(InputEvent.MouseButton.Pre event) {
         if (event.getAction() != InputConstants.PRESS) return;
         if (Minecraft.getInstance().player == null) return;
-        if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
+        if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
 
         if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
             List<String> currentKey = getCurrentKeyDescs();
@@ -47,7 +48,7 @@ public class ConfigAction {
     @SubscribeEvent
     public static void wheelAction(InputEvent.MouseScrollingEvent event) {
         if (Minecraft.getInstance().player == null) return;
-        if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
+        if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
         scaleHUD(event.getScrollDelta());
         event.setCanceled(true);
     }
@@ -67,7 +68,7 @@ public class ConfigAction {
         List<String> currentKey = new ArrayList<>();
         synchronized (HUD.KeyPromptList) {
             for (KeyPrompt keyPrompt : HUD.KeyPromptList) {
-                if (keyPrompt != null && !keyPrompt.isCustom && Utils.getKeyByDesc(keyPrompt.desc) != null) {
+                if (keyPrompt != null && !keyPrompt.isCustom && KeyUtils.getKeyByDesc(keyPrompt.desc) != null) {
                     currentKey.add(keyPrompt.desc);
                 }
             }

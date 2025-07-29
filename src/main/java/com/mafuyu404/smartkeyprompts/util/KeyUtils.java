@@ -122,7 +122,7 @@ public class KeyUtils {
     /**
      * 检查单个物理按键是否被按下
      */
-    private static boolean isPhysicalKeySinglePressed(String keyName) {
+    public static boolean isPhysicalKeySinglePressed(String keyName) {
         if (keyName == null || keyName.isEmpty()) {
             return false;
         }
@@ -182,6 +182,9 @@ public class KeyUtils {
         KEY_MAP.put(key, code);
     }
     public static InputConstants.Key unknownKey;
+    public static int getGLFWKey(String key) {
+        return KEY_MAP.getOrDefault(key, -1);
+    }
 
     /**
      * 获取按键的翻译文本（不带任何前缀）

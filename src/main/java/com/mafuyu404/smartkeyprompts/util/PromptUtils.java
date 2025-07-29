@@ -1,7 +1,6 @@
 package com.mafuyu404.smartkeyprompts.util;
 
 import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
-import com.mafuyu404.smartkeyprompts.init.Utils;
 
 public class PromptUtils {
     public static void show(String id, String desc) {
@@ -17,6 +16,6 @@ public class PromptUtils {
     }
 
     public static KeyPrompt addDesc(String desc) {
-        return new KeyPrompt("", Utils.getKeyByDesc(desc), desc, false);
+        return new KeyPrompt("", KeyUtils.getKeyByDesc(desc), desc, false);
     }
 }

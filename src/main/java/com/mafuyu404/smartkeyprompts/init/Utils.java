@@ -1,7 +1,9 @@
 package com.mafuyu404.smartkeyprompts.init;
 
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
-import com.mafuyu404.smartkeyprompts.util.KeyMap;
+import com.mafuyu404.smartkeyprompts.util.CommonUtils;
+import com.mafuyu404.smartkeyprompts.util.KeyUtils;
+import com.mafuyu404.smartkeyprompts.util.PlayerUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -22,6 +24,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class Utils {
 
     /**
@@ -30,7 +33,7 @@ public class Utils {
     public static String getVehicleType() {
         Player player = Minecraft.getInstance().player;
         if (player.getVehicle() == null) return null;
-        return toPathString(player.getVehicle().getType().toString());
+        return CommonUtils.toPathString(player.getVehicle().getType().toString());
     }
 
     /**
@@ -91,16 +94,16 @@ public class Utils {
      * 获取目标实体类型
      */
     public static String getTargetedEntityType() {
-        var entity = getTargetedEntity();
-        return entity != null ? toPathString(entity.getType().toString()) : null;
+        var entity = PlayerUtils.getTargetedEntity();
+        return entity != null ? CommonUtils.toPathString(entity.getType().toString()) : null;
     }
 
     /**
      * 获取目标方块ID
      */
     public static String getTargetedBlockId() {
-        BlockState blockState = getTargetedBlock();
-        return blockState != null ? toPathString(blockState.getBlock().getDescriptionId()) : null;
+        BlockState blockState = PlayerUtils.getTargetedBlock();
+        return blockState != null ? CommonUtils.toPathString(blockState.getBlock().getDescriptionId()) : null;
     }
 
     /**
@@ -129,7 +132,7 @@ public class Utils {
             StringBuilder result = new StringBuilder();
             List.of(key.split("\\+")).forEach(part -> {
                 if (!result.isEmpty()) result.append("+");
-                result.append(translateKey(part));
+                result.append(KeyUtils.translateKey(part));
             });
             return result.toString();
         }
@@ -175,7 +178,7 @@ public class Utils {
      * 根据描述获取按键名称
      */
     public static String getKeyByDesc(String desc) {
-        for (KeyPrompt keyPrompt : getAllKeyBindings()) {
+        for (KeyPrompt keyPrompt : KeyUtils.getAllKeyBindings()) {
             if (keyPrompt.desc.equals(desc)) return keyPrompt.key;
         }
         return "key.keyboard.unknown";
@@ -246,7 +249,7 @@ public class Utils {
      * 检查是否有敌对目标实体
      */
     public static boolean hasTargetedEntityIsMob() {
-        Entity entity = getTargetedEntity();
+        Entity entity = PlayerUtils.getTargetedEntity();
         if (entity == null) return false;
 
         return entity instanceof Enemy ||
@@ -257,8 +260,8 @@ public class Utils {
      * 获取按键的翻译文本（不带任何前缀）
      */
     public static String getKeyDisplayName(String keyDesc) {
-        String keyName = getKeyByDesc(keyDesc);
-        return translateKey(keyName);
+        String keyName = KeyUtils.getKeyByDesc(keyDesc);
+        return KeyUtils.translateKey(keyName);
     }
 
     /**
@@ -272,7 +275,7 @@ public class Utils {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < keyDescs.length; i++) {
             if (i > 0) result.append("+");
-            result.append(getKeyDisplayName(keyDescs[i]));
+            result.append(KeyUtils.getKeyDisplayName(keyDescs[i]));
         }
         return result.toString();
     }
@@ -281,7 +284,7 @@ public class Utils {
      * 检查按键是否为右键相关
      */
     public static boolean isRightClickKey(String keyDesc) {
-        String keyName = getKeyByDesc(keyDesc);
+        String keyName = KeyUtils.getKeyByDesc(keyDesc);
         return keyName.equals("key.mouse.right") || keyName.equals("key.use");
     }
 
@@ -297,7 +300,7 @@ public class Utils {
         if (keyName.contains("+")) {
             String[] keys = keyName.split("\\+");
             for (String key : keys) {
-                if (!isPhysicalKeyPressed(key.trim())) {
+                if (!KeyUtils.isPhysicalKeyPressed(key.trim())) {
                     return false;
                 }
             }
@@ -305,7 +308,7 @@ public class Utils {
         }
 
         // 处理单个按键
-        return isPhysicalKeySinglePressed(keyName);
+        return KeyUtils.isPhysicalKeySinglePressed(keyName);
     }
 
 
@@ -322,10 +325,7 @@ public class Utils {
         if (windowHandle == 0L) return false;
 
         try {
-            Integer glfwKey = KeyMap.getGLFWKey(keyName);
-            if (glfwKey == null) {
-                return false;
-            }
+            int glfwKey = KeyUtils.getGLFWKey(keyName);
 
             if (keyName.startsWith("key.mouse.")) {
                 return GLFW.glfwGetMouseButton(windowHandle, glfwKey) == GLFW.GLFW_PRESS;

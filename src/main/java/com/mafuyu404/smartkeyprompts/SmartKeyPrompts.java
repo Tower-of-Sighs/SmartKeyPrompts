@@ -1,9 +1,9 @@
 package com.mafuyu404.smartkeyprompts;
 
-import com.mafuyu404.smartkeyprompts.init.HUD;
 import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
-import com.mafuyu404.smartkeyprompts.init.Utils;
 import com.mafuyu404.smartkeyprompts.network.NetworkHandler;
+import com.mafuyu404.smartkeyprompts.util.KeyUtils;
+import com.mafuyu404.smartkeyprompts.util.PromptUtils;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -31,19 +31,23 @@ public class SmartKeyPrompts {
         event.enqueueWork(NetworkHandler::register);
     }
 
+    @Deprecated
     public static void show(String id, String desc) {
-        addDesc(desc).toGroup(id);
+        PromptUtils.addDesc(desc).toGroup(id);
     }
 
+    @Deprecated
     public static void custom(String id, String key, String desc) {
-        addDesc(desc).forKey(key).withCustom(true).toGroup(id);
+        PromptUtils.addDesc(desc).forKey(key).withCustom(true).toGroup(id);
     }
 
+    @Deprecated
     public static void alias(String id, String desc, String alias) {
-        addDesc(desc).withKeyAlias(alias).toGroup(id);
+        PromptUtils.addDesc(desc).withKeyAlias(alias).toGroup(id);
     }
 
+    @Deprecated
     public static KeyPrompt addDesc(String desc) {
-        return new KeyPrompt("", Utils.getKeyByDesc(desc), desc, false);
+        return new KeyPrompt("", KeyUtils.getKeyByDesc(desc), desc, false);
     }
 }
