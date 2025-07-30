@@ -9,8 +9,6 @@ import java.util.List;
 public class Config {
     public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
-//    private static final ForgeConfigSpec.BooleanValue LOG_DIRT_BLOCK = BUILDER.comment("Whether to log the dirt block on common setup").define("logDirtBlock", true);
-
     public static final ForgeConfigSpec.DoubleValue SCALE = BUILDER.comment("缩放").defineInRange("scale", 0.8, 0, 10);
 
     public static final ForgeConfigSpec.IntValue POSITION = BUILDER.comment("显示位置").defineInRange("position", 1, 1, 8);
