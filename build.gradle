@@ -215,12 +215,13 @@ dependencies {
     runtimeOnly fg.deobf('libs:SlashBladeResharped:1.20.1-1.3.40')
     implementation fg.deobf('libs:oelib:0.0.1')
     runtimeOnly fg.deobf('libs:oelib:0.0.1')
-    jarJar("libs:oelib:0.0.1"){
-        jarJar.ranged(it, '[0.0.1,1.0.0)')
+    jarJar("curse.maven:oelib-1319210:6841973"){
+        jarJar.ranged(it, '[0.0.2,1.0.0)')
     }
     implementation 'org.mvel:mvel2:2.5.0.Final'
     implementation fg.deobf("curse.maven:kubejs-238086:5853326")
     implementation fg.deobf("curse.maven:rhino-416294:6186971")
+    implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
