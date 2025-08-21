@@ -1,4 +1,4 @@
-package com.mafuyu404.smartkeyprompts.utils;
+package com.mafuyu404.smartkeyprompts.util;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -10,14 +10,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * NBT工具类，用于实体和方块实体的NBT操作以及通用NBT路径解析
- */
 public class NBTUtils {
 
     private static final Map<String, NbtPathArgument.NbtPath> pathCache = new ConcurrentHashMap<>();
