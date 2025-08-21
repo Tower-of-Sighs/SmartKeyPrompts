@@ -12,6 +12,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -144,13 +145,13 @@ public class HUD {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRenderGameOverlay(RenderGuiEvent.Post event) {
         if (Minecraft.getInstance().screen != null) return;
         drawHud(event.getGuiGraphics());
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onRenderScreenOverlay(ScreenEvent.Render.Post event) {
         if (Minecraft.getInstance().player == null) return;
         drawHud(event.getGuiGraphics());
