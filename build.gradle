@@ -22,6 +22,19 @@ repositories {
         name = "ModMaven"
         url = "https://modmaven.dev"
     }
+
+    maven {
+        // Add curse maven to repositories
+        name = "Curse Maven"
+        url = "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+
+    flatDir {
+        dir 'libs'
+    }
 }
 
 base {
@@ -108,18 +121,13 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 
 dependencies {
-    // compile against the JEI API but do not include it at runtime
     compileOnly("mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}")
-    // at runtime, use the full JEI jar for NeoForge
     runtimeOnly("mezz.jei:jei-${mc_version}-neoforge:${jei_version}")
     implementation files('libs/rhino-2101.2.7-build.74.jar')
+    runtimeOnly "libs:architectury:13.0.8-neoforge"
     implementation files('libs/kubejs-neoforge-2101.7.1-build.181.jar')
-
-    jarJar(implementation("org.mvel:mvel2")) {
-        version {
-            strictly '2.5.0.Final'
-        }
-    }
+    implementation "curse.maven:oelib-1319210:6882494"
+    jarJar("curse.maven:oelib-1319210:6882494")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

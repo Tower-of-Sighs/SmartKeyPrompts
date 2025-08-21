@@ -1,11 +1,11 @@
 package com.mafuyu404.smartkeyprompts.util;
 
-import com.mafuyu404.smartkeyprompts.init.Utils;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
@@ -132,23 +132,11 @@ public class NBTUtils {
     }
 
     /**
-     * 获取玩家主手物品的NBT
-     */
-    public static CompoundTag getMainHandNBT(Player player) {
-        if (player == null) return null;
-        try {
-            return player.getMainHandItem().getTag();
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    /**
      * 获取目标实体的NBT
      */
     public static CompoundTag getTargetEntityNBT() {
         try {
-            Entity entity = Utils.getTargetedEntity();
+            Entity entity = PlayerUtils.getTargetedEntity();
             if (entity == null) return null;
 
             CompoundTag nbt = new CompoundTag();
@@ -171,7 +159,7 @@ public class NBTUtils {
             var blockEntity = mc.level.getBlockEntity(pos);
             if (blockEntity == null) return null;
 
-            return blockEntity.saveWithoutMetadata();
+            return blockEntity.saveWithoutMetadata(mc.level.registryAccess());
         } catch (Exception e) {
             return null;
         }

@@ -2,36 +2,44 @@ package com.mafuyu404.smartkeyprompts.init;
 
 import com.mafuyu404.smartkeyprompts.Config;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
+import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.InputEvent;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-@EventBusSubscriber(modid = SmartKeyPrompts.MOD_ID)
+import static com.mafuyu404.smartkeyprompts.init.HUD.KeyMappingCache;
+
+@EventBusSubscriber(modid = SmartKeyPrompts.MODID, value = Dist.CLIENT)
 public class ConfigAction {
+
     @SubscribeEvent
     public static void mouseAction(InputEvent.MouseButton.Pre event) {
         if (event.getAction() != InputConstants.PRESS) return;
         if (Minecraft.getInstance().player == null) return;
-        if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
+        if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
+
         if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-            List<String> currentKey = HUD.KeyPromptList.stream()
-                    .filter(keyBindingInfo -> !keyBindingInfo.isCustom() && Utils.getKeyByDesc(keyBindingInfo.getDesc()) != null)
-                    .map(KeyPrompt::getDesc).toList();
+            List<String> currentKey = getCurrentKeyDescs();
             modifyKey(currentKey);
         }
         if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             int position = Config.POSITION.get();
-            if (position == 8) Config.POSITION.set(1);
-            else Config.POSITION.set(position + 1);
+            if (position == 8) {
+                Config.POSITION.set(1);
+            } else {
+                Config.POSITION.set(position + 1);
+            }
             Config.POSITION.save();
         }
         event.setCanceled(true);
@@ -40,7 +48,7 @@ public class ConfigAction {
     @SubscribeEvent
     public static void wheelAction(InputEvent.MouseScrollingEvent event) {
         if (Minecraft.getInstance().player == null) return;
-        if (!Utils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
+        if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) return;
         scaleHUD(event.getScrollDeltaY());
         event.setCanceled(true);
     }
@@ -56,32 +64,42 @@ public class ConfigAction {
         Config.SCALE.save();
     }
 
+    private static List<String> getCurrentKeyDescs() {
+        List<String> currentKey = new ArrayList<>();
+        synchronized (HUD.KeyPromptList) {
+            for (KeyPrompt keyPrompt : HUD.KeyPromptList) {
+                if (keyPrompt != null && !keyPrompt.isCustom && KeyUtils.getKeyByDesc(keyPrompt.desc) != null) {
+                    currentKey.add(keyPrompt.desc);
+                }
+            }
+        }
+        return currentKey;
+    }
+
     public static void modifyKey(List<String> keyNames) {
-        if (HUD.KeyMappingCache != null) return;
+        if (KeyMappingCache != null) return;
+        if (keyNames == null || keyNames.isEmpty()) return;
 
         Minecraft minecraft = Minecraft.getInstance();
-
-        HUD.KeyMappingCache = minecraft.options.keyMappings;
+        KeyMappingCache = minecraft.options.keyMappings;
 
         KeyMapping[] allKeys = minecraft.options.keyMappings;
-        Set<String> targetKeys = keyNames.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
 
-        KeyMapping[] filteredKeys = new KeyMapping[allKeys.length];
-        int count = 0;
-
-        for (KeyMapping key : allKeys) {
-            String name = key.getName().toLowerCase();
-            if (targetKeys.contains(name)) {
-                filteredKeys[count++] = key;
+        Set<String> targetKeys = new HashSet<>();
+        for (String keyName : keyNames) {
+            if (keyName != null) {
+                targetKeys.add(keyName.toLowerCase());
             }
         }
 
-        KeyMapping[] tempKeys = new KeyMapping[count];
-        System.arraycopy(filteredKeys, 0, tempKeys, 0, count);
+        List<KeyMapping> filteredKeysList = new ArrayList<>();
+        for (KeyMapping key : allKeys) {
+            if (key != null && targetKeys.contains(key.getName().toLowerCase())) {
+                filteredKeysList.add(key);
+            }
+        }
 
-        minecraft.options.keyMappings = tempKeys;
+        minecraft.options.keyMappings = filteredKeysList.toArray(new KeyMapping[0]);
         minecraft.setScreen(new KeyBindsScreen(null, minecraft.options));
     }
 }

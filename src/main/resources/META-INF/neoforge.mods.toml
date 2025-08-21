@@ -1,0 +1,29 @@
+modLoader = "javafml"
+license = "GPL-3.0 license"
+
+[[mods]]
+modId = "smartkeyprompts"
+version = "1.1.0"
+displayName = "SKP"
+authors = "zhenshiz"
+description = "skp"
+
+[[accessTransformers]]
+file="META-INF/accesstransformer.cfg"
+
+[[dependencies.smartkeyprompts]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.197,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.smartkeyprompts]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21,1.21.2)"
+ordering = "NONE"
+side = "BOTH"
+
+[[mixins]]
+config = "smartkeyprompts.mixins.json"

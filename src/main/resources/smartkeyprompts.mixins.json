@@ -6,6 +6,8 @@
   "mixins": [
   ],
   "client": [
+    "InputConstants$TypeMixin",
+    "KeyMappingMixin",
     "MouseHandlerMixin"
   ],
   "injectors": {

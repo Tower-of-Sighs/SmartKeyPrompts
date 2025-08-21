@@ -18,7 +18,7 @@ public class JeiPlugin implements IModPlugin {
 
     @Override
     public @NotNull ResourceLocation getPluginUid() {
-        return SmartKeyPrompts.ResourceLocationMod("jei_plugin");
+        return ResourceLocation.fromNamespaceAndPath(SmartKeyPrompts.MODID, "jei_plugin");
     }
 
     @Override
