@@ -3,6 +3,7 @@ package com.mafuyu404.smartkeyprompts.init;
 import com.mafuyu404.smartkeyprompts.Config;
 import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mafuyu404.smartkeyprompts.util.NBTUtils;
+import com.mafuyu404.smartkeyprompts.util.PromptUtils;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
@@ -58,7 +59,8 @@ public class HUD {
                 List<KeyPrompt> toAdd = new ArrayList<>();
                 for (KeyPrompt keyPrompt : KeyPromptCache) {
                     if (keyPrompt != null && !blacklist.contains(keyPrompt.group)) {
-                        toAdd.add(keyPrompt);
+                        boolean checkDisable = PromptUtils.checkPromptValid(keyPrompt);
+                        if (checkDisable) toAdd.add(keyPrompt);
                     }
                 }
 

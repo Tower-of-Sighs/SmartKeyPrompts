@@ -54,6 +54,8 @@ public class KeyUtils {
      * 检查按键是否被按下
      */
     public static boolean isKeyPressed(int glfwKeyCode) {
+        if (glfwKeyCode == -1) return false;
+
         Minecraft minecraft = Minecraft.getInstance();
         long windowHandle = minecraft.getWindow().getWindow();
         if (windowHandle == 0L) return false; // 窗口未准备好
@@ -151,6 +153,30 @@ public class KeyUtils {
         }
     }
 
+    /**
+     * 获取按键的翻译文本（不带任何前缀）
+     */
+    public static String getKeyDisplayName(String keyDesc) {
+        String keyName = getKeyByDesc(keyDesc);
+        return translateKey(keyName);
+    }
+
+    /**
+     * 获取多个按键的翻译文本，用+连接
+     */
+    public static String getKeysDisplayName(String... keyDescs) {
+        if (keyDescs == null || keyDescs.length == 0) {
+            return "";
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < keyDescs.length; i++) {
+            if (i > 0) result.append("+");
+            result.append(getKeyDisplayName(keyDescs[i]));
+        }
+        return result.toString();
+    }
+
     private static final Collection<String> DisabledKeyMappingList = new HashSet<>();
     public static boolean isKeyDisabled(String desc) {
         return DisabledKeyMappingList.contains(desc);
@@ -184,29 +210,5 @@ public class KeyUtils {
     public static InputConstants.Key unknownKey;
     public static int getGLFWKey(String key) {
         return KEY_MAP.getOrDefault(key, -1);
-    }
-
-    /**
-     * 获取按键的翻译文本（不带任何前缀）
-     */
-    public static String getKeyDisplayName(String keyDesc) {
-        String keyName = getKeyByDesc(keyDesc);
-        return translateKey(keyName);
-    }
-
-    /**
-     * 获取多个按键的翻译文本，用+连接
-     */
-    public static String getKeysDisplayName(String... keyDescs) {
-        if (keyDescs == null || keyDescs.length == 0) {
-            return "";
-        }
-
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < keyDescs.length; i++) {
-            if (i > 0) result.append("+");
-            result.append(getKeyDisplayName(keyDescs[i]));
-        }
-        return result.toString();
     }
 }
