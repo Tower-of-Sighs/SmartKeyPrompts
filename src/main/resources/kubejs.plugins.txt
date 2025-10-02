@@ -1,1 +1,1 @@
-com.mafuyu404.smartkeyprompts.SkpUtil
+com.mafuyu404.smartkeyprompts.SmartKeyPromptsJSPlugin
