@@ -1,6 +1,6 @@
 package com.mafuyu404.smartkeyprompts.data;
 
-import com.mafuyu404.oelib.event.FunctionRegistryEvent;
+import com.mafuyu404.oelib.forge.event.FunctionRegistryEvent;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.EventPriority;

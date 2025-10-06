@@ -1,11 +1,10 @@
 package com.mafuyu404.smartkeyprompts.data;
 
-import com.mafuyu404.oelib.api.ExpressionFunction;
+import com.mafuyu404.oelib.api.data.ExpressionFunction;
 import com.mafuyu404.smartkeyprompts.util.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
-import net.minecraftforge.fml.ModList;
 
 /**
  * 用于数据包MVEL表达式的函数类

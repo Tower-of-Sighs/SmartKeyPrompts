@@ -1,9 +1,9 @@
 package com.mafuyu404.smartkeyprompts.data;
 
-import com.mafuyu404.oelib.core.DataManager;
-import com.mafuyu404.oelib.core.DataRegistry;
-import com.mafuyu404.oelib.core.ExpressionEngine;
-import com.mafuyu404.oelib.event.DataReloadEvent;
+import com.mafuyu404.oelib.forge.data.DataManager;
+import com.mafuyu404.oelib.forge.data.DataRegistry;
+import com.mafuyu404.oelib.forge.data.mvel.ExpressionEngine;
+import com.mafuyu404.oelib.forge.event.DataReloadEvent;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
