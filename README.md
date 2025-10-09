@@ -6,35 +6,52 @@
 
 对于普通玩家，只需正常下载使用即可。
 
-对于开发者，若希望在游戏中新增一组按键提示，有三种方法：
+对于开发者，若希望在游戏中新增一组按键提示，有四种方法：
 - 由目标模组主动与本模组联动，从而添加按键支持。
 - 使用KubeJS调用本模组提供的方法，从而添加按键支持。
+- 使用数据包添加按键支持，但存在一定的局限性，详见[数据包扩展指南](https://doc.sighs.cc/docs/SmartKeyPrompts/datapack-guide)。
 - 由本模组主动适配后添加。
 
 ### 主要功能
 
 本模组用于在合适的时机选择性地展示相关按键，为此，提供了灵活展示按键提示的接口供模组或整合包开发者使用。
+
 ```java
 // 展示已注册按键绑定中的某个按键。
-public static void show(String id, String desc);
+show(String group, String desc);
 // 展示自定义按键提示。
-public static void custom(String id, String key, String desc);
+custom(String group, String key, String desc);
 // 将已注册按键绑定中的某个按键，使用另外的别名展示。
-public static void alias(String id, String key, String desc);
+alias(String group, String desc, String alias);
 ```
+
+只需在客户端Tick事件中按条件约束执行这三个方法，就能添加简单的按键提示。详细的开发实例请看后文。
+
+此外也支持使用数据包添加按键提示支持，但条件判断上存在一定的限制，部分复杂语法也无法使用，仅适用于简单适配的场景。
+
+如需使用，请查阅[数据包扩展指南](https://doc.sighs.cc/docs/SmartKeyPrompts/datapack-guide)。
+
 效果如下：
-![img](https://resource-api.xyeidc.com//client/pics/abf93d30)
 
-三个方法中的id均代表按键组标识号，例如，本模组在为JEI提供按键提示支持时，使用了"jei_skp"的标识号，并默认禁用此按键组。
+![img](https://resource-api.xyeidc.com/client/pics/aba3356e)
 
-你可以随时在配置文件中使用标识号来禁用对应的按键组。
+三个方法中的group均代表按键组标识号，例如，本模组在为JEI提供按键提示支持时，使用了"jei_skp"的标识号，并默认禁用此按键组。
+
+你可以随时在配置文件中使用标识号来禁用对应的按键组，或者使用。
 
 此外，当屏幕上存在按键提示时，按下控制热键（默认为K）+鼠标左键，即可打开相应的按键绑定设置界面，而不需要在所有按键绑定中寻找。
 
 效果如下：
+
 ![img](https://resource-api.xyeidc.com//client/pics/f016a6c2)
 
-注意，只有已注册的按键绑定（show, alias）适用此功能，对于自定义按键提示（custom）不会有任何效果。
+注意，只有在对已注册的按键绑定添加提示时（show, alias）适用此功能，对于自定义按键提示（custom）不会有任何效果。
+
+此外，这个功能也可以主动触发，用于打开自定义按键绑定设置界面，并只显示给定的按键绑定：
+
+```java
+ConfigAction.modifyKey(List<String> keyDescList);
+```
 
 按住控制热键时，按键提示会被锁定，无需顾虑抓时机的问题。
 
@@ -60,7 +77,13 @@ public static void alias(String id, String key, String desc);
 }
 ```
 
+对于组合键，可以像这样：
+```java
+SmartKeyPrompts.custom(modid, "key.keyboard.left.shift+key.mouse.left", "批量转移物品");
+```
+
 在模组中使用：
+
 ```java
 @SubscribeEvent
 public static void tick(TickEvent.ClientTickEvent event) {
@@ -80,7 +103,9 @@ public static void tick(TickEvent.ClientTickEvent event) {
 }
 
 ```
+
 在KubeJS中使用：
+
 ```javascript
 let SmartKeyPrompts = Java.loadClass("com.mafuyu404.smartkeyprompts.SmartKeyPrompts");
 let Utils = Java.loadClass("com.mafuyu404.smartkeyprompts.init.Utils");
@@ -104,6 +129,47 @@ ClientEvents.tick(event => {
 });
 ```
 
+通过查阅[数据包扩展指南](https://doc.sighs.cc/docs/SmartKeyPrompts/datapack-guide)，也可以使用数据包简单添加按键支持：
+
+```json
+{
+  "modid": "tacz_skp",
+  "vars": {
+    "modLoaded": "isModLoaded('tacz')",
+    "hasTaczGun": "mainHandItem == 'tacz:modern_kinetic_gun'",
+    "isNotInVehicle": "!isInVehicle()"
+  },
+  "entries": [
+    {
+      "when": {
+        "modLoaded": "true",
+        "hasTaczGun": "true",
+        "isNotInVehicle": "true"
+      },
+      "then": [
+        "show('tacz_skp', 'key.tacz.shoot.desc')",
+        "show('tacz_skp', 'key.tacz.zoom.desc')",
+        "show('tacz_skp', 'key.tacz.reload.desc')"
+      ]
+    }
+  ]
+}
+```
+
+拓展用法示例：当准星指向目标实体时，将实体互动信息的按键提示展示在准星下方：
+
+```java
+@SubscribeEvent
+public static void tick(TickEvent.ClientTickEvent event) {
+    if (!ModList.get().isLoaded(modid)) return;
+    if (Utils.getTargetedEntityType() == "minecraft:pig") {
+        SmartKeyPrompts.addDesc("key.pig.feed").forKey("key.mouse.right").withCustom(true).atPosition("crosshair").toGroup(modid);
+    }
+}
+```
+
+拓展方法中，"custom"和"position"字段都可以自定义，前者决定这个按键提示能否出现在筛选后的按键绑定设置界面中，后者则决定显示的位置，这是一个固定值，不再调整HUD位置的功能影响。
+
 在案例中可看到，本模组还提供了诸多关于按键操作的便捷方法，用于简化开发流程。除此之外，还有诸如获取视线所指实体等更为通用的条件判断工具。
 
 ### 其它
@@ -114,9 +180,10 @@ ClientEvents.tick(event => {
 
 对于整合包开发者，推荐搭配KeyBindJS使用。
 
-本体已简单适配的模组：
-- TaCZ
-- 冰与火之歌
-- 沉浸式飞机
-- 勤劳跟踪狂
-- JEI
+未来计划：
+- 更多可供选择的按键提示位置，如跟随鼠标。
+- 双击和长按按键的显示支持。
+- HUD美化。
+- 可能往更多版本移植。
+
+已适配模组列表详见[官方文档](https://doc.sighs.cc/docs/SmartKeyPrompts/support-mod)。
