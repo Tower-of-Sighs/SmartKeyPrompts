@@ -57,7 +57,7 @@ ConfigAction.modifyKey(List<String> keyDescList);
 
 最后，按下控制热键+鼠标右键，即可切换按键提示HUD的显示与否和显示位置。按住控制热键时还可以通过鼠标滚轮调整HUD大小。
 
-### 开发实例
+### 灵活提示
 
 创建按键提示所使用的"key"和"desc"字段均为语言文件中的对应字段。
 例如在Minecraft的语言文件\assets\minecraft\lang\en_us.json中查找"key"字段：
@@ -77,11 +77,6 @@ ConfigAction.modifyKey(List<String> keyDescList);
 }
 ```
 
-对于组合键，可以像这样：
-```java
-SmartKeyPrompts.custom(modid, "key.keyboard.left.shift+key.mouse.left", "批量转移物品");
-```
-
 在模组中使用：
 
 ```java
@@ -90,14 +85,14 @@ public static void tick(TickEvent.ClientTickEvent event) {
     if (!ModList.get().isLoaded("immersive_aircraft")) return;
     Player player = Minecraft.getInstance().player;
     if (player == null || Minecraft.getInstance().screen != null) return;
-    String vehicle = Utils.getVehicleType(player);
+    String vehicle = PlayerUtils.getVehicleType(player);
     if (vehicle != null && vehicle.startsWith("immersive_aircraft:")) {
-        SmartKeyPrompts.custom(modid, Utils.getKeyByDesc("key.inventory"), "immersive_aircraft.slot.upgrade");
-        SmartKeyPrompts.show(modid, "key.immersive_aircraft.dismount");
-        String keyUse = Utils.getKeyByDesc("key.immersive_aircraft.fallback_use");
-        SmartKeyPrompts.custom(modid, Objects.equals(keyUse, "key.keyboard.unknown") ? "key.mouse.right" : keyUse, "item.immersive_aircraft.item.weapon");
+        PromptUtils.custom(modid, KeyUtils.getKeyByDesc("key.inventory"), "immersive_aircraft.slot.upgrade");
+        PromptUtils.show(modid, "key.immersive_aircraft.dismount");
+        String keyUse = KeyUtils.getKeyByDesc("key.immersive_aircraft.fallback_use");
+        PromptUtils.custom(modid, Objects.equals(keyUse, "key.keyboard.unknown") ? "key.mouse.right" : keyUse, "item.immersive_aircraft.item.weapon");
         if (vehicle.equals("immersive_aircraft:biplane")) {
-            SmartKeyPrompts.custom(modid, Utils.getKeyByDesc("key.jump"), "item.immersive_aircraft.engine");
+            PromptUtils.custom(modid, KeyUtils.getKeyByDesc("key.jump"), "item.immersive_aircraft.engine");
         }
     }
 }
@@ -107,26 +102,28 @@ public static void tick(TickEvent.ClientTickEvent event) {
 在KubeJS中使用：
 
 ```javascript
-let SmartKeyPrompts = Java.loadClass("com.mafuyu404.smartkeyprompts.SmartKeyPrompts");
-let Utils = Java.loadClass("com.mafuyu404.smartkeyprompts.init.Utils");
-
 ClientEvents.tick(event => {
     let player = event.player;
-    if (["key.left", "key.right", "key.forward", "key.back"].map(desc => Utils.isKeyPressedOfDesc(desc)).includes(true)) {
-        SmartKeyPrompts.show("parcool", "key.parcool.Dodge");
+    if (["key.left", "key.right", "key.forward", "key.back"].map(desc => SKP$KeyUtils.isKeyPressedOfDesc(desc)).includes(true)) {
+        SKP$PromptUtils.show("parcool", "key.parcool.Dodge");
     }
     if (!player.onGround() && !player.isInWater()) {
-        SmartKeyPrompts.show("parcool", "key.parcool.Breakfall");
-        SmartKeyPrompts.show("parcool", "key.parcool.ClingToCliff");
+        SKP$PromptUtils.show("parcool", "key.parcool.Breakfall");
+        SKP$PromptUtils.show("parcool", "key.parcool.ClingToCliff");
     }
     if (player.isSprinting()) {
-        SmartKeyPrompts.show("parcool", "key.parcool.FastRun");
+        SKP$PromptUtils.show("parcool", "key.parcool.FastRun");
     }
-    if (Utils.isKeyPressedOfDesc("key.parcool.FastRun")) {
-        SmartKeyPrompts.show("parcool", Utils.getKeyByDesc("key.parcool.Dodge"));
-        SmartKeyPrompts.custom("parcool", Utils.getKeyByDesc("key.sneak"), "parcool.action.CatLeap");
+    if (SKP$KeyUtils.isKeyPressedOfDesc("key.parcool.FastRun")) {
+        SKP$PromptUtils.show("parcool", SKP$KeyUtils.getKeyByDesc("key.parcool.Dodge"));
+        SKP$PromptUtils.custom("parcool", SKP$KeyUtils.getKeyByDesc("key.sneak"), "parcool.action.CatLeap");
     }
 });
+```
+
+对于组合键，可以像这样：
+```java
+SmartKeyPrompts.custom(modid, "key.keyboard.left.shift+key.mouse.left", "批量转移物品");
 ```
 
 通过查阅[数据包扩展指南](https://doc.sighs.cc/docs/SmartKeyPrompts/datapack-guide)，也可以使用数据包简单添加按键支持：
@@ -162,15 +159,47 @@ ClientEvents.tick(event => {
 @SubscribeEvent
 public static void tick(TickEvent.ClientTickEvent event) {
     if (!ModList.get().isLoaded(modid)) return;
-    if (Utils.getTargetedEntityType() == "minecraft:pig") {
-        SmartKeyPrompts.addDesc("key.pig.feed").forKey("key.mouse.right").withCustom(true).atPosition("crosshair").toGroup(modid);
+    if (PlayerUtils.getTargetedEntityType() == "minecraft:pig") {
+        PromptUtils.addDesc("key.pig.feed").forKey("key.mouse.right").withCustom(true).atPosition("crosshair").toGroup(modid);
     }
 }
 ```
 
-拓展方法中，"custom"和"position"字段都可以自定义，前者决定这个按键提示能否出现在筛选后的按键绑定设置界面中，后者则决定显示的位置，这是一个固定值，不再调整HUD位置的功能影响。
+拓展方法中，"custom"和"position"字段都可以自定义，前者决定这个按键提示能否出现在筛选后的按键绑定设置界面中，后者则决定显示的位置，这是一个固定值，不再受调整HUD位置的功能影响。
 
 在案例中可看到，本模组还提供了诸多关于按键操作的便捷方法，用于简化开发流程。除此之外，还有诸如获取视线所指实体等更为通用的条件判断工具。
+
+### 灵活禁用
+
+前文说到，按住控制热键（默认为K）时，按键提示会被锁定，无需顾虑抓时机的问题，此时按键提示对应的标识名也会以"group:desc"的方式标注在按键提示后。
+
+对于KubeJS，可以用这样的方式管理某一个或某一类按键提示：
+
+```javascript
+SKP$PromptUtils.disablePromptByGroup(String group)
+SKP$PromptUtils.enablePromptByGroup(String group)
+SKP$PromptUtils.disablePromptByDesc(String desc)
+SKP$PromptUtils.enablePromptByDesc(String desc)
+SKP$PromptUtils.disablePrompt(String group, String desc)
+SKP$PromptUtils.enablePrompt(String group, String desc)
+```
+
+该功能常用于禁用已有的按键提示。
+
+此外，本模组也提供了禁用某一个按键绑定的快捷方法：
+
+```javascript
+SKP$KeyUtils.isKeyDisabled(String desc)
+SKP$KeyUtils.getDisabledKeyMappingList()
+SKP$KeyUtils.disableKeyMapping(String desc)
+SKP$KeyUtils.disableKeyMapping(List<String> list)
+SKP$KeyUtils.disableAllKeyMapping()
+SKP$KeyUtils.enableKeyMapping(String desc)
+SKP$KeyUtils.enableKeyMapping(List<String> list)
+SKP$KeyUtils.enableAllKeyMapping()
+```
+
+使用这些方法，可以灵活地禁用和启用某一按键绑定，如disableKeyMapping("key.jump")可以让玩家无法跳跃。
 
 ### 其它
 
