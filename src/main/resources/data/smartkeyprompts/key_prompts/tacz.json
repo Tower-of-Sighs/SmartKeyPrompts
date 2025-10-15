@@ -1,0 +1,53 @@
+{
+  "modid": "tacz_skp",
+  "vars": {
+    "modLoaded": "isModLoaded('tacz')",
+    "mainHandItem": "mainHandItem()",
+    "hasTaczGun": "mainHandItem() == 'tacz:modern_kinetic_gun'",
+    "isNotInVehicle": "!isInVehicle()",
+    "screenOpen": "isScreenOpen()",
+    "holdAim": "isKeyPressedOfDesc('key.tacz.aim.desc')"
+  },
+  "entries": [
+    {
+      "when": {
+        "modLoaded": "true",
+        "hasTaczGun": "true",
+        "isNotInVehicle": "true",
+        "screenOpen": "false",
+        "holdAim": "false"
+      },
+      "then": [
+        "show('tacz_skp', 'key.tacz.shoot.desc')",
+        "show('tacz_skp', 'key.tacz.reload.desc')",
+        "show('tacz_skp', 'key.tacz.refit.desc')",
+        "show('tacz_skp', 'key.tacz.melee.desc')",
+        "show('tacz_skp', 'key.tacz.interact.desc')",
+        "show('tacz_skp', 'key.tacz.inspect.desc')",
+        "show('tacz_skp', 'key.tacz.fire_select.desc')",
+        "show('tacz_skp', 'key.tacz.crawl.desc')",
+        "show('tacz_skp', 'key.tacz.aim.desc')"
+      ]
+    },
+    {
+      "when": {
+        "modLoaded": "true",
+        "hasTaczGun": "true",
+        "isNotInVehicle": "true",
+        "screenOpen": "false",
+        "holdAim": "true"
+      },
+      "then": [
+        "show('tacz_skp', 'key.tacz.shoot.desc')",
+        "show('tacz_skp', 'key.tacz.reload.desc')",
+        "show('tacz_skp', 'key.tacz.refit.desc')",
+        "show('tacz_skp', 'key.tacz.zoom.desc')",
+        "show('tacz_skp', 'key.tacz.interact.desc')",
+        "show('tacz_skp', 'key.tacz.inspect.desc')",
+        "show('tacz_skp', 'key.tacz.fire_select.desc')",
+        "show('tacz_skp', 'key.tacz.crawl.desc')",
+        "show('tacz_skp', 'key.tacz.aim.desc')"
+      ]
+    }
+  ]
+}

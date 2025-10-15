@@ -35,6 +35,7 @@ repositories {
     flatDir {
         dir 'libs'
     }
+    maven { url "https://maven.architectury.dev/" }
 }
 
 base {
@@ -123,11 +124,13 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 dependencies {
     compileOnly("mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}")
     runtimeOnly("mezz.jei:jei-${mc_version}-neoforge:${jei_version}")
-    implementation files('libs/rhino-2101.2.7-build.74.jar')
-    runtimeOnly "libs:architectury:13.0.8-neoforge"
-    implementation files('libs/kubejs-neoforge-2101.7.1-build.181.jar')
+    implementation "curse.maven:rhino-416294:7104526"
+    runtimeOnly "dev.architectury:architectury-neoforge:13.0.8"
+    implementation "curse.maven:kubejs-238086:7107528"
     implementation "curse.maven:oelib-1319210:6882494"
-    jarJar("curse.maven:oelib-1319210:6882494")
+    runtimeOnly "curse.maven:immersive-aircraft-666014:6992093"
+    runtimeOnly "curse.maven:diligentstalker-1256172:7110049"
+    runtimeOnly files('libs/tacz-neoforge-1.21.1.jar')
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

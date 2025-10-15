@@ -6,6 +6,7 @@ import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * 用于数据包MVEL表达式的函数类
@@ -114,6 +115,42 @@ public class DataPackFunctions {
         if (currentPlayer == null) return false;
         return currentPlayer.getInventory().items.stream()
                 .anyMatch(stack -> CommonUtils.toPathString(stack.getItem().getDescriptionId()).equals(itemId));
+    }
+
+    @ExpressionFunction(description = "检查主手物品是否包含指定数据组件")
+    public static boolean hasMainHandComponent(String componentId) {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.hasComponent(itemStack, componentId);
+    }
+
+    @ExpressionFunction(description = "检查主手物品数据组件的值是否匹配")
+    public static boolean checkMainHandComponent(String componentId, String expectedValue) {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.checkComponentValue(itemStack, componentId, expectedValue);
+    }
+
+    @ExpressionFunction(description = "获取主手物品数据组件的值")
+    public static String getMainHandComponentValue(String componentId) {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.getComponentValue(itemStack, componentId);
+    }
+
+    @ExpressionFunction(description = "检查主手物品自定义数据是否包含指定键")
+    public static boolean hasMainHandCustomDataKey(String key) {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.hasCustomDataKey(itemStack, key);
+    }
+
+    @ExpressionFunction(description = "获取主手物品的完整数据组件信息")
+    public static String getMainHandComponents() {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.getComponentsAsString(itemStack);
+    }
+
+    @ExpressionFunction(description = "获取主手物品的自定义数据字符串")
+    public static String getMainHandCustomDataString() {
+        ItemStack itemStack = DataComponentUtils.getMainHandItem(currentPlayer);
+        return DataComponentUtils.getCustomDataAsString(itemStack);
     }
 
     // ========== 目标实体NBT函数 ==========

@@ -1,9 +1,16 @@
 {
-  "smartkeyprompts.configuration.config": "SmartKeyPrompts config",
-  "smartkeyprompts.configuration.scale": "scale",
-  "smartkeyprompts.configuration.position": "position",
-  "smartkeyprompts.configuration.blacklist": "ID Blacklist",
+"key.categories.smartkeyprompts": "Smart Key Prompts",
+"key.smartkeyprompts.control": "control",
+"key.smartkeyprompts.keybinding": "View Keybindings",
+"key.smartkeyprompts.position": "Move HUD",
+"key.smartkeyprompts.scale": "Scale HUD",
 
-  "key.mouse.wheel": "Wheel",
-  "key.mouse.button": "Mouse Button "
+"key.mouse.wheel": "Wheel",
+"key.mouse.button": "Mouse Button ",
+
+"key.diligentstalker.connect": "Connect",
+"key.diligentstalker.container": "Container",
+"key.diligentstalker.record": "Record",
+"key.diligentstalker.add_fuel": "Add Fuel",
+"key.diligentstalker.remote_connect": "Remote Connect"
 }
