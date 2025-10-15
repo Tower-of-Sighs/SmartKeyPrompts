@@ -4,7 +4,7 @@ license = "GPL-3.0 license"
 
 [[mods]]
 modId = "smartkeyprompts"
-version = "1.1.0"
+version = "1.1.2"
 displayName = "SKP"
 authors = "zhenshiz"
 description = "skp"
