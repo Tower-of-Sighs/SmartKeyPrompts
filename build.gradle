@@ -36,6 +36,9 @@ repositories {
         dir 'libs'
     }
     maven { url "https://maven.architectury.dev/" }
+    maven {
+        url "https://maven.sighs.cc/repository/maven-releases/"
+    }
 }
 
 base {
@@ -127,7 +130,8 @@ dependencies {
     implementation "curse.maven:rhino-416294:7104526"
     runtimeOnly "dev.architectury:architectury-neoforge:13.0.8"
     implementation "curse.maven:kubejs-238086:7107528"
-    implementation "curse.maven:oelib-1319210:6882494"
+    annotationProcessor 'com.mafuyu404.oelib:OELib-common-api-1.21.1:0.0.6'
+    implementation 'com.mafuyu404.oelib:OELib-neoforge-1.21.1:0.0.6'
     runtimeOnly "curse.maven:immersive-aircraft-666014:6992093"
     runtimeOnly "curse.maven:diligentstalker-1256172:7110049"
     runtimeOnly files('libs/tacz-neoforge-1.21.1.jar')

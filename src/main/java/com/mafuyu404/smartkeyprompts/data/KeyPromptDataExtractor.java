@@ -1,11 +1,12 @@
 package com.mafuyu404.smartkeyprompts.data;
 
-import com.mafuyu404.oelib.neoforge.data.mvel.FunctionUsageAnalyzer;
+
+
+import com.mafuyu404.oelib.data.mvel.FunctionUsageAnalyzer;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 public class KeyPromptDataExtractor implements FunctionUsageAnalyzer.DataExpressionExtractor<KeyPromptData> {
 
     @Override

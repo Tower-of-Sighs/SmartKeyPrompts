@@ -26,5 +26,12 @@ versionRange = "[1.21,1.21.2)"
 ordering = "NONE"
 side = "BOTH"
 
+[[dependencies.smartkeyprompts]]
+modId = "oelib"
+mandatory = true
+versionRange = "[0.0.6,)"
+ordering = "NONE"
+side = "BOTH"
+
 [[mixins]]
 config = "smartkeyprompts.mixins.json"

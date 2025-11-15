@@ -1,5 +1,8 @@
 package com.mafuyu404.smartkeyprompts;
 
+import com.mafuyu404.oelib.data.DataRegistry;
+import com.mafuyu404.smartkeyprompts.data.KeyPromptData;
+import com.mafuyu404.smartkeyprompts.data.KeyPromptDataExtractor;
 import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
 import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mafuyu404.smartkeyprompts.util.PromptUtils;
@@ -21,6 +24,9 @@ public class SmartKeyPrompts {
     public static final Logger LOGGER = LogManager.getLogger(SmartKeyPrompts.MODID);
 
     public SmartKeyPrompts(IEventBus modEventBus, ModContainer container, Dist dist) {
+        DataRegistry.register(KeyPromptData.class, KeyPromptData.CODEC);
+        DataRegistry.registerExtractor(KeyPromptData.class, new KeyPromptDataExtractor());
+        DataRegistry.attachReloadListeners();
         if (dist == Dist.CLIENT) {
             container.registerConfig(ModConfig.Type.COMMON, Config.CONFIG_SPEC, MODID + "_config.toml");
             container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
