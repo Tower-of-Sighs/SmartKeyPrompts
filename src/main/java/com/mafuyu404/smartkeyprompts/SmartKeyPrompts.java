@@ -23,7 +23,6 @@ public class SmartKeyPrompts {
     public SmartKeyPrompts() {
         DataRegistry.register(KeyPromptData.class, KeyPromptData.CODEC);
         DataRegistry.registerExtractor(KeyPromptData.class, new KeyPromptDataExtractor());
-        DataRegistry.attachReloadListeners();
         var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Config.SPEC);
