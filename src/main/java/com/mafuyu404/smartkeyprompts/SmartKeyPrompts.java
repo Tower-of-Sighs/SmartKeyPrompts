@@ -26,7 +26,6 @@ public class SmartKeyPrompts {
     public SmartKeyPrompts(IEventBus modEventBus, ModContainer container, Dist dist) {
         DataRegistry.register(KeyPromptData.class, KeyPromptData.CODEC);
         DataRegistry.registerExtractor(KeyPromptData.class, new KeyPromptDataExtractor());
-        DataRegistry.attachReloadListeners();
         if (dist == Dist.CLIENT) {
             container.registerConfig(ModConfig.Type.COMMON, Config.CONFIG_SPEC, MODID + "_config.toml");
             container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
