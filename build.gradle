@@ -7,7 +7,7 @@ version = project.mod_version
 group = project.maven_group
 
 base {
-    archivesName = project.archives_base_name
+    archivesName = "${archives_base_name}-fabric-${minecraft_version}"
 }
 
 loom {
@@ -85,7 +85,7 @@ dependencies {
     modImplementation "curse.maven:uranus-1010827:6914447"
 //    modImplementation "curse.maven:iceandfire-ce-1040076:7210403"
     modImplementation "curse.maven:jupiter-1072905:7324290"
-    modImplementation "curse.maven:diligentstalker-1256172:7095571"
+    modImplementation "curse.maven:diligentstalker-1256172:7328044"
     modImplementation "curse.maven:slashblade-refabricated-1324741:7221187"
     modImplementation "curse.maven:tacz-refabricated-1334246:7281251"
     modImplementation "curse.maven:indium-459496:6237037"

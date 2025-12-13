@@ -19,6 +19,9 @@
     ],
     "main": [
       "com.mafuyu404.smartkeyprompts.SmartKeyPrompts"
+    ],
+    "modmenu": [
+      "com.mafuyu404.smartkeyprompts.compat.config.ModMenuIntegration"
     ]
   },
   "mixins": [

@@ -1,4 +1,16 @@
 {
+  "config.smartkeyprompts.title": "Smart Key Prompts",
+  "config.smartkeyprompts.category": "General Settings",
+
+  "config.smartkeyprompts.category.scale": "HUD Scale",
+  "config.smartkeyprompts.category.scale.tooltip": "Adjust the scale of the key prompt HUD. Range: 0.0 (invisible) to 10.0 (very large).",
+
+  "config.smartkeyprompts.category.position": "HUD Position",
+  "config.smartkeyprompts.category.position.tooltip": "Set the position of the key prompt HUD on screen.\n1: Top Left\n2: Top Center (disabled)\n3: Top Right\n4: Middle Left\n5: Bottom Right\n6: Bottom Center (disabled)\n7: Bottom Left\n8: Center",
+
+  "config.smartkeyprompts.category.blacklist": "Group ID Blacklist",
+  "config.smartkeyprompts.category.blacklist.tooltip": "List of prompt group IDs to hide. Add mod integration IDs (e.g., 'jei_skp', 'emi_skp') to disable their prompts.",
+
   "key.categories.smartkeyprompts": "Smart Key Prompts",
   "key.smartkeyprompts.control": "control",
   "key.smartkeyprompts.keybinding": "View Keybindings",
