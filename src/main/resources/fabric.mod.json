@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "smartkeyprompts",
+  "version": "${version}",
+  "name": "SmartKeyPrompts",
+  "description": "Loot Bags is a mod which adds bags that drop other items, renewed by src_resources.",
+  "authors": [
+    "MerrySnow",
+    "Flechazo",
+    "zhenshiz"
+  ],
+  "contact": {},
+  "license": "GPL-3.0 license",
+  "icon": "assets/smartkeyprompts/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.mafuyu404.smartkeyprompts.client.SmartKeyPromptsClient"
+    ],
+    "main": [
+      "com.mafuyu404.smartkeyprompts.SmartKeyPrompts"
+    ]
+  },
+  "mixins": [
+    "smartkeyprompts.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": "*",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "forgeconfigapiport": "*",
+    "oelib": ">=0.0.6"
+  },
+  "accessWidener": "smartkeyprompts.accesswidener"
+}
