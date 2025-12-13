@@ -71,30 +71,27 @@ dependencies {
 
     modApi "fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${project.fcap_version}"
 
-    modCompileOnly "mezz.jei:jei-1.20.1-fabric-api:15.20.0.104"
-    modImplementation "mezz.jei:jei-1.20.1-fabric:15.20.0.104"
-    modImplementation "curse.maven:kubejs-238086:5853321"
-    modImplementation "curse.maven:jade-324717:6291330"
-    modImplementation "curse.maven:sodium-394468:6260639"
-    modImplementation "curse.maven:irisshaders-455508:6258195"
-    modImplementation "curse.maven:rhino-416294:6186969"
-    modImplementation "curse.maven:architectury-api-419699:5137936"
-    modImplementation "curse.maven:sodium-extra-447673:6298804"
-    modImplementation "curse.maven:immersive-aircraft-666014:6972823"
-    modImplementation "curse.maven:modern-keybinding-fabric-695433:4913784"
-    modImplementation "curse.maven:uranus-1010827:6914447"
+    modCompileOnly "mezz.jei:jei-1.21.1-fabric-api:19.22.1.316"
+    modImplementation "mezz.jei:jei-1.21.1-fabric:19.22.1.316"
+    modImplementation "curse.maven:jade-324717:6738760"
+    modImplementation "curse.maven:sodium-394468:6382649"
+    modImplementation "curse.maven:irisshaders-455508:6213635"
+    modImplementation "curse.maven:architectury-api-419699:5786326"
+    modImplementation "curse.maven:sodium-extra-447673:5913375"
+    modImplementation "curse.maven:immersive-aircraft-666014:6992092"
+    modImplementation "curse.maven:modern-keybinding-fabric-695433:6016136"
+    modImplementation "curse.maven:uranus-1010827:6979352"
 //    modImplementation "curse.maven:iceandfire-ce-1040076:7210403"
-    modImplementation "curse.maven:jupiter-1072905:7324290"
-    modImplementation "curse.maven:diligentstalker-1256172:7328044"
-    modImplementation "curse.maven:slashblade-refabricated-1324741:7221187"
-    modImplementation "curse.maven:tacz-refabricated-1334246:7281251"
-    modImplementation "curse.maven:indium-459496:6237037"
+    modImplementation "curse.maven:jupiter-1072905:7324306"
+//    modImplementation "curse.maven:diligentstalker-1256172:7328044"
+    modImplementation "curse.maven:slashblade-refabricated-1324741:7221195"
+    modImplementation "curse.maven:tacz-refabricated-1334246:7285846"
+//    modImplementation "curse.maven:indium-459496:6237037"
 
-    annotationProcessor 'com.mafuyu404.oelib:OELib-common-api-1.20.1:0.0.6'
-    modImplementation 'com.mafuyu404.oelib:OELib-fabric-1.20.1:0.0.6'
+    annotationProcessor 'com.mafuyu404.oelib:OELib-common-api-1.21.1:0.0.6'
+    modImplementation 'com.mafuyu404.oelib:OELib-fabric-1.21.1:0.0.6'
 
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}"
-    modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-item:${project.cca_version}"
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}"
 
     modImplementation files("libs/bcel-6.6.1.jar")
@@ -102,15 +99,13 @@ dependencies {
     modImplementation files("libs/luaj-core-3.0.8-figura.jar")
     modImplementation files("libs/luaj-jse-3.0.8-figura.jar")
     modImplementation files("libs/CaffeineConfig-1.3.0+1.17.jar")
-    modImplementation("io.github.fabricators_of_create.Porting-Lib:base:2.3.8+1.20.1")
-    modImplementation("io.github.fabricators_of_create.Porting-Lib:obj_loader:2.3.8+1.20.1")
-    modImplementation("io.github.fabricators_of_create.Porting-Lib:attributes:2.3.8+1.20.1")
-    modImplementation("io.github.fabricators_of_create.Porting-Lib:extensions:2.3.8+1.20.1")
-    modImplementation("io.github.fabricators_of_create.Porting-Lib:entity:2.3.8+1.20.1")
-    modApi "me.shedaniel.cloth:cloth-config-fabric:11.1.136"
+    modImplementation("io.github.fabricators_of_create.Porting-Lib:obj_loader:3.1.0-beta.75+1.21.1")
+    modImplementation("io.github.fabricators_of_create.Porting-Lib:items:3.1.0-beta.75+1.21.1")
+    modImplementation("io.github.fabricators_of_create.Porting-Lib:entity:3.1.0-beta.75+1.21.1")
+    modApi "me.shedaniel.cloth:cloth-config-fabric:15.0.140"
     implementation 'org.mariuszgromada.math:MathParser.org-mXparser:5.2.1'
     implementation 'org.mvel:mvel2:2.5.0.Final'
-    modImplementation "maven.modrinth:modmenu:lEkperf6"
+    modImplementation "maven.modrinth:modmenu:YIfqIJ8q"
 }
 
 processResources {

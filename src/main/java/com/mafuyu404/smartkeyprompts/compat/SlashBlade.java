@@ -14,10 +14,17 @@ import mods.flammpfeil.slashblade.slasharts.SlashArts;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
+import org.jetbrains.annotations.Nullable;
 
 public class SlashBlade {
     private static final String modid = "slashblade_skp";
@@ -51,7 +58,9 @@ public class SlashBlade {
 
             showSlashArtKeys(mainHandItem);
 
-            canUseSummonedSwordKeys(mainHandItem);
+            var registryAccess = player.registryAccess();
+
+            canUseSummonedSwordKeys(mainHandItem, registryAccess);
 
         } else {
             if (!lastSlashArt.isEmpty()) {
@@ -143,8 +152,8 @@ public class SlashBlade {
     }
 
 
-    private static void canUseSummonedSwordKeys(ItemStack itemStack) {
-        if (!canUseSummonedSword(itemStack)) {
+    private static void canUseSummonedSwordKeys(ItemStack itemStack, RegistryAccess registryAccess) {
+        if (!canUseSummonedSword(itemStack, registryAccess)) {
             return;
         }
 
@@ -186,13 +195,17 @@ public class SlashBlade {
         }
     }
 
-    private static boolean canUseSummonedSword(ItemStack itemStack) {
+    private static boolean canUseSummonedSword(ItemStack itemStack, RegistryAccess registryAccess) {
         try {
             if (!SwordType.from(itemStack).contains(SwordType.BEWITCHED)) {
                 return false;
             }
 
-            int strengthLevel = EnchantmentUtils.getTagEnchantmentLevel(Enchantments.POWER_ARROWS, itemStack);
+            var holder = registryAccess.registryOrThrow(Registries.ENCHANTMENT)
+                    .getHolder(Enchantments.POWER)
+                    .orElse(null);
+
+            int strengthLevel = EnchantmentUtils.getTagEnchantmentLevel(holder, itemStack);
             if (strengthLevel < 1) {
                 return false;
             }
@@ -208,11 +221,13 @@ public class SlashBlade {
 
     private static int getProudSoul(ItemStack itemStack) {
         try {
-            return CapabilitySlashBlade.BLADESTATE.maybeGet(itemStack)
+            return CapabilitySlashBlade.getBladeState(itemStack)
                     .map(ISlashBladeState::getProudSoulCount)
                     .orElse(0);
         } catch (Exception e) {
-            SmartKeyPrompts.LOGGER.error("[SlashBlade] Error getting proud soul: {}", e.getMessage(), e);
+            SmartKeyPrompts.LOGGER.error(
+                    "[SlashBlade] Error getting proud soul", e
+            );
             return 0;
         }
     }
@@ -223,14 +238,18 @@ public class SlashBlade {
                 return true;
             }
 
-            return CapabilitySlashBlade.BLADESTATE.maybeGet(itemStack)
+            return CapabilitySlashBlade.getBladeState(itemStack)
                     .map(state -> state.isBroken() || state.isSealed())
                     .orElse(false);
+
         } catch (Exception e) {
-            SmartKeyPrompts.LOGGER.error("[SlashBlade] Error checking blade state: {}", e.getMessage(), e);
+            SmartKeyPrompts.LOGGER.error(
+                    "[SlashBlade] Error checking blade state", e
+            );
             return false;
         }
     }
+
 
     /**
      * 检查是否为默认SA或none类型（不应该显示的SA）
@@ -245,13 +264,15 @@ public class SlashBlade {
     /**
      * 直接通过cap获取拔刀剑的SA信息
      */
-    private static ResourceLocation getSlashArtKey(ItemStack itemStack) {
+    private static @Nullable ResourceLocation getSlashArtKey(ItemStack itemStack) {
         try {
-            return CapabilitySlashBlade.BLADESTATE.maybeGet(itemStack)
+            return CapabilitySlashBlade.getBladeState(itemStack)
                     .map(ISlashBladeState::getSlashArtsKey)
                     .orElse(null);
         } catch (Exception e) {
-            SmartKeyPrompts.LOGGER.error("[SlashBlade] Error getting slash art key from capability: {}", e.getMessage());
+            SmartKeyPrompts.LOGGER.error(
+                    "[SlashBlade] Error getting slash art key", e
+            );
             return null;
         }
     }

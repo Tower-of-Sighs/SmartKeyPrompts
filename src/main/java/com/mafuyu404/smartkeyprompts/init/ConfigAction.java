@@ -6,7 +6,7 @@ import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
+import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;

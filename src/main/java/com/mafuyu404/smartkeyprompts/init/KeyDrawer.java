@@ -7,12 +7,14 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
+import java.util.Objects;
+
 public class KeyDrawer {
     // 纹理资源位置
     private static final ResourceLocation TEXTURE_UNPRESSED =
-            new ResourceLocation(SmartKeyPrompts.MODID, "textures/gui/unpressed_key.png");
+            ResourceLocation.fromNamespaceAndPath(SmartKeyPrompts.MODID, "textures/gui/unpressed_key.png");
     private static final ResourceLocation TEXTURE_PRESSED =
-            new ResourceLocation(SmartKeyPrompts.MODID, "textures/gui/pressed_key.png");
+            ResourceLocation.fromNamespaceAndPath(SmartKeyPrompts.MODID, "textures/gui/pressed_key.png");
 
     // 纹理尺寸
     public static final int TEXTURE_WIDTH = 32;
@@ -45,17 +47,16 @@ public class KeyDrawer {
         float v1 = (float) (texY + texHeight) / TEXTURE_HEIGHT;
 
         // 构建顶点缓冲区
-        var buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        var buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
 
         Matrix4f matrix = poseStack.last().pose();
-        buffer.vertex(matrix, 0, height, 0).uv(u0, v1).endVertex();
-        buffer.vertex(matrix, width, height, 0).uv(u1, v1).endVertex();
-        buffer.vertex(matrix, width, 0, 0).uv(u1, v0).endVertex();
-        buffer.vertex(matrix, 0, 0, 0).uv(u0, v0).endVertex();
+        buffer.addVertex(matrix, 0, height, 0).setUv(u0, v1);
+        buffer.addVertex(matrix, width, height, 0).setUv(u1, v1);
+        buffer.addVertex(matrix, width, 0, 0).setUv(u1, v0);
+        buffer.addVertex(matrix, 0, 0, 0).setUv(u0, v0);
 
         // 绘制
-        BufferUploader.drawWithShader(buffer.end());
+        BufferUploader.drawWithShader(Objects.requireNonNull(buffer.build()));
 
         poseStack.popPose();
         RenderSystem.disableBlend();

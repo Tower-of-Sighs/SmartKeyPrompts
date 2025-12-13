@@ -16,7 +16,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
+import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
@@ -64,7 +64,7 @@ public class HUD {
 
                     @Override
                     public ResourceLocation getFabricId() {
-                        return new ResourceLocation(MODID, "hud_cache");
+                        return ResourceLocation.fromNamespaceAndPath(MODID, "hud_cache");
                     }
 
                 });

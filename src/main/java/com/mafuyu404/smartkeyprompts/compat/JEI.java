@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -21,7 +22,7 @@ public class JEI {
         ClientTickEvents.END_CLIENT_TICK.register(JEI::tick);
     }
 
-    public static void itemTooltip(ItemStack stack, TooltipFlag context, List<Component> lines) {
+    public static void itemTooltip(ItemStack stack, Item.TooltipContext tooltipContext, TooltipFlag tooltipType, List<Component> lines) {
         if (FabricLoader.getInstance().isModLoaded("jei")) {
             if (CommonUtils.isScreenOpen()) {
                 PromptUtils.show(modid, "key.jei.showRecipe");

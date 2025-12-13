@@ -6,9 +6,9 @@ import com.mafuyu404.smartkeyprompts.data.KeyPromptDataExtractor;
 import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
 import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mafuyu404.smartkeyprompts.util.PromptUtils;
-import fuzs.forgeconfigapiport.api.config.v2.ForgeConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
 import net.fabricmc.api.ModInitializer;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.config.ModConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,7 +20,7 @@ public class SmartKeyPrompts implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        ForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.CLIENT, Config.SPEC);
+        NeoForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.CLIENT, Config.SPEC);
         DataRegistry.register(KeyPromptData.class, KeyPromptData.CODEC);
         DataRegistry.registerExtractor(KeyPromptData.class, new KeyPromptDataExtractor());
     }
