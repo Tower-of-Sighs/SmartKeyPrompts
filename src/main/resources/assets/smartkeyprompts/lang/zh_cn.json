@@ -1,6 +1,6 @@
 {
   "config.smartkeyprompts.title": "灵活按键提示",
-  "config.smartkeyprompts.smart_key_prompts": "常规设置",
+  "config.smartkeyprompts.smart_key_prompts.title": "常规设置",
 
   "config.smartkeyprompts.smart_key_prompts.scale": "HUD 缩放比例",
   "config.smartkeyprompts.smart_key_prompts.scale.tooltip": "调整按键提示 HUD 的缩放大小。范围：0.0 到 10.0。",
