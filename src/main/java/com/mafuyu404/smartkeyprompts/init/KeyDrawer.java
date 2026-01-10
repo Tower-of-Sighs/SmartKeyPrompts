@@ -10,15 +10,14 @@ import org.joml.Matrix4f;
 import java.util.Objects;
 
 public class KeyDrawer {
+    // 纹理尺寸
+    public static final int TEXTURE_WIDTH = 32;
+    public static final int TEXTURE_HEIGHT = 16;
     // 纹理资源位置
     private static final ResourceLocation TEXTURE_UNPRESSED =
             ResourceLocation.fromNamespaceAndPath(SmartKeyPrompts.MODID, "textures/gui/unpressed_key.png");
     private static final ResourceLocation TEXTURE_PRESSED =
             ResourceLocation.fromNamespaceAndPath(SmartKeyPrompts.MODID, "textures/gui/pressed_key.png");
-
-    // 纹理尺寸
-    public static final int TEXTURE_WIDTH = 32;
-    public static final int TEXTURE_HEIGHT = 16;
 
     public static void drawUnpressedKey(PoseStack poseStack, int x, int y,
                                         int width, int height,

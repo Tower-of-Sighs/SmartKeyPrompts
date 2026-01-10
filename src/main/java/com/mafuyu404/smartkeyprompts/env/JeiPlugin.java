@@ -16,16 +16,6 @@ import java.util.Optional;
 public class JeiPlugin implements IModPlugin {
     private static IJeiRuntime jeiRuntime;
 
-    @Override
-    public @NotNull ResourceLocation getPluginUid() {
-        return ResourceLocation.fromNamespaceAndPath(SmartKeyPrompts.MODID, "jei_plugin");
-    }
-
-    @Override
-    public void onRuntimeAvailable(@NotNull IJeiRuntime jeiRuntime) {
-        JeiPlugin.jeiRuntime = jeiRuntime;
-    }
-
     public static Optional<IJeiRuntime> getJeiRuntime() {
         return Optional.ofNullable(jeiRuntime);
     }
@@ -36,5 +26,15 @@ public class JeiPlugin implements IModPlugin {
             result[0] = jeiRuntime.getIngredientListOverlay().isListDisplayed() && Minecraft.getInstance().screen != null;
         });
         return result[0];
+    }
+
+    @Override
+    public @NotNull ResourceLocation getPluginUid() {
+        return ResourceLocation.fromNamespaceAndPath(SmartKeyPrompts.MODID, "jei_plugin");
+    }
+
+    @Override
+    public void onRuntimeAvailable(@NotNull IJeiRuntime jeiRuntime) {
+        JeiPlugin.jeiRuntime = jeiRuntime;
     }
 }

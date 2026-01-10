@@ -6,9 +6,7 @@ import com.mafuyu404.smartkeyprompts.data.KeyPromptDataExtractor;
 import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
 import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mafuyu404.smartkeyprompts.util.PromptUtils;
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
 import net.fabricmc.api.ModInitializer;
-import net.neoforged.fml.config.ModConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,13 +15,6 @@ public class SmartKeyPrompts implements ModInitializer {
     public static final String MODID = "smartkeyprompts";
 
     public static final Logger LOGGER = LogManager.getLogger(SmartKeyPrompts.MODID);
-
-    @Override
-    public void onInitialize() {
-        Config.register();
-        DataRegistry.register(KeyPromptData.class, KeyPromptData.CODEC);
-        DataRegistry.registerExtractor(KeyPromptData.class, new KeyPromptDataExtractor());
-    }
 
     @Deprecated
     public static void show(String id, String desc) {
@@ -43,5 +34,12 @@ public class SmartKeyPrompts implements ModInitializer {
     @Deprecated
     public static KeyPrompt addDesc(String desc) {
         return new KeyPrompt("", KeyUtils.getKeyByDesc(desc), desc, false);
+    }
+
+    @Override
+    public void onInitialize() {
+        Config.register();
+        DataRegistry.register(KeyPromptData.class, KeyPromptData.CODEC);
+        DataRegistry.registerExtractor(KeyPromptData.class, new KeyPromptDataExtractor());
     }
 }

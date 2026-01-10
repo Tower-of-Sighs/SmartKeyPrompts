@@ -15,7 +15,7 @@ public record Config(
         double scale,
         int position,
         List<String> blacklist
-        ) {
+) {
 
     private static final String FILE_NAME = "smartkeyprompts-client";
 
@@ -55,6 +55,7 @@ public record Config(
     public static Config get() {
         return UNIT.get();
     }
+
     public static void register() {
         ConfigManager.registerClient(UNIT);
     }

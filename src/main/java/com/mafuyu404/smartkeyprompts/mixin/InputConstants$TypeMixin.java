@@ -17,13 +17,13 @@ public class InputConstants$TypeMixin {
     @Final
     private Int2ObjectMap<InputConstants.Key> map;
 
-    public Int2ObjectMap<InputConstants.Key> getMap() {
-        return map;
-    }
-
     @Inject(method = "addKey", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;put(ILjava/lang/Object;)Ljava/lang/Object;"))
     private static void q(InputConstants.Type p_84900_, String key, int code, CallbackInfo ci, @Local InputConstants.Key inputconstants$key) {
         KeyUtils.addKeyMap(key, code);
         if (code == 1) KeyUtils.unknownKey = inputconstants$key;
+    }
+
+    public Int2ObjectMap<InputConstants.Key> getMap() {
+        return map;
     }
 }

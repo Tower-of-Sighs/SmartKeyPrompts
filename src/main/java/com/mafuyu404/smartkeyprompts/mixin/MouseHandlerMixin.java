@@ -20,6 +20,9 @@ public abstract class MouseHandlerMixin {
     private double xpos;
     @Shadow
     private double ypos;
+    @Shadow
+    @Final
+    private Minecraft minecraft;
 
     @Shadow
     public abstract boolean isLeftPressed();
@@ -29,10 +32,6 @@ public abstract class MouseHandlerMixin {
 
     @Shadow
     public abstract boolean isRightPressed();
-
-    @Shadow
-    @Final
-    private Minecraft minecraft;
 
     @Inject(
             method = "onPress",
