@@ -3,7 +3,7 @@
   "id": "smartkeyprompts",
   "version": "${version}",
   "name": "SmartKeyPrompts",
-  "description": "Loot Bags is a mod which adds bags that drop other items, renewed by src_resources.",
+  "description": "Flexible on-screen key prompts and convenient key remapping features. See more: https://docs.mafuyu.moe/docs/SmartKeyPrompts/intro",
   "authors": [
     "MerrySnow",
     "Flechazo",
@@ -32,7 +32,7 @@
     "fabric": "*",
     "minecraft": "${minecraft_version}",
     "forgeconfigapiport": "*",
-    "oelib": ">=0.0.6"
+    "oelib": ">=0.0.7"
   },
   "accessWidener": "smartkeyprompts.accesswidener"
 }

@@ -1,6 +1,6 @@
 package com.mafuyu404.smartkeyprompts;
 
-import com.mafuyu404.oelib.data.DataRegistry;
+import cc.sighs.oelib.data.DataRegistry;
 import com.mafuyu404.smartkeyprompts.data.KeyPromptData;
 import com.mafuyu404.smartkeyprompts.data.KeyPromptDataExtractor;
 import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
@@ -20,7 +20,7 @@ public class SmartKeyPrompts implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        NeoForgeConfigRegistry.INSTANCE.register(MODID, ModConfig.Type.CLIENT, Config.SPEC);
+        Config.register();
         DataRegistry.register(KeyPromptData.class, KeyPromptData.CODEC);
         DataRegistry.registerExtractor(KeyPromptData.class, new KeyPromptDataExtractor());
     }
