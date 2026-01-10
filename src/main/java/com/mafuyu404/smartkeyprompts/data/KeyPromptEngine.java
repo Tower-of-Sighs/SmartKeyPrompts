@@ -1,9 +1,9 @@
 package com.mafuyu404.smartkeyprompts.data;
 
-import com.mafuyu404.oelib.data.DataManagerBridge;
-import com.mafuyu404.oelib.data.DataRegistry;
-import com.mafuyu404.oelib.data.mvel.ExpressionEngine;
-import com.mafuyu404.oelib.neoforge.event.DataReloadEvent;
+import cc.sighs.oelib.data.DataManager;
+import cc.sighs.oelib.data.DataRegistry;
+import cc.sighs.oelib.data.mvel.ExpressionEngine;
+import cc.sighs.oelib.neoforge.event.DataReloadEvent;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -24,7 +24,7 @@ public class KeyPromptEngine {
         if (event.getDataClass() == KeyPromptData.class) {
             SmartKeyPrompts.LOGGER.info("KeyPrompt data reloaded: {} entries loaded, {} invalid",
                     event.getLoadedCount(), event.getInvalidCount());
-            cachedData = DataManagerBridge.getAllData(KeyPromptData.class);
+            cachedData = DataManager.getAllData(KeyPromptData.class);
             DataRegistry.resetExpressionEngine();
             DataRegistry.initializeExpressionEngine();
         }

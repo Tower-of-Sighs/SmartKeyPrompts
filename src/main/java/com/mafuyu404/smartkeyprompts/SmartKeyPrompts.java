@@ -1,6 +1,7 @@
 package com.mafuyu404.smartkeyprompts;
 
-import com.mafuyu404.oelib.data.DataRegistry;
+import cc.sighs.oelib.config.ui.screen.ConfigScreen;
+import cc.sighs.oelib.data.DataRegistry;
 import com.mafuyu404.smartkeyprompts.data.KeyPromptData;
 import com.mafuyu404.smartkeyprompts.data.KeyPromptDataExtractor;
 import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
@@ -10,8 +11,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,11 +23,11 @@ public class SmartKeyPrompts {
     public static final Logger LOGGER = LogManager.getLogger(SmartKeyPrompts.MODID);
 
     public SmartKeyPrompts(IEventBus modEventBus, ModContainer container, Dist dist) {
+        Config.register();
         DataRegistry.register(KeyPromptData.class, KeyPromptData.CODEC);
         DataRegistry.registerExtractor(KeyPromptData.class, new KeyPromptDataExtractor());
         if (dist == Dist.CLIENT) {
-            container.registerConfig(ModConfig.Type.COMMON, Config.CONFIG_SPEC, MODID + "_config.toml");
-            container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+            container.registerExtensionPoint(IConfigScreenFactory.class, (minecraft, parent) -> new ConfigScreen(parent, SmartKeyPrompts.MODID));
         }
     }
 

@@ -1,16 +1,22 @@
 {
-"key.categories.smartkeyprompts": "Smart Key Prompts",
-"key.smartkeyprompts.control": "control",
-"key.smartkeyprompts.keybinding": "View Keybindings",
-"key.smartkeyprompts.position": "Move HUD",
-"key.smartkeyprompts.scale": "Scale HUD",
-
-"key.mouse.wheel": "Wheel",
-"key.mouse.button": "Mouse Button ",
-
-"key.diligentstalker.connect": "Connect",
-"key.diligentstalker.container": "Container",
-"key.diligentstalker.record": "Record",
-"key.diligentstalker.add_fuel": "Add Fuel",
-"key.diligentstalker.remote_connect": "Remote Connect"
+  "config.smartkeyprompts.title": "Smart Key Prompts",
+  "config.smartkeyprompts.smart_key_prompts.title": "General Settings",
+  "config.smartkeyprompts.smart_key_prompts.scale": "HUD Scale",
+  "config.smartkeyprompts.smart_key_prompts.scale.tooltip": "Adjust the scale of the key prompt HUD. Range: 0.0 (invisible) to 10.0 (very large).",
+  "config.smartkeyprompts.smart_key_prompts.position": "HUD Position",
+  "config.smartkeyprompts.smart_key_prompts.position.tooltip": "Set the position of the key prompt HUD on screen.\n1: Top Left\n2: Top Center (disabled)\n3: Top Right\n4: Middle Left\n5: Bottom Right\n6: Bottom Center (disabled)\n7: Bottom Left\n8: Center",
+  "config.smartkeyprompts.smart_key_prompts.blacklist": "Group ID Blacklist",
+  "config.smartkeyprompts.smart_key_prompts.blacklist.tooltip": "List of prompt group IDs to hide. Add mod integration IDs (e.g., 'jei_skp', 'emi_skp') to disable their prompts.",
+  "key.categories.smartkeyprompts": "Smart Key Prompts",
+  "key.smartkeyprompts.control": "control",
+  "key.smartkeyprompts.keybinding": "View Keybindings",
+  "key.smartkeyprompts.position": "Move HUD",
+  "key.smartkeyprompts.scale": "Scale HUD",
+  "key.mouse.wheel": "Wheel",
+  "key.mouse.button": "Mouse Button ",
+  "key.diligentstalker.connect": "Connect",
+  "key.diligentstalker.container": "Container",
+  "key.diligentstalker.record": "Record",
+  "key.diligentstalker.add_fuel": "Add Fuel",
+  "key.diligentstalker.remote_connect": "Remote Connect"
 }

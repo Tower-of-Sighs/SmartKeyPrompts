@@ -3,6 +3,7 @@ package com.mafuyu404.smartkeyprompts.init;
 import com.mafuyu404.smartkeyprompts.Config;
 import com.mafuyu404.smartkeyprompts.util.KeyUtils;
 import com.mafuyu404.smartkeyprompts.util.NBTUtils;
+import com.mafuyu404.smartkeyprompts.util.PromptUtils;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
@@ -52,12 +53,13 @@ public class HUD {
         if (minecraft.player == null) return;
 
         if (!KeyUtils.isKeyPressed(ModKeybindings.CONTROL_KEY.getKey().getValue())) {
-            List<? extends String> blacklist = Config.BLACKLIST.get();
+            List<? extends String> blacklist = Config.get().blacklist();
 
             List<KeyPrompt> toAdd = new ArrayList<>();
             for (KeyPrompt keyPrompt : KeyPromptCache) {
                 if (keyPrompt != null && !blacklist.contains(keyPrompt.group)) {
-                    toAdd.add(keyPrompt);
+                    boolean checkDisable = PromptUtils.checkPromptValid(keyPrompt);
+                    if (checkDisable) toAdd.add(keyPrompt);
                 }
             }
 
@@ -185,8 +187,8 @@ public class HUD {
 
         if (font == null) font = Minecraft.getInstance().font;
 
-        float scale = Config.SCALE.get().floatValue();
-        int position = Config.POSITION.get();
+        float scale = (float) Config.get().scale();
+        int position = Config.get().position();
 
         if (position == 2 || position == 6) {
             return;

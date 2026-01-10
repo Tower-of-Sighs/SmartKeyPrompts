@@ -1,25 +1,61 @@
 package com.mafuyu404.smartkeyprompts;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import cc.sighs.oelib.config.ConfigAccess;
+import cc.sighs.oelib.config.ConfigManager;
+import cc.sighs.oelib.config.ConfigRecordCodecBuilder;
+import cc.sighs.oelib.config.ConfigUnit;
+import cc.sighs.oelib.config.field.ConfigField;
+import cc.sighs.oelib.config.model.ConfigStorageFormat;
+import com.mojang.serialization.Codec;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.List;
 
-public class Config {
-    public static final ModConfigSpec CONFIG_SPEC;
+public record Config(
+        double scale,
+        int position,
+        List<String> blacklist
+) {
 
-    public static final ModConfigSpec.DoubleValue SCALE;
+    private static final String FILE_NAME = "smartkeyprompts-client";
 
-    public static final ModConfigSpec.IntValue POSITION;
+    public static final ConfigUnit<Config> UNIT = ConfigRecordCodecBuilder.createClient(
+            ResourceLocation.fromNamespaceAndPath(SmartKeyPrompts.MODID, "smart_key_prompts"),
+            instance -> instance.group(
+                    ConfigField.doubleRange("scale", 0.0, 10.0)
+                            .defaultValue(0.8)
+                            .text()
+                            .comment("""
+                                    #缩放
+                                    # Default: 0.8
+                                    # Range: 0.0 ~ 10.0
+                                    """)
+                            .forGetter(Config::scale),
+                    ConfigField.intRange("position", 1, 8)
+                            .defaultValue(1)
+                            .text()
+                            .comment("""
+                                    #显示位置
+                                    # Default: 1
+                                    # Range: 1 ~ 8
+                                    """)
+                            .forGetter(Config::position),
+                    ConfigField.list("blacklist", Codec.STRING)
+                            .defaultValue(List.of("jei_skp", "emi_skp"))
+                            .comment("#标识ID黑名单")
+                            .forGetter(Config::blacklist)
+            ).apply(instance, Config::new),
+            meta -> meta
+                    .fileName(FILE_NAME)
+                    .format(ConfigStorageFormat.TOML)
+    );
 
-    public static final ModConfigSpec.ConfigValue<List<? extends String>> BLACKLIST;
+    public static final ConfigAccess<Config> ACCESS = new ConfigAccess<>(UNIT);
 
-    static {
-        ModConfigSpec.Builder CONFIG_BUILDER = new ModConfigSpec.Builder();
-        CONFIG_BUILDER.push("config");
-        SCALE = CONFIG_BUILDER.defineInRange("scale", 0.8, 0, 10);
-        POSITION = CONFIG_BUILDER.defineInRange("position", 1, 1, 8);
-        BLACKLIST = CONFIG_BUILDER.defineList("blacklist", List.of("jei_skp"), entry -> entry instanceof String);
-        CONFIG_BUILDER.pop();
-        CONFIG_SPEC = CONFIG_BUILDER.build();
+    public static Config get() {
+        return UNIT.get();
+    }
+    public static void register() {
+        ConfigManager.registerClient(UNIT);
     }
 }

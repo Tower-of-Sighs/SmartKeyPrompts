@@ -1,6 +1,6 @@
 package com.mafuyu404.smartkeyprompts.data;
 
-import com.mafuyu404.oelib.api.data.ExpressionFunction;
+import cc.sighs.oelib.data.api.ExpressionFunction;
 import com.mafuyu404.smartkeyprompts.util.*;
 import lombok.Setter;
 import net.minecraft.client.Minecraft;
