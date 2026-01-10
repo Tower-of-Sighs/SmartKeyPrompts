@@ -5,6 +5,10 @@ import com.mafuyu404.smartkeyprompts.init.KeyPrompt;
 import java.util.HashSet;
 
 public class PromptUtils {
+    private static final HashSet<String> disabledPromptByGroup = new HashSet<>();
+    private static final HashSet<String> disabledPromptByDesc = new HashSet<>();
+    private static final HashSet<String> disabledPrompt = new HashSet<>();
+
     public static void show(String id, String desc) {
         addDesc(desc).toGroup(id);
     }
@@ -20,10 +24,6 @@ public class PromptUtils {
     public static KeyPrompt addDesc(String desc) {
         return new KeyPrompt("", KeyUtils.getKeyByDesc(desc), desc, false);
     }
-
-    private static final HashSet<String> disabledPromptByGroup = new HashSet<>();
-    private static final HashSet<String> disabledPromptByDesc = new HashSet<>();
-    private static final HashSet<String> disabledPrompt = new HashSet<>();
 
     public static void disablePromptByGroup(String group) {
         disabledPromptByGroup.add(group);

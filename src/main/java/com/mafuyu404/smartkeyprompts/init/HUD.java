@@ -32,12 +32,10 @@ import static com.mafuyu404.smartkeyprompts.SmartKeyPrompts.MODID;
 public class HUD {
     public static final List<KeyPrompt> KeyPromptList = Collections.synchronizedList(new ArrayList<>());
     public static final Set<KeyPrompt> KeyPromptCache = new CopyOnWriteArraySet<>();
-    private static volatile Font font;
-    public static volatile KeyMapping[] KeyMappingCache;
-
     private static final Map<String, String> translationCache = new ConcurrentHashMap<>();
     private static final Map<String, String> keyTranslationCache = new ConcurrentHashMap<>();
-
+    public static volatile KeyMapping[] KeyMappingCache;
+    private static volatile Font font;
     private static volatile List<KeyPrompt> cachedDefaultPrompts = Collections.emptyList();
     private static volatile List<KeyPrompt> cachedCrosshairPrompts = Collections.emptyList();
     private static volatile int lastPromptListHash = 0;

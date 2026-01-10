@@ -10,6 +10,10 @@ import org.lwjgl.glfw.GLFW;
 import java.util.*;
 
 public class KeyUtils {
+    private static final Collection<String> DisabledKeyMappingList = new HashSet<>();
+    private static final HashMap<String, Integer> KEY_MAP = new HashMap<>();
+    public static InputConstants.Key unknownKey;
+
     /**
      * 获取所有按键绑定
      */
@@ -151,8 +155,6 @@ public class KeyUtils {
         }
     }
 
-    private static final Collection<String> DisabledKeyMappingList = new HashSet<>();
-
     public static boolean isKeyDisabled(String desc) {
         return DisabledKeyMappingList.contains(desc);
     }
@@ -160,8 +162,6 @@ public class KeyUtils {
     public static Collection<String> getDisabledKeyMappingList() {
         return DisabledKeyMappingList;
     }
-
-    ;
 
     public static void disableKeyMapping(String desc) {
         DisabledKeyMappingList.add(desc);
@@ -187,13 +187,9 @@ public class KeyUtils {
         DisabledKeyMappingList.clear();
     }
 
-    private static final HashMap<String, Integer> KEY_MAP = new HashMap<>();
-
     public static void addKeyMap(String key, int code) {
         KEY_MAP.put(key, code);
     }
-
-    public static InputConstants.Key unknownKey;
 
     public static int getGLFWKey(String key) {
         return KEY_MAP.getOrDefault(key, -1);

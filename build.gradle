@@ -132,9 +132,12 @@ dependencies {
     implementation "curse.maven:kubejs-238086:7107528"
     annotationProcessor 'cc.sighs.oelib:OELib-common-api-1.21.1:0.0.7'
     implementation 'cc.sighs.oelib:OELib-neoforge-1.21.1:0.0.7'
-    additionalRuntimeClasspath ("cn.6tail:lunar:1.7.3")
-    additionalRuntimeClasspath ("de.marhali:json5-java:3.0.0")
     additionalRuntimeClasspath ("org.mvel:mvel2:2.5.0.Final")
+    jarJar(implementation("org.mvel:mvel2")) {
+        version {
+            strictly '2.5.0.Final'
+        }
+    }
     runtimeOnly "curse.maven:immersive-aircraft-666014:6992093"
     runtimeOnly "curse.maven:diligentstalker-1256172:7110049"
     runtimeOnly files('libs/tacz-neoforge-1.21.1.jar')

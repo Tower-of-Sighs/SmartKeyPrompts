@@ -5,6 +5,7 @@ import cc.sighs.oelib.data.mvel.FunctionUsageAnalyzer;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 public class KeyPromptDataExtractor implements FunctionUsageAnalyzer.DataExpressionExtractor<KeyPromptData> {
 
     @Override

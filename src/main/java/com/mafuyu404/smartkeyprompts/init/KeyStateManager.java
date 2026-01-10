@@ -19,9 +19,8 @@ public class KeyStateManager {
     private static final Map<String, Boolean> keyStateCache = new ConcurrentHashMap<>();
     private static final Set<String> activeKeys = ConcurrentHashMap.newKeySet();
     private static final Map<String, Boolean> previousStates = new ConcurrentHashMap<>();
-
-    private static int cleanupCounter = 0;
     private static final int CLEANUP_INTERVAL = 100;
+    private static int cleanupCounter = 0;
 
     public static void registerKeys(Set<String> keyDescs) {
         activeKeys.addAll(keyDescs);

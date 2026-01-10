@@ -55,6 +55,7 @@ public record Config(
     public static Config get() {
         return UNIT.get();
     }
+
     public static void register() {
         ConfigManager.registerClient(UNIT);
     }
