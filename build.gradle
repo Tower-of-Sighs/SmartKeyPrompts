@@ -88,8 +88,8 @@ dependencies {
     modImplementation "curse.maven:tacz-refabricated-1334246:7285846"
 //    modImplementation "curse.maven:indium-459496:6237037"
 
-    annotationProcessor 'cc.sighs.oelib:OELib-common-api-1.21.1:0.0.7'
-    modApi 'cc.sighs.oelib:OELib-fabric-1.21.1:0.0.7'
+    annotationProcessor 'cc.sighs.oelib:OELib-common-api-1.21.1:0.0.8'
+    modApi 'cc.sighs.oelib:OELib-fabric-1.21.1:0.0.8'
 
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}"
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${project.cca_version}"
