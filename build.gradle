@@ -130,8 +130,8 @@ dependencies {
     implementation "curse.maven:rhino-416294:7104526"
     runtimeOnly "dev.architectury:architectury-neoforge:13.0.8"
     implementation "curse.maven:kubejs-238086:7107528"
-    annotationProcessor 'cc.sighs.oelib:OELib-common-api-1.21.1:0.0.7'
-    implementation 'cc.sighs.oelib:OELib-neoforge-1.21.1:0.0.7'
+    annotationProcessor 'cc.sighs.oelib:OELib-common-api-1.21.1:0.0.8'
+    implementation 'cc.sighs.oelib:OELib-neoforge-1.21.1:0.0.8'
     additionalRuntimeClasspath ("org.mvel:mvel2:2.5.0.Final")
     jarJar(implementation("org.mvel:mvel2")) {
         version {
