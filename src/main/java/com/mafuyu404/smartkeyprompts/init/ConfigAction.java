@@ -34,13 +34,12 @@ public class ConfigAction {
             modifyKey(currentKey);
         }
         if (button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
-            int position = Config.POSITION.get();
+            int position = Config.get().position();
             if (position == 8) {
-                Config.POSITION.set(1);
+                Config.ACCESS.set(Config::position, 1);
             } else {
-                Config.POSITION.set(position + 1);
+                Config.ACCESS.set(Config::position, position + 1);
             }
-            Config.POSITION.save();
         }
         return true;
     }
@@ -54,14 +53,13 @@ public class ConfigAction {
     }
 
     public static void scaleHUD(double delta) {
-        double scale = Config.SCALE.get();
+        double scale = Config.get().scale();
         if (delta < 0) {
             scale = Math.max(scale - 0.1, 0);
         } else {
             scale = Math.min(scale + 0.1, 10);
         }
-        Config.SCALE.set(scale);
-        Config.SCALE.save();
+        Config.ACCESS.set(Config::scale, scale);
     }
 
     private static List<String> getCurrentKeyDescs() {

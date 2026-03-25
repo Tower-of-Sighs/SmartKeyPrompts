@@ -90,8 +90,8 @@ dependencies {
     modImplementation "curse.maven:tacz-refabricated-1334246:7281251"
     modImplementation "curse.maven:indium-459496:6237037"
 
-    annotationProcessor 'com.mafuyu404.oelib:OELib-common-api-1.20.1:0.0.6'
-    modImplementation 'com.mafuyu404.oelib:OELib-fabric-1.20.1:0.0.6'
+    annotationProcessor 'cc.sighs.oelib:OELib-common-api-1.20.1:0.2.2'
+    modImplementation 'cc.sighs.oelib:OELib-fabric-1.20.1:0.2.2'
 
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-base:${project.cca_version}"
     modImplementation "dev.onyxstudios.cardinal-components-api:cardinal-components-item:${project.cca_version}"
@@ -109,7 +109,7 @@ dependencies {
     modImplementation("io.github.fabricators_of_create.Porting-Lib:entity:2.3.8+1.20.1")
     modApi "me.shedaniel.cloth:cloth-config-fabric:11.1.136"
     implementation 'org.mariuszgromada.math:MathParser.org-mXparser:5.2.1'
-    implementation 'org.mvel:mvel2:2.5.0.Final'
+    implementation (include('org.mvel:mvel2:2.5.0.Final'))
     modImplementation "maven.modrinth:modmenu:lEkperf6"
 }
 

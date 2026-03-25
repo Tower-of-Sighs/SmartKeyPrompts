@@ -1,7 +1,7 @@
 package com.mafuyu404.smartkeyprompts.data;
 
 
-import com.mafuyu404.oelib.data.mvel.FunctionUsageAnalyzer;
+import cc.sighs.oelib.data.mvel.FunctionUsageAnalyzer;
 
 import java.util.HashSet;
 import java.util.Map;
