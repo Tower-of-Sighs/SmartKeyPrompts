@@ -213,9 +213,11 @@ dependencies {
     implementation fg.deobf("curse.maven:citadel-331936:6702068")
 ////    runtimeOnly fg.deobf("dev.emi:emi-forge:1.1.22+1.20.1")
     implementation fg.deobf("curse.maven:slashblade-resharped-1022428:7234815")
-    annotationProcessor 'com.mafuyu404.oelib:OELib-common-api-1.20.1:0.0.6'
-    implementation fg.deobf('com.mafuyu404.oelib:OELib-forge-1.20.1:0.0.6')
-    implementation 'org.mvel:mvel2:2.5.0.Final'
+    annotationProcessor 'cc.sighs.oelib:OELib-common-api-1.20.1:0.2.2'
+    implementation fg.deobf('cc.sighs.oelib:OELib-forge-1.20.1:0.2.2')
+    minecraftLibrary(jarJar('org.mvel:mvel2:2.5.0.Final')) {
+        jarJar.ranged(it, '[2.5.0.Final,2.6.0)')
+    }
     implementation fg.deobf("curse.maven:kubejs-238086:5853326")
     implementation fg.deobf("curse.maven:rhino-416294:6186971")
     implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
