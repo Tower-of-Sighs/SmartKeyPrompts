@@ -1,15 +1,12 @@
 {
   "config.smartkeyprompts.title": "灵活按键提示",
-  "config.smartkeyprompts.category": "常规设置",
-
-  "config.smartkeyprompts.category.scale": "HUD 缩放比例",
-  "config.smartkeyprompts.category.scale.tooltip": "调整按键提示 HUD 的缩放大小。范围：0.0 到 10.0。",
-
-  "config.smartkeyprompts.category.position": "HUD 位置",
-  "config.smartkeyprompts.category.position.tooltip": "设置按键提示 HUD 在屏幕上的位置。\n1：左上角\n2：顶部居中（已禁用）\n3：右上角\n4：左侧居中\n5：右下角\n6：底部居中（已禁用）\n7：左下角\n8：屏幕中央",
-
-  "config.smartkeyprompts.category.blacklist": "分组 ID 黑名单",
-  "config.smartkeyprompts.category.blacklist.tooltip": "要隐藏的提示分组 ID 列表。添加模组集成 ID（例如 'jei_skp'、'emi_skp'）以禁用其对应的提示。",
+  "config.smartkeyprompts.smart_key_prompts.title": "常规设置",
+  "config.smartkeyprompts.smart_key_prompts.scale": "HUD 缩放比例",
+  "config.smartkeyprompts.smart_key_prompts.scale.tooltip": "调整按键提示 HUD 的缩放大小。范围：0.0 到 10.0。",
+  "config.smartkeyprompts.smart_key_prompts.position": "HUD 位置",
+  "config.smartkeyprompts.smart_key_prompts.position.tooltip": "设置按键提示 HUD 在屏幕上的位置。\n1：左上角\n2：顶部居中（已禁用）\n3：右上角\n4：左侧居中\n5：右下角\n6：底部居中（已禁用）\n7：左下角\n8：屏幕中央",
+  "config.smartkeyprompts.smart_key_prompts.blacklist": "分组 ID 黑名单",
+  "config.smartkeyprompts.smart_key_prompts.blacklist.tooltip": "要隐藏的提示分组 ID 列表。添加模组集成 ID（例如 'jei_skp'、'emi_skp'）以禁用其对应的提示。",
 
   "key.categories.smartkeyprompts": "灵活按键显示",
   "key.smartkeyprompts.control": "控制",
@@ -37,7 +34,7 @@
   "key.slashblade_addon.rapid_blistering_swords": "急袭幻影剑",
   "key.slashblade_addon.spiral_edge": "旋刃",
   "key.slashblade_addon.gale_swords": "烈风幻影剑",
-  
+
   "key.slashblade.air_trick": "隔空瞬步",
   "key.slashblade.trick_down": "瞬步退行",
   "key.slashblade.trick_dodge": "瞬步回避",
