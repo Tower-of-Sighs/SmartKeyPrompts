@@ -31,7 +31,6 @@
     "fabricloader": "*",
     "fabric": "*",
     "minecraft": "${minecraft_version}",
-    "forgeconfigapiport": "*",
     "oelib": ">=0.2.2"
   },
   "accessWidener": "smartkeyprompts.accesswidener"
