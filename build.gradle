@@ -4,10 +4,13 @@ plugins {
     id 'idea'
     id 'net.neoforged.moddev' version '2.0.97'
     id 'io.freefair.lombok' version '8.6'
+    id 'com.modrinth.minotaur' version '2.10.0'
 }
 
 version = mod_version
 group = mod_group_id
+
+apply from: 'gradle/publish-conventions.gradle'
 
 repositories {
     mavenLocal()
@@ -38,6 +41,10 @@ repositories {
     maven { url "https://maven.architectury.dev/" }
     maven {
         url "https://maven.sighs.cc/repository/maven-releases/"
+    }
+    maven {
+        name = "sighs snapshots"
+        url "https://maven.sighs.cc/repository/maven-snapshots/"
     }
 }
 
@@ -130,8 +137,8 @@ dependencies {
     implementation "curse.maven:rhino-416294:7104526"
     runtimeOnly "dev.architectury:architectury-neoforge:13.0.8"
     implementation "curse.maven:kubejs-238086:7107528"
-    annotationProcessor 'cc.sighs.oelib:OELib-common-api-1.21.1:0.0.8'
-    implementation 'cc.sighs.oelib:OELib-neoforge-1.21.1:0.0.8'
+    annotationProcessor "cc.sighs.oelib:data-common-1.21.1:${oel_version}"
+    implementation "cc.sighs.oelib:oelib-neoforge-1.21.1:${oel_version}"
     additionalRuntimeClasspath ("org.mvel:mvel2:2.5.0.Final")
     jarJar(implementation("org.mvel:mvel2")) {
         version {
@@ -140,7 +147,7 @@ dependencies {
     }
     runtimeOnly "curse.maven:immersive-aircraft-666014:6992093"
     runtimeOnly "curse.maven:diligentstalker-1256172:7110049"
-    runtimeOnly files('libs/tacz-neoforge-1.21.1.jar')
+    runtimeOnly "curse.maven:tacz-1353462:9027337"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

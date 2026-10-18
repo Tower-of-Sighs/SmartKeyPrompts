@@ -27,3 +27,6 @@ replay_pid*
 .idea
 build
 run
+
+# Local publishing credentials
+publish.env

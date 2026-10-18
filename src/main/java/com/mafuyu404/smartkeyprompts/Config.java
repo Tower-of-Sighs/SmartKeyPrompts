@@ -1,14 +1,14 @@
 package com.mafuyu404.smartkeyprompts;
 
-import cc.sighs.oelib.config.ConfigAccess;
 import cc.sighs.oelib.config.ConfigManager;
-import cc.sighs.oelib.config.ConfigRecordCodecBuilder;
+import cc.sighs.oelib.config.ConfigSchema;
 import cc.sighs.oelib.config.ConfigUnit;
 import cc.sighs.oelib.config.field.ConfigField;
 import cc.sighs.oelib.config.model.ConfigStorageFormat;
 import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 
+import java.lang.invoke.MethodHandles;
 import java.util.List;
 
 public record Config(
@@ -19,8 +19,13 @@ public record Config(
 
     private static final String FILE_NAME = "smartkeyprompts-client";
 
-    public static final ConfigUnit<Config> UNIT = ConfigRecordCodecBuilder.createClient(
+    public static final ConfigUnit<Config> UNIT = ConfigSchema.defineClient(
+            MethodHandles.lookup(),
             ResourceLocation.fromNamespaceAndPath(SmartKeyPrompts.MODID, "smart_key_prompts"),
+            Config.class,
+            meta -> meta
+                    .fileName(FILE_NAME)
+                    .format(ConfigStorageFormat.TOML),
             instance -> instance.group(
                     ConfigField.doubleRange("scale", 0.0, 10.0)
                             .defaultValue(0.8)
@@ -44,13 +49,8 @@ public record Config(
                             .defaultValue(List.of("jei_skp", "emi_skp"))
                             .comment("#标识ID黑名单")
                             .forGetter(Config::blacklist)
-            ).apply(instance, Config::new),
-            meta -> meta
-                    .fileName(FILE_NAME)
-                    .format(ConfigStorageFormat.TOML)
+            ).apply(instance, Config::new)
     );
-
-    public static final ConfigAccess<Config> ACCESS = new ConfigAccess<>(UNIT);
 
     public static Config get() {
         return UNIT.get();

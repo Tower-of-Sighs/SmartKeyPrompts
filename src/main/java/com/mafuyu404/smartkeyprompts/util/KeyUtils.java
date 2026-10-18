@@ -58,6 +58,8 @@ public class KeyUtils {
      * 检查按键是否被按下
      */
     public static boolean isKeyPressed(int glfwKeyCode) {
+        if (glfwKeyCode < GLFW.GLFW_KEY_SPACE || glfwKeyCode > GLFW.GLFW_KEY_LAST) return false;
+
         Minecraft minecraft = Minecraft.getInstance();
         long windowHandle = minecraft.getWindow().getWindow();
         if (windowHandle == 0L) return false; // 窗口未准备好
@@ -146,7 +148,7 @@ public class KeyUtils {
             }
 
             if (keyName.startsWith("key.keyboard.")) {
-                return GLFW.glfwGetKey(windowHandle, glfwKey) == GLFW.GLFW_PRESS;
+                return isKeyPressed(glfwKey);
             }
 
             return false;

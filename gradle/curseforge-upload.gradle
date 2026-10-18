@@ -1,0 +1,105 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.time.Duration
+
+// https://support.curseforge.com/support/solutions/articles/9000197321-curseforge-upload-api
+// Version names belong in gameVersionNames; gameVersions only accepts integer IDs.
+abstract class CurseForgeUpload extends DefaultTask {
+    @InputFile
+    @PathSensitive(PathSensitivity.NONE)
+    abstract RegularFileProperty getUploadFile()
+
+    @Input
+    abstract Property<String> getProjectId()
+
+    @Internal
+    abstract Property<String> getApiToken()
+
+    @Input
+    abstract Property<Boolean> getDryRunMode()
+
+    @Input
+    abstract MapProperty<String, Object> getUploadMetadata()
+
+    @Internal
+    URI apiEndpoint = URI.create('https://legacy.curseforge.com')
+
+    @TaskAction
+    void publish() {
+        def id = projectId.get()
+        if (!(id ==~ /[1-9][0-9]*/)) throw new GradleException('CurseForge project ID must be numeric.')
+        def file = uploadFile.get().asFile
+        def fields = uploadMetadata.get()
+        if (fields.containsKey('gameVersions') && (!(fields.gameVersions instanceof Collection) ||
+                !fields.gameVersions.every { (it instanceof Integer || it instanceof Long) && it > 0 })) {
+            throw new GradleException('CurseForge gameVersions accepts integer IDs; use gameVersionNames for names. No upload attempted.')
+        }
+        if (!(fields.gameVersionNames instanceof Collection) || !fields.gameVersionNames ||
+                !fields.gameVersionNames.every { it instanceof String && !it.trim().isEmpty() }) {
+            throw new GradleException('CurseForge gameVersionNames requires non-empty version names. No upload attempted.')
+        }
+        def metadata = JsonOutput.toJson(fields)
+        def target = apiEndpoint.resolve("/api/projects/${id}/upload-file")
+        if (dryRunMode.get()) {
+            logger.lifecycle("CurseForge dry run: ${file.name} -> ${target}\n${JsonOutput.prettyPrint(metadata)}")
+            return
+        }
+        def token = apiToken.get().trim()
+        if (!token) throw new GradleException('Missing CURSEFORGE_TOKEN; no upload attempted.')
+
+        def boundary = 'SmartKeyPrompts-' + UUID.randomUUID()
+        def filename = file.name.replace('\\', '_').replace('"', '_').replaceAll(/[\r\n]/, '_')
+        def header = "--${boundary}\r\n" +
+                'Content-Disposition: form-data; name="metadata"\r\n' +
+                'Content-Type: application/json; charset=UTF-8\r\n\r\n' + metadata + '\r\n' +
+                "--${boundary}\r\n" +
+                "Content-Disposition: form-data; name=\"file\"; filename=\"${filename}\"\r\n" +
+                'Content-Type: application/octet-stream\r\n\r\n'
+        def body = HttpRequest.BodyPublishers.concat(
+                HttpRequest.BodyPublishers.ofString(header),
+                HttpRequest.BodyPublishers.ofFile(file.toPath()),
+                HttpRequest.BodyPublishers.ofString("\r\n--${boundary}--\r\n"))
+        def request = HttpRequest.newBuilder(target)
+                .timeout(Duration.ofMinutes(5))
+                .header('X-Api-Token', token)
+                .header('User-Agent', 'SmartKeyPrompts-Publisher/1.0')
+                .header('Content-Type', "multipart/form-data; boundary=${boundary}")
+                .POST(body).build()
+        def response
+        try (def client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build()) {
+            response = client.send(request, HttpResponse.BodyHandlers.ofString())
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt()
+            throw new GradleException('CurseForge upload interrupted; check the project files before retrying.', ex)
+        } catch (IOException ex) {
+            throw new GradleException('CurseForge upload connection failed; check the project files before retrying.', ex)
+        }
+        def status = response.statusCode()
+        def responseText = response.body().replace(token, '[REDACTED]')
+        if (status != 200) {
+            if (responseText.contains('Just a moment') ||
+                    response.headers().firstValue('cf-mitigated').orElse('') == 'challenge') {
+                throw new GradleException("CurseForge HTTP ${status}: website protection blocked the upload endpoint. " +
+                        'Check the network or use the author dashboard; this does not establish whether the token is valid.')
+            }
+            def detail = response.headers().firstValue('content-type').orElse('').contains('json') ?
+                    responseText.take(500) : 'Non-JSON response from the upload endpoint.'
+            throw new GradleException("CurseForge HTTP ${status}: ${detail}")
+        }
+        def result
+        try {
+            result = new JsonSlurper().parseText(responseText)
+        } catch (Exception ex) {
+            throw new GradleException('CurseForge returned an invalid response; check the project files before retrying.', ex)
+        }
+        if (!(result instanceof Map) || !(result.id instanceof Number) || result.id.longValue() <= 0) {
+            throw new GradleException('CurseForge returned no file ID; check the project files before retrying.')
+        }
+        logger.lifecycle("CurseForge uploaded ${file.name}; file ID: ${result.id}")
+    }
+}
+
+project.ext.curseForgeUploadTaskType = CurseForgeUpload

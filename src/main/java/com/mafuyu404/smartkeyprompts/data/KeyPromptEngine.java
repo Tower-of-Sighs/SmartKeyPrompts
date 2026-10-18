@@ -3,7 +3,7 @@ package com.mafuyu404.smartkeyprompts.data;
 import cc.sighs.oelib.data.DataManager;
 import cc.sighs.oelib.data.DataRegistry;
 import cc.sighs.oelib.data.mvel.ExpressionEngine;
-import cc.sighs.oelib.neoforge.event.DataReloadEvent;
+import cc.sighs.oelib.event.neoforge.DataReloadEvent;
 import com.mafuyu404.smartkeyprompts.SmartKeyPrompts;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;

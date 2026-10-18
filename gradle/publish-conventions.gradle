@@ -1,0 +1,127 @@
+import groovy.json.JsonOutput
+
+// Follows https://github.com/zhenshiz/ViScriptLib: Minotaur for MR, Upload API for CF.
+apply from: rootProject.file('gradle/curseforge-upload.gradle')
+
+def trimToNull = { value -> value?.toString()?.trim() ?: null }
+def publishEnv = [:]
+providers.fileContents(rootProject.layout.projectDirectory.file('publish.env')).asText.orElse('').get().eachLine { line ->
+    def trimmed = line.trim()
+    if (trimmed && !trimmed.startsWith('#')) {
+        def separator = trimmed.indexOf('=')
+        if (separator > 0) {
+            def value = trimmed.substring(separator + 1).trim()
+            if (value.length() >= 2 && ((value.startsWith('"') && value.endsWith('"')) ||
+                    (value.startsWith("'") && value.endsWith("'")))) {
+                value = value.substring(1, value.length() - 1)
+            }
+            publishEnv[trimmed.substring(0, separator).trim()] = value
+        }
+    }
+}
+def envOrFile = { String name ->
+    trimToNull(providers.environmentVariable(name).orNull) ?: trimToNull(publishEnv[name])
+}
+def cfProjectId = envOrFile('CURSEFORGE_PROJECT_ID') ?: trimToNull(findProperty('publish_curseforge_project_id'))
+def mrProjectId = envOrFile('MODRINTH_PROJECT_ID') ?: trimToNull(findProperty('publish_modrinth_project_id'))
+def cfToken = envOrFile('CURSEFORGE_TOKEN')
+def mrToken = envOrFile('MODRINTH_TOKEN')
+def publishVersion = property('mod_version').toString()
+def minecraftVersion = property('minecraft_version').toString()
+def displayName = "${property('mod_name')} ${publishVersion} (NeoForge ${minecraftVersion})".toString()
+def versionLower = publishVersion.toLowerCase(Locale.ROOT)
+def releaseType = versionLower.contains('alpha') ? 'alpha' : versionLower.contains('beta') ? 'beta' : 'release'
+def dryRun = providers.gradleProperty('publish_dry_run').isPresent()
+def publishChangelog = envOrFile('PUBLISH_CHANGELOG') ?: trimToNull(findProperty('publish_changelog')) ?:
+        trimToNull(providers.fileContents(layout.projectDirectory.file('CHANGELOG.md')).asText.orElse('').get()) ?:
+        'See the project page for details.'
+def splitSlugs = { value -> (value ?: '').toString().split(',').collect { it.trim() }.findAll { it } }
+def cfRequires = splitSlugs(findProperty('publish_curseforge_requires'))
+def mrRequires = splitSlugs(findProperty('publish_modrinth_requires'))
+def jarTask = tasks.named('jar')
+def uploadFileProvider = jarTask.flatMap { it.archiveFile }
+def cfTaskPath = "${project.path == ':' ? '' : project.path}:publishCurseforge".toString()
+def mrTaskPath = "${project.path == ':' ? '' : project.path}:modrinth".toString()
+
+// Both uploads share this gate, so missing configuration fails before either upload,
+// including with --continue. Single-platform tasks only require their own credentials.
+def validatePublishing = tasks.register('validateModPublishing') {
+    group = 'publishing'
+    description = '检查本次发布所需的平台项目 ID 和 Token'
+    notCompatibleWithConfigurationCache('Publishing validation inspects the selected platform tasks.')
+    doLast { task ->
+        def publishingGraph = task.project.gradle.taskGraph
+        def errors = []
+        if (publishingGraph.hasTask(cfTaskPath)) {
+            if (!cfProjectId || !(cfProjectId ==~ /[1-9][0-9]*/)) {
+                errors << 'Set a numeric publish_curseforge_project_id or CURSEFORGE_PROJECT_ID.'
+            }
+            if (!dryRun && !cfToken) errors << 'Missing CURSEFORGE_TOKEN (environment or publish.env).'
+        }
+        if (publishingGraph.hasTask(mrTaskPath)) {
+            if (!mrProjectId) errors << 'Set publish_modrinth_project_id or MODRINTH_PROJECT_ID.'
+            if (!dryRun && !mrToken) errors << 'Missing MODRINTH_TOKEN (environment or publish.env).'
+        }
+        if (errors) throw new GradleException(errors.join('\n') + '\nNo upload attempted.')
+    }
+}
+
+tasks.register('publishCurseforge', project.ext.curseForgeUploadTaskType) {
+    group = 'publishing'
+    description = '构建并上传到 CurseForge（-Ppublish_dry_run 试运行）'
+    dependsOn validatePublishing
+    uploadFile.set(uploadFileProvider)
+    projectId.set(cfProjectId ?: '')
+    apiToken.set(cfToken ?: '')
+    dryRunMode.set(dryRun)
+    uploadMetadata.set([
+            changelog: publishChangelog,
+            changelogType: 'markdown',
+            displayName: displayName,
+            releaseType: releaseType,
+            gameVersionNames: [minecraftVersion, 'NeoForge', 'Client', 'Java 21']
+    ] + (cfRequires ? [relations: [projects: cfRequires.collect {
+        [slug: it, type: 'requiredDependency']
+    }]] : [:]))
+}
+
+modrinth {
+    token = mrToken ?: ''
+    projectId = mrProjectId ?: ''
+    versionNumber = publishVersion
+    versionName = displayName
+    versionType = releaseType
+    uploadFile = jarTask.get()
+    gameVersions = [minecraftVersion]
+    loaders = ['neoforge']
+    detectLoaders = false
+    changelog = publishChangelog
+    dependencies {
+        mrRequires.each { required.project it }
+    }
+}
+
+// Minotaur debugMode still resolves project/dependency IDs over HTTP. Skip its action
+// during our dry run and print the metadata locally instead, without requiring tokens.
+def mrPreview = JsonOutput.prettyPrint(JsonOutput.toJson([
+        project_id: mrProjectId, version_number: publishVersion, name: displayName,
+        version_type: releaseType, game_versions: [minecraftVersion], loaders: ['neoforge'],
+        changelog: publishChangelog,
+        dependencies: mrRequires.collect { [project: it, dependency_type: 'required'] }
+]))
+tasks.named('modrinth') {
+    dependsOn validatePublishing
+    description = '构建并上传到 Modrinth（-Ppublish_dry_run 试运行）'
+    onlyIf {
+        if (dryRun) {
+            logger.lifecycle("Modrinth dry run: ${uploadFileProvider.get().asFile.name}\n${mrPreview}")
+        }
+        !dryRun
+    }
+}
+
+tasks.register('publishMods') {
+    group = 'publishing'
+    description = '构建并上传到 CurseForge 与 Modrinth（-Ppublish_dry_run 试运行）'
+    dependsOn tasks.named('publishCurseforge'), tasks.named('modrinth')
+}

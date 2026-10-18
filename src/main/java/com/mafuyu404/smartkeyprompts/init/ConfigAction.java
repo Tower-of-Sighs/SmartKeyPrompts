@@ -36,9 +36,9 @@ public class ConfigAction {
         if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
             int position = Config.get().position();
             if (position == 8) {
-                Config.ACCESS.set(Config::position, 1);
+                Config.UNIT.set(Config::position, 1);
             } else {
-                Config.ACCESS.set(Config::position, position + 1);
+                Config.UNIT.set(Config::position, position + 1);
             }
         }
         event.setCanceled(true);
@@ -59,7 +59,7 @@ public class ConfigAction {
         } else {
             scale = Math.min(scale + 0.1, 10);
         }
-        Config.ACCESS.set(Config::scale, scale);
+        Config.UNIT.set(Config::scale, scale);
     }
 
     private static List<String> getCurrentKeyDescs() {
