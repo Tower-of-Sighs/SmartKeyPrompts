@@ -260,3 +260,16 @@ tasks.named('jar', Jar).configure {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
+
+tasks.register('verifyPromptOrder', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.mafuyu404.smartkeyprompts.init.PromptOrderCheck'
+}
+tasks.register('verifyPromptLayout', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.mafuyu404.smartkeyprompts.init.PromptLayoutCheck'
+}
+
+tasks.named('check') { dependsOn 'verifyPromptOrder', 'verifyPromptLayout' }
