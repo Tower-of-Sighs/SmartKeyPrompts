@@ -128,6 +128,9 @@ public class HUD {
             currentList = new ArrayList<>(KeyPromptList);
         }
 
+        // Stable sort the render snapshot, not the submission/de-duplication list.
+        // Sorting before hashing also detects order changes on reused prompts.
+        currentList.sort(Comparator.nullsLast(Comparator.comparingInt(prompt -> prompt.order)));
         int currentHash = currentList.hashCode();
         if (currentHash != lastPromptListHash) {
             List<KeyPrompt> defaultPrompts = new ArrayList<>();
@@ -198,26 +201,31 @@ public class HUD {
             return;
         }
 
-        int y0 = calculateY0(position, screenHeight, defaultPrompts.size());
         boolean isControlDown = ModKeybindings.CONTROL_KEY.isDown();
 
         PoseStack poseStack = guiGraphics.pose();
 
-        renderKeyPrompts(guiGraphics, poseStack, defaultPrompts, position, screenWidth, y0, scale, isControlDown, false);
-        renderKeyPrompts(guiGraphics, poseStack, crosshairPrompts, position, screenWidth, screenHeight / 2 + 7, scale, isControlDown, true);
+        renderKeyPrompts(guiGraphics, poseStack, defaultPrompts, position, screenWidth, screenHeight, scale, isControlDown, false);
+        renderKeyPrompts(guiGraphics, poseStack, crosshairPrompts, position, screenWidth, screenHeight, scale, isControlDown, true);
     }
 
-    private static int calculateY0(int position, int screenHeight, int promptCount) {
+    private static int calculatePromptY(int position, int screenHeight, int promptCount, int index,
+                                        float scale, boolean isCrosshair) {
+        double rowHeight = 16.0 * scale;
+        if (isCrosshair) return screenHeight / 2 + 7 + (int) (rowHeight * index);
+
+        // Round each row's distance from its anchor. Rounding the whole block
+        // and then adding row offsets makes footer rows drift at fractional scales.
         return switch (position) {
-            case 1, 3 -> 5;
-            case 4, 8 -> screenHeight / 2 - (promptCount * 14) / 2;
-            case 5, 7 -> screenHeight - 5 - promptCount * 14;
-            default -> 0;
+            case 1, 3 -> 5 + (int) (rowHeight * index);
+            case 4, 8 -> screenHeight / 2 + (int) (rowHeight * (index - promptCount / 2.0));
+            case 5, 7 -> screenHeight - 5 - (int) (rowHeight * (promptCount - index));
+            default -> (int) (rowHeight * index);
         };
     }
 
     private static void renderKeyPrompts(GuiGraphics guiGraphics, PoseStack poseStack, List<KeyPrompt> prompts,
-                                         int position, int screenWidth, int baseY, float scale, boolean isControlDown, boolean isCrosshair) {
+                                         int position, int screenWidth, int screenHeight, float scale, boolean isControlDown, boolean isCrosshair) {
 
         // 找出当前按下的最复杂的按键组合
         String mostComplexPressedKey = findMostComplexPressedKey(prompts);
@@ -241,7 +249,7 @@ public class HUD {
                 pressed = KeyUtils.isKeyPressedOfDesc(keyPrompt.desc);
             }
 
-            int y = baseY + (int) (16.0 * scale * i);
+            int y = calculatePromptY(position, screenHeight, prompts.size(), i, scale, isCrosshair);
             int x;
 
             poseStack.pushPose();

@@ -9,6 +9,8 @@ public class KeyPrompt {
     public String group;
     public boolean isCustom = false;
     public String keyAlias = null;
+    /** Ascending display order; equal values retain submission order. */
+    public int order;
 
     private volatile String cachedKeyString = null;
 
@@ -35,6 +37,11 @@ public class KeyPrompt {
 
     public KeyPrompt withKeyAlias(String keyAlias) {
         this.keyAlias = keyAlias;
+        return this;
+    }
+
+    public KeyPrompt withOrder(int order) {
+        this.order = order;
         return this;
     }
 
