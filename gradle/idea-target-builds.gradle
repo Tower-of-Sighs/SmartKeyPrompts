@@ -1,0 +1,42 @@
+// Shared, portable toolbar entries for both supported IDEA entry directories.
+tasks.register('syncIdeaTargetBuilds') {
+    group = 'IDEA'
+    description = 'Refreshes shared toolbar Build and Run Client configurations from discovered targets.'
+    doLast {
+        def repositoryRoot = gradle.ext.workspaceRepositoryRoot
+        [repositoryRoot, new File(repositoryRoot, 'idea-workspace')].each { entryDirectory ->
+            def outputDirectory = new File(entryDirectory, '.run')
+            outputDirectory.mkdirs()
+            def expectedFiles = [] as Set
+            gradle.ext.workspaceTargets.each { name, target ->
+                def actions = target.enabled ? ['Build': 'build', 'RunClient': 'runClient'] : ['Build': 'buildTarget']
+                actions.each { action, taskName ->
+                    def filename = "SKP-${action}-${name}.run.xml".toString()
+                    expectedFiles.add(filename)
+                    def label = "${action == 'RunClient' ? 'Run Client' : 'Build'} ${name}${target.enabled ? '' : ' [CI off]'}"
+                    def output = new File(outputDirectory, filename)
+                    def writer = new StringWriter()
+                    def xml = new groovy.xml.MarkupBuilder(writer)
+                    xml.component(name: 'ProjectRunConfigurationManager') {
+                        configuration(default: 'false', name: label, type: 'GradleRunConfiguration', factoryName: 'Gradle', folderName: 'SKP targets') {
+                            ExternalSystemSettings {
+                                option(name: 'externalProjectPath', value: '$PROJECT_DIR$')
+                                option(name: 'externalSystemIdString', value: 'GRADLE')
+                                option(name: 'scriptParameters', value: '--console=plain')
+                                option(name: 'taskNames') {
+                                    list { option(value: ":targets:${name}:${taskName}") }
+                                }
+                            }
+                            method(v: '2')
+                        }
+                    }
+                    output.setText(writer.toString() + '\n', 'UTF-8')
+                }
+            }
+            outputDirectory.listFiles().findAll {
+                (it.name.startsWith('SKP-Build-') || it.name.startsWith('SKP-RunClient-')) && it.name.endsWith('.run.xml') && !expectedFiles.contains(it.name)
+            }.each { it.delete() }
+            logger.lifecycle("Updated ${expectedFiles.size()} target toolbar configurations in ${outputDirectory}")
+        }
+    }
+}

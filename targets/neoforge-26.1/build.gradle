@@ -1,0 +1,71 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.141'
+    id 'me.modmuss50.mod-publish-plugin' version '2.1.1'
+}
+
+apply from: file('../../gradle/target-conventions/shared.gradle')
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
+}
+
+commonJava {
+    // Exclude only common files with confirmed differences for this target.
+}
+
+tasks.named('sourcesJar', Jar).configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+neoForge {
+    version = neoforge_261_version
+
+    runs {
+        client {
+            client()
+            gameDirectory = file('run')
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    def replaceProperties = [
+            minecraft_version     : neoforge_261_minecraft_version,
+            neoforge_version      : neoforge_261_version,
+            neoforge_version_range: neoforge_261_version_range,
+            mod_id                : mod_id,
+            mod_name              : mod_name,
+            mod_license           : mod_license,
+            mod_version           : mod_version,
+            mod_authors           : mod_authors,
+            mod_description       : mod_description
+    ]
+    inputs.properties replaceProperties
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand replaceProperties + [project: project]
+    }
+}
+
+apply from: file('../../gradle/target-conventions/publish.gradle')

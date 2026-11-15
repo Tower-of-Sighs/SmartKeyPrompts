@@ -1,0 +1,115 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.141'
+    id 'me.modmuss50.mod-publish-plugin' version '2.1.1'
+}
+
+apply from: file('../../gradle/target-conventions/shared.gradle')
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+}
+
+commonJava {
+    // API evidence: docs/version-differences/SMARTKEYPROMPTS.md.
+    exclude 'com/mafuyu404/smartkeyprompts/FabricSmartKeyPrompts.java'
+    exclude 'com/mafuyu404/smartkeyprompts/init/FabricKeybindings.java'
+    exclude 'com/mafuyu404/smartkeyprompts/event/InputEvent.java'
+    exclude 'com/mafuyu404/smartkeyprompts/compat/config/ModMenuIntegration.java'
+    exclude 'com/mafuyu404/smartkeyprompts/client/FabricClientEvents.java'
+    exclude 'com/mafuyu404/smartkeyprompts/platform/LegacyKeyTexture.java'
+    exclude 'com/mafuyu404/smartkeyprompts/data/LegacyItemFunctions.java'
+    exclude 'com/mafuyu404/smartkeyprompts/compat/SlashBlade.java'
+}
+
+tasks.named('sourcesJar', Jar).configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+neoForge {
+    version = neoforge_121_version
+    addModdingDependenciesTo(sourceSets.test)
+
+    runs {
+        client {
+            client()
+            gameDirectory = file('run')
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.blamejared.com/' }
+    maven { url = 'https://maven.sighs.cc/repository/maven-releases/' }
+    maven { url = 'https://maven.sighs.cc/repository/maven-snapshots/' }
+}
+
+dependencies {
+    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
+    runtimeOnly "mezz.jei:jei-1.21.1-neoforge:${jei_version}"
+    compileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor "cc.sighs.oelib:data-common-1.21.1:${oel_version}"
+    implementation "cc.sighs.oelib:oelib-neoforge-1.21.1:${oel_version}"
+    implementation 'org.mvel:mvel2:2.5.0.Final'
+    jarJar('org.mvel:mvel2:2.5.0.Final') {
+        version { strictly '2.5.0.Final' }
+    }
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    def replaceProperties = [
+            minecraft_version     : neoforge_121_minecraft_version,
+            neoforge_version      : neoforge_121_version,
+            neoforge_version_range: neoforge_121_version_range,
+            mod_id                : mod_id,
+            mod_name              : mod_name,
+            mod_license           : mod_license,
+            mod_version           : mod_version,
+            mod_authors           : mod_authors,
+            mod_description       : mod_description
+    ]
+    inputs.properties replaceProperties
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand replaceProperties + [project: project]
+    }
+}
+
+apply from: file('../../gradle/target-conventions/publish.gradle')
+
+publishMods {
+    curseforge { requires('oelib') }
+    modrinth { requires('oelib') }
+}
+
+repositories {
+    exclusiveContent {
+        forRepository { maven { name = 'OELibRelease'; url = 'https://maven.sighs.cc/repository/maven-releases/' } }
+        filter { includeGroup 'cc.sighs.oelib'; includeGroup 'com.flechazo' }
+    }
+}
+
+// An isolated development mod, enabled only by -PldTest.
+apply from: file('../../gradle/ldlib2-dev-test.gradle')
+
+repositories {
+    // Optional KubeJS API compilation; no scripting mod is added to development runtime.
+    exclusiveContent {
+        forRepository { maven { name = 'LatvianCompat'; url = 'https://maven.latvian.dev/releases' } }
+        filter { includeGroup 'dev.latvian.mods'; includeGroup 'dev.latvian.apps' }
+    }
+}

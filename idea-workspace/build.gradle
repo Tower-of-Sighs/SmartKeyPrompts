@@ -1,0 +1,6 @@
+plugins {
+    id 'base'
+    id 'idea'
+}
+
+apply from: file('../gradle/native-workspace.gradle')

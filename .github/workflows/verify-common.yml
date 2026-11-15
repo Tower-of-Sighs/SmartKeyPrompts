@@ -1,0 +1,133 @@
+name: Verify Common Changes
+
+on:
+  push:
+    paths:
+      - 'common/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - 'gradle/**'
+      - 'scripts/build-target.ps1'
+      - 'scripts/discover-targets.ps1'
+      - '.github/workflows/verify-common.yml'
+      - 'targets/**'
+      - 'docs/en/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+  pull_request:
+    paths:
+      - 'common/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - 'gradle/**'
+      - 'scripts/build-target.ps1'
+      - 'scripts/discover-targets.ps1'
+      - '.github/workflows/verify-common.yml'
+      - 'targets/**'
+      - 'docs/en/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-common-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  discover-targets:
+    name: Discover Enabled Targets
+    runs-on: windows-latest
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
+      has-targets: ${{ steps.discover.outputs.has-targets }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Build target matrix
+        id: discover
+        shell: pwsh
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          $arguments = @{}
+          if ($env:EVENT_NAME -ne 'workflow_dispatch' -and $env:BASE_SHA -match '^[0-9a-f]{40}$' -and $env:BASE_SHA -notmatch '^0+$') {
+            $changedFiles = @(git diff --name-only --no-renames $env:BASE_SHA $env:HEAD_SHA)
+            if ($LASTEXITCODE -ne 0) { throw 'Cannot determine changed files for target discovery.' }
+            $arguments.ChangedFiles = $changedFiles
+          }
+          $matrix = .\scripts\discover-targets.ps1 @arguments
+          $hasTargets = @((ConvertFrom-Json $matrix).include).Count -gt 0
+          "matrix=$matrix" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "has-targets=$($hasTargets.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+  common-tests:
+    name: Common Unit Tests
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v6
+      # common/ compiles standalone against the NeoForge 1.21.1 classpath
+      # (common/build.gradle), so its tests run directly.
+      - name: Run common unit tests
+        shell: pwsh
+        run: .\gradlew.bat -p common test --console plain --no-daemon
+
+  target-builds:
+    name: ${{ matrix.target }} (JDK ${{ matrix.java }})
+    needs: [discover-targets, common-tests]
+    if: needs.discover-targets.outputs.has-targets == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.discover-targets.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - uses: gradle/actions/setup-gradle@v6
+      - name: Build target and run tests
+        shell: pwsh
+        run: .\scripts\build-target.ps1 -Target ${{ matrix.target }} -Attempts ${{ matrix.attempts }}
+      - name: Upload build output
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.target }}-jdk-${{ matrix.java }}
+          path: targets/${{ matrix.target }}/build/libs/*.jar
+          if-no-files-found: ignore
+
+  verify-builds:
+    name: Verify Builds
+    needs: [discover-targets, common-tests, target-builds]
+    if: always()
+    runs-on: windows-latest
+    steps:
+      - name: Check verification results
+        shell: pwsh
+        env:
+          DISCOVERY_RESULT: ${{ needs.discover-targets.result }}
+          COMMON_RESULT: ${{ needs.common-tests.result }}
+          TARGET_RESULT: ${{ needs.target-builds.result }}
+          HAS_TARGETS: ${{ needs.discover-targets.outputs.has-targets }}
+        run: |
+          if ($env:DISCOVERY_RESULT -ne 'success' -or $env:COMMON_RESULT -ne 'success') {
+            throw 'Target discovery or common tests failed.'
+          }
+          $expected = if ($env:HAS_TARGETS -eq 'true') { 'success' } else { 'skipped' }
+          if ($env:TARGET_RESULT -ne $expected) { throw 'Target builds did not complete successfully.' }

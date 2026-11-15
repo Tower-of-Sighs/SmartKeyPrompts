@@ -1,0 +1,57 @@
+def repositoryRoot = gradle.ext.workspaceRepositoryRoot
+def enabledTargets = gradle.ext.workspaceTargets.findAll { name, target ->
+    target.enabled && findProject(":targets:${name}") != null
+}
+
+idea.module {
+    sourceDirs = [] as Set
+    testSourceDirs = [] as Set
+    resourceDirs = [] as Set
+    testResourceDirs = [] as Set
+    excludeDirs += new File(repositoryRoot, projectDir == repositoryRoot ? 'idea-workspace/.run' : '.run')
+    ['.tmp', '.codex_tmp', '.gradle', 'common/build', 'common/.gradle'].each {
+        excludeDirs += new File(repositoryRoot, it)
+    }
+}
+
+enabledTargets.each { name, target ->
+    def targetProject = project(":targets:${name}")
+    targetProject.plugins.withId('java') {
+        targetProject.apply plugin: 'idea'
+        targetProject.afterEvaluate {
+            targetProject.idea.module {
+                sourceDirs += targetProject.sourceSets.main.allJava.srcDirs
+                testSourceDirs += targetProject.sourceSets.test.allJava.srcDirs
+                resourceDirs += targetProject.sourceSets.main.resources.srcDirs
+                testResourceDirs += targetProject.sourceSets.test.resources.srcDirs
+                ['run', 'runs', 'run-ldtest', 'logs', 'out'].each { directory ->
+                    excludeDirs += targetProject.file(directory)
+                }
+            }
+        }
+    }
+    targetProject.plugins.withId('fabric-loom') {
+        // Loom only generates IDE runs for its root project by default.
+        targetProject.loom.runs.configureEach { ideConfigGenerated = true }
+    }
+    tasks.register("buildTarget-${name}") {
+        group = 'build'
+        description = "Builds the fully imported ${name} Java module."
+        dependsOn ":targets:${name}:build"
+    }
+    tasks.named('build') { dependsOn ":targets:${name}:build" }
+    tasks.named('clean') { dependsOn ":targets:${name}:clean" }
+}
+
+tasks.register('workspaceInfo') {
+    group = 'IDEA'
+    description = 'Lists imported Java targets and CI-disabled standalone skeletons.'
+    doLast {
+        enabledTargets.each { name, target -> logger.lifecycle("Java module with runClient: ${name}") }
+        gradle.ext.workspaceTargets.findAll { name, target -> !target.enabled }.each { name, target ->
+            logger.lifecycle("CI-disabled skeleton (standalone only): ${name}")
+        }
+    }
+}
+
+apply from: new File(repositoryRoot, 'gradle/idea-target-builds.gradle')

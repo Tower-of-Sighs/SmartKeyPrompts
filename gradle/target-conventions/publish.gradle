@@ -1,0 +1,116 @@
+// Applied from an individual target project, not from the aggregate root project.
+apply plugin: 'maven-publish'
+
+def publishLoader = project.projectDir.name.tokenize('-').first()
+def targetProperties = new Properties()
+file('gradle.properties').withInputStream { targetProperties.load(it) }
+def minecraftVersionKeys = targetProperties.stringPropertyNames().findAll {
+    it.startsWith("${publishLoader}_") && it.endsWith('_minecraft_version')
+}
+if (minecraftVersionKeys.size() != 1) {
+    throw new GradleException("Expected exactly one ${publishLoader}_*_minecraft_version property in ${projectDir}/gradle.properties; found ${minecraftVersionKeys}.")
+}
+def publishMinecraftVersion = providers.provider {
+    findProperty(minecraftVersionKeys.first())?.toString() ?: targetProperties.getProperty(minecraftVersionKeys.first())
+}
+
+def publishArtifactTask = tasks.findByName('remapJar') != null ?
+        tasks.named('remapJar') :
+        (tasks.findByName('reobfJar') != null ? tasks.named('reobfJar') : tasks.named('jar', Jar))
+def publishFile = publishArtifactTask.flatMap { it.archiveFile }
+def curseforgeProjectId = providers.provider { findProperty('publish_curseforge_project_id')?.toString() }
+        .orElse(providers.environmentVariable('CURSEFORGE_PROJECT_ID'))
+def modrinthProjectId = providers.provider { findProperty('publish_modrinth_project_id')?.toString() }
+        .orElse(providers.environmentVariable('MODRINTH_PROJECT_ID'))
+
+publishMods {
+    file = publishFile
+    changelog = providers.environmentVariable('PUBLISH_CHANGELOG').getOrElse('See the project changelog for details.')
+    type = STABLE
+    modLoaders.add(publishLoader)
+
+    curseforge {
+        projectId = curseforgeProjectId
+        accessToken = providers.environmentVariable('CURSEFORGE_TOKEN')
+        minecraftVersions.add(publishMinecraftVersion)
+        client = true
+        server = true
+    }
+
+    modrinth {
+        projectId = modrinthProjectId
+        accessToken = providers.environmentVariable('MODRINTH_TOKEN')
+        minecraftVersions.add(publishMinecraftVersion)
+    }
+}
+
+tasks.named('publishMods').configure {
+    doFirst {
+        def missing = [
+                'publish_curseforge_project_id (or CURSEFORGE_PROJECT_ID)': curseforgeProjectId,
+                'publish_modrinth_project_id (or MODRINTH_PROJECT_ID)'    : modrinthProjectId,
+                'CURSEFORGE_TOKEN'                                        : providers.environmentVariable('CURSEFORGE_TOKEN'),
+                'MODRINTH_TOKEN'                                          : providers.environmentVariable('MODRINTH_TOKEN')
+        ].findAll { _, value -> !value.present || value.get().trim().isEmpty() }.keySet()
+
+        if (!missing.isEmpty()) {
+            throw new GradleException("Cannot publish mods; missing: ${missing.join(', ')}")
+        }
+    }
+}
+
+// Legacy Forge's jar task produces the development-mapped jar first and
+// reobfJar rewrites it for production. Make every publishing task wait for the
+// target-specific production artifact verification instead of relying on a
+// jar finalizer's execution order.
+if (tasks.findByName('verifyReobfuscatedJar') != null) {
+    def productionJarVerification = tasks.named('verifyReobfuscatedJar')
+    tasks.configureEach { task ->
+        if (task.name.startsWith('publish')) {
+            task.dependsOn productionJarVerification
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            groupId = project.group.toString()
+            artifactId = base.archivesName.get()
+            version = project.version.toString()
+
+            // Loader and Minecraft dependencies are supplied by the game runtime,
+            // so the published mod POM must not expose the target build classpath.
+            pom.withXml {
+                def dependenciesNode = asNode().getAt('dependencies')[0]
+                if (dependenciesNode != null) {
+                    dependenciesNode.children().toList().each { dependency ->
+                        dependenciesNode.remove(dependency)
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        def isSnapshot = project.version.toString().toLowerCase().contains('snapshot')
+        def publishUrl = isSnapshot ?
+                'https://maven.sighs.cc/repository/maven-snapshots/' :
+                'https://maven.sighs.cc/repository/maven-releases/'
+
+        maven {
+            name = 'remoteRepo'
+            url = uri(publishUrl)
+            credentials {
+                username = System.getenv('SIGHS_PUBLISH_USER')
+                password = System.getenv('SIGHS_PUBLISH_PASSWORD')
+            }
+        }
+    }
+}
+
+tasks.withType(GenerateModuleMetadata).configureEach {
+    enabled = false
+}

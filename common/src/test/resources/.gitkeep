@@ -1,0 +1,2 @@
+# Shared test resources for every target. Targets add this directory to their
+# own test source set, so files here are visible to all of them.

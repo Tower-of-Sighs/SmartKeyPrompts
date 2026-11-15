@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "smartkeyprompts",
+  "version": "${mod_version}",
+  "name": "SmartKeyPrompts",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "contact": {},
+  "license": "${mod_license}",
+  "icon": "assets/smartkeyprompts/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.mafuyu404.smartkeyprompts.client.FabricClientInitializer",
+      "com.mafuyu404.smartkeyprompts.client.FabricKeyGuideReceiver"
+    ],
+    "main": [
+      "com.mafuyu404.smartkeyprompts.FabricSmartKeyPrompts",
+      "com.mafuyu404.smartkeyprompts.network.FabricKeyGuideNetwork"
+    ],
+    "modmenu": [
+      "com.mafuyu404.smartkeyprompts.compat.config.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "smartkeyprompts.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${fabric_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21",
+    "oelib": ">=0.3.0"
+  },
+  "accessWidener": "smartkeyprompts.accesswidener"
+}

@@ -1,0 +1,45 @@
+// Import enabled targets as real Java projects; retain standalone launchers for CI-disabled skeletons.
+def repositoryRoot = settingsDir.name == 'idea-workspace' ? settingsDir.parentFile : settingsDir
+def targetsRoot = new File(repositoryRoot, 'targets')
+def descriptors = [:]
+if (!targetsRoot.isDirectory()) throw new GradleException("Targets directory not found: ${targetsRoot}")
+
+targetsRoot.listFiles().findAll { it.isDirectory() }.sort { it.name }.each { directory ->
+    def descriptor = new File(directory, 'ci.properties')
+    if (!descriptor.isFile() || !new File(directory, 'gradlew.bat').isFile()) {
+        throw new GradleException("Target '${directory.name}' requires ci.properties and gradlew.bat.")
+    }
+    def values = [:]
+    descriptor.eachLine('UTF-8') { line ->
+        def entry = line.trim()
+        if (entry && !entry.startsWith('#') && !entry.startsWith(';')) {
+            def separator = entry.indexOf('=')
+            if (separator < 1) throw new GradleException("Invalid ci.properties entry in ${directory.name}: ${entry}")
+            def key = entry.substring(0, separator).trim()
+            if (values.containsKey(key)) throw new GradleException("Duplicate ci.properties key '${key}' in ${directory.name}")
+            values[key] = entry.substring(separator + 1).trim()
+        }
+    }
+    def enabled = values.get('ci.enabled', 'true').toLowerCase(Locale.ROOT)
+    if (!(enabled in ['true', 'false'])) throw new GradleException("Target '${directory.name}' has invalid ci.enabled '${enabled}'.")
+    def javaVersion = values['ci.java']
+    if (javaVersion == null || !(javaVersion ==~ /[1-9][0-9]*/) || !javaVersion.isInteger()) {
+        throw new GradleException("Target '${directory.name}' requires a positive integer ci.java value.")
+    }
+    descriptors[directory.name] = [directory: directory, enabled: enabled == 'true', java: javaVersion.toInteger()]
+}
+def selectedTarget = providers.gradleProperty('target').orNull
+if (selectedTarget != null && (!descriptors.containsKey(selectedTarget) || !descriptors[selectedTarget].enabled)) {
+    throw new GradleException("Unknown enabled target '${selectedTarget}'.")
+}
+descriptors.each { name, target ->
+    if (selectedTarget == null || selectedTarget == name) {
+        include(":targets:${name}")
+        project(":targets:${name}").projectDir = target.directory
+        if (!target.enabled) project(":targets:${name}").buildFileName = '../../gradle/target-launcher.gradle'
+    }
+}
+project(':targets').projectDir = targetsRoot
+project(':targets').buildFileName = '../gradle/target-launcher.gradle'
+gradle.ext.workspaceTargets = descriptors
+gradle.ext.workspaceRepositoryRoot = repositoryRoot

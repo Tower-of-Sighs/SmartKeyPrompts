@@ -1,0 +1,92 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://maven.fabricmc.net/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.fabricmc:fabric-loom:1.10.5'
+        classpath 'me.modmuss50:mod-publish-plugin:2.1.1'
+    }
+}
+
+apply plugin: 'fabric-loom'
+apply plugin: 'java'
+apply plugin: 'me.modmuss50.mod-publish-plugin'
+
+apply from: file('../../gradle/target-conventions/shared.gradle')
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+}
+
+commonJava {
+    // API evidence: docs/version-differences/SMARTKEYPROMPTS.md.
+    exclude 'com/mafuyu404/smartkeyprompts/platform/LegacyKeyTexture.java'
+    exclude 'com/mafuyu404/smartkeyprompts/data/LegacyItemFunctions.java'
+}
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.sighs.cc/repository/maven-releases/' }
+    maven { url = 'https://maven.blamejared.com/' }
+    maven { url = 'https://maven.terraformersmc.com/' }
+    maven { url = 'https://cursemaven.com'; content { includeGroup 'curse.maven' } }
+}
+
+loom {
+    accessWidenerPath = file('src/main/resources/smartkeyprompts.accesswidener')
+}
+
+
+dependencies {
+    minecraft "com.mojang:minecraft:${fabric_minecraft_version}"
+
+    modImplementation "cc.sighs.oelib:oelib-fabric-1.21.1:${oel_version}"
+    annotationProcessor "cc.sighs.oelib:data-common-1.21.1:${oel_version}"
+    modCompileOnly 'mezz.jei:jei-1.21.1-fabric-api:19.22.1.316'
+    modLocalRuntime 'mezz.jei:jei-1.21.1-fabric:19.22.1.316'
+    modImplementation 'com.terraformersmc:modmenu:11.0.0'
+    modCompileOnly 'curse.maven:slashblade-refabricated-1324741:7221195'
+    implementation include('org.mvel:mvel2:2.5.0.Final')
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    def replaceProperties = [
+            minecraft_version    : fabric_minecraft_version,
+            fabric_loader_version: fabric_loader_version,
+            fabric_api_version   : fabric_api_version,
+            mod_id               : mod_id,
+            mod_name             : mod_name,
+            mod_license          : mod_license,
+            mod_version          : mod_version,
+            mod_authors          : mod_authors,
+            mod_description      : mod_description
+    ]
+    inputs.properties replaceProperties
+    filesMatching('fabric.mod.json') {
+        expand replaceProperties + [project: project]
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+}
+
+apply from: file('../../gradle/target-conventions/publish.gradle')
+
+publishMods {
+    curseforge { requires("oelib", "fabric-api") }
+    modrinth { requires("oelib", "fabric-api") }
+}
+
+repositories {
+    exclusiveContent {
+        forRepository { maven { name = 'OELibRelease'; url = 'https://maven.sighs.cc/repository/maven-releases/' } }
+        filter { includeGroup 'cc.sighs.oelib'; includeGroup 'com.flechazo' }
+    }
+}

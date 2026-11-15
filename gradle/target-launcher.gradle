@@ -1,0 +1,40 @@
+// This is an IDE task entry, not the target's actual loader build.
+apply plugin: 'idea'
+
+idea.module {
+    name = "target-tasks-${project.name}"
+    contentRoot = new File(gradle.ext.workspaceRepositoryRoot, ".gradle/target-task-modules/${project.name}")
+    sourceDirs = [] as Set
+    testSourceDirs = [] as Set
+    resourceDirs = [] as Set
+    testResourceDirs = [] as Set
+}
+
+def target = gradle.ext.workspaceTargets[project.name]
+if (target == null) return
+def windows = System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')
+def javaHome = providers.gradleProperty("targetJavaHome.${project.name}")
+        .orElse(providers.gradleProperty('targetJavaHome')).orElse(System.getProperty('java.home'))
+
+['buildTarget': 'build', 'cleanTarget': 'clean'].each { entry, delegate ->
+    tasks.register(entry, Exec) {
+        group = 'build'
+        description = "${delegate.capitalize()} ${project.name} using its own wrapper (JDK ${target.java}${target.enabled ? '' : ', CI disabled'})."
+        workingDir target.directory
+        commandLine(windows ? ['cmd', '/c', 'gradlew.bat', delegate, '--console=plain'] :
+                ['sh', './gradlew', delegate, '--console=plain'])
+        doFirst {
+            def jdkDirectory = file(javaHome.get())
+            def release = new File(jdkDirectory, 'release')
+            def javaProperties = new Properties()
+            if (!release.isFile()) throw new GradleException("JDK release file not found: ${release}")
+            release.withInputStream { javaProperties.load(it) }
+            def major = JavaVersion.toVersion(javaProperties.getProperty('JAVA_VERSION').replace('"', '')).majorVersion.toInteger()
+            if (major < target.java) {
+                throw new GradleException("${project.name} needs JDK ${target.java}; set targetJavaHome.${project.name} in your user Gradle properties (current JDK ${major}).")
+            }
+            environment 'JAVA_HOME', jdkDirectory.absolutePath
+            logger.lifecycle("${project.name}: ${delegate} via its own wrapper, JAVA_HOME=${jdkDirectory}")
+        }
+    }
+}

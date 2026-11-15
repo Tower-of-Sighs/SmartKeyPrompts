@@ -1,0 +1,226 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'java-library'
+    id 'maven-publish'
+    id 'jacoco'
+    id 'net.neoforged.moddev.legacyforge' version '2.0.141'
+    id 'me.modmuss50.mod-publish-plugin' version '2.1.1'
+}
+
+apply from: file('../../gradle/target-conventions/shared.gradle')
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(17)
+}
+
+sourceSets.main.resources.srcDir 'src/generated/resources'
+
+commonJava {
+    // Legacy KubeJS is a separate source root so IDEA cannot index it in modern targets.
+    srcDir file('../../common/src/kubejsLegacy/java')
+    exclude 'com/mafuyu404/smartkeyprompts/network/KeyGuidePayload.java'
+    // API evidence: docs/version-differences/SMARTKEYPROMPTS.md.
+    exclude 'com/mafuyu404/smartkeyprompts/platform/ComponentItemData.java'
+    exclude 'com/mafuyu404/smartkeyprompts/platform/ItemDataAccess.java'
+    exclude 'com/mafuyu404/smartkeyprompts/platform/ComponentKeyTexture.java'
+    exclude 'com/mafuyu404/smartkeyprompts/util/DataComponentUtils.java'
+    exclude 'com/mafuyu404/smartkeyprompts/data/ComponentFunctions.java'
+    exclude 'com/mafuyu404/smartkeyprompts/FabricSmartKeyPrompts.java'
+    exclude 'com/mafuyu404/smartkeyprompts/init/FabricKeybindings.java'
+    exclude 'com/mafuyu404/smartkeyprompts/event/InputEvent.java'
+    exclude 'com/mafuyu404/smartkeyprompts/compat/config/ModMenuIntegration.java'
+    exclude 'com/mafuyu404/smartkeyprompts/client/FabricClientEvents.java'
+}
+
+legacyForge {
+    version = "${forge_minecraft_version}-${forge_version}"
+    addModdingDependenciesTo(sourceSets.test)
+    validateAccessTransformers = true
+    accessTransformers {
+        file('src/main/resources/META-INF/accesstransformer.cfg')
+    }
+
+    runs {
+        client {
+            client()
+            gameDirectory = file('run')
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'forge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        data {
+            data()
+
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath(), '--existing', file('../../common/src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+repositories {
+    maven { url = 'https://maven.sighs.cc/repository/maven-releases/' }
+    maven { url = 'https://maven.blamejared.com/' }
+    mavenCentral()
+    maven {
+        name = "MinecraftForge"
+        url = "https://maven.minecraftforge.net/"
+        content {
+            includeGroup "net.minecraftforge"
+        }
+    }
+    maven {
+        name = "Curse Maven"
+        url = "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    def replaceProperties = [
+            minecraft_version      : forge_minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            forge_version          : forge_version,
+            forge_version_range    : forge_version_range,
+            loader_version_range   : forge_loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
+    ]
+
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+tasks.named('jar', Jar).configure {
+    manifest {
+        attributes(["MixinConfigs" : "smartkeyprompts.mixins.json",
+                    "Specification-Title"     : mod_id,
+                    "Specification-Vendor"    : mod_authors,
+                    "Specification-Version"   : "1",
+                    "Implementation-Title"    : project.name,
+                    "Implementation-Version"  : project.jar.archiveVersion,
+                    "Implementation-Vendor"   : mod_authors,
+                    "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")])
+    }
+
+    finalizedBy 'reobfJar'
+}
+
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+tasks.named('test', Test).configure {
+    finalizedBy tasks.named('jacocoTestReport')
+}
+
+tasks.named('jacocoTestReport', JacocoReport).configure {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+}
+
+apply from: file('../../gradle/target-conventions/publish.gradle')
+
+
+def remappedImplementation = configurations.modImplementation
+def remappedCompileOnly = configurations.modCompileOnly
+def remappedRuntimeOnly = configurations.modRuntimeOnly
+dependencies {
+    add(remappedRuntimeOnly.name, "cc.sighs.oelib:oelib-forge-1.20.1:${oel_version}")
+    // LegacyForge mod configurations are not transitive; compile against the used modules.
+    ['config', 'data', 'event'].each { module ->
+        add(remappedCompileOnly.name, "cc.sighs.oelib:${module}-forge-1.20.1:${oel_version}")
+    }
+    // This artifact contains the Java 17 processor; data-common 0.3.0 is Java 21.
+    annotationProcessor("cc.sighs.oelib:data-forge-1.20.1:${oel_version}") { transitive = false }
+    compileOnly 'mezz.jei:jei-1.20.1-forge-api:15.20.0.104'
+    add(remappedRuntimeOnly.name, 'mezz.jei:jei-1.20.1-forge:15.20.0.104')
+    add(remappedCompileOnly.name, 'dev.latvian.mods:kubejs-forge:2001.6.5-build.26')
+    add(remappedCompileOnly.name, 'curse.maven:slashblade-resharped-1022428:7234815')
+    implementation 'org.mvel:mvel2:2.5.0.Final'
+    jarJar('org.mvel:mvel2:2.5.0.Final') { version { strictly '2.5.0.Final' } }
+}
+
+publishMods {
+    curseforge { requires('oelib') }
+    modrinth { requires('oelib') }
+}
+
+
+mixin {
+    add sourceSets.main, 'smartkeyprompts.refmap.json'
+    config 'smartkeyprompts.mixins.json'
+}
+dependencies {
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    compileOnly('com.flechazo:optics-java:1.0.8-beta-j17') { transitive = false }
+}
+
+repositories {
+    exclusiveContent {
+        forRepository { maven { name = 'OELibRelease'; url = 'https://maven.sighs.cc/repository/maven-releases/' } }
+        filter { includeGroup 'cc.sighs.oelib'; includeGroup 'com.flechazo' }
+    }
+}
+
+// Plain JUnit runs do not discover the modules nested inside OELib's mod jar.
+configurations.testRuntimeOnly.extendsFrom(configurations.compileOnly)
+
+configurations.testCompileOnly.extendsFrom(configurations.compileOnly)
+
+// OELib 1.20.1's published processor jar omits its processor service descriptor.
+// Select it explicitly while retaining both Mixin annotation processors.
+tasks.named('compileJava', JavaCompile).configure {
+    options.compilerArgs.addAll(['-processor',
+            'cc.sighs.oelib.data.mvel.processor.ExpressionFunctionProcessor,' +
+            'org.spongepowered.tools.obfuscation.MixinObfuscationProcessorInjection,' +
+            'org.spongepowered.tools.obfuscation.MixinObfuscationProcessorTargets'])
+}
+
+repositories {
+    // Optional KubeJS API compilation; no scripting mod is added to development runtime.
+    exclusiveContent {
+        forRepository { maven { name = 'LatvianCompat'; url = 'https://maven.latvian.dev/releases' } }
+        filter { includeGroup 'dev.latvian.mods'; includeGroup 'dev.latvian.apps' }
+    }
+}

@@ -1,0 +1,65 @@
+// LDLib2 is a development tool. This script adds nothing to ordinary builds or player jars.
+tasks.register('verifyDevelopmentIsolation') {
+    group = 'verification'
+    description = 'Checks that player artifacts and production classpaths do not depend on the development harness.'
+    dependsOn tasks.named('jar'), tasks.named('sourcesJar')
+    doLast {
+        [configurations.compileClasspath, configurations.runtimeClasspath].each { configuration ->
+            if (configuration.incoming.resolutionResult.allComponents.any { it.moduleVersion?.group == 'com.lowdragmc.ldlib2' }) {
+                throw new GradleException("LDLib2 leaked into ${configuration.name}")
+            }
+        }
+        [tasks.named('jar').get().archiveFile.get().asFile,
+         tasks.named('sourcesJar').get().archiveFile.get().asFile].each { artifact ->
+            new java.util.zip.ZipFile(artifact).withCloseable { zip ->
+                zip.entries().each { entry ->
+                    if (entry.name.contains('/autotest/') || entry.name.endsWith('/key_prompts/autotest.json') ||
+                            entry.name.contains('ldlib2')) {
+                        throw new GradleException("Development test file leaked into ${artifact.name}: ${entry.name}")
+                    }
+                    if (!entry.directory && (entry.name.endsWith('.class') || entry.name.endsWith('.toml'))) {
+                        def content = new String(zip.getInputStream(entry).bytes, java.nio.charset.StandardCharsets.ISO_8859_1)
+                        if (content.contains('com/lowdragmc/lowdraglib2') || content.contains('modId = "skp_autotest"') ||
+                                content.contains('modId = "ldlib2"')) {
+                            throw new GradleException("Development dependency leaked into ${artifact.name}: ${entry.name}")
+                        }
+                    }
+                }
+            }
+        }
+        logger.lifecycle('Player artifacts and main classpaths are independent of LDLib2 and skp_autotest.')
+    }
+}
+
+if (!project.hasProperty('ldTest')) return
+
+repositories {
+    maven {
+        name = 'LDLib2Development'
+        url = 'https://maven.firstdarkdev.xyz/snapshots/'
+        content { includeGroup 'com.lowdragmc.ldlib2' }
+    }
+}
+
+def uiTest = sourceSets.create('uiTest')
+uiTest.compileClasspath += sourceSets.main.output
+uiTest.runtimeClasspath += sourceSets.main.output
+configurations.uiTestImplementation.extendsFrom(configurations.implementation)
+configurations.uiTestCompileOnly.extendsFrom(configurations.compileOnly)
+configurations.uiTestRuntimeOnly.extendsFrom(configurations.runtimeOnly)
+
+// The all artifact embeds its libraries; no LDLib2 dependency enters main or publication variants.
+dependencies {
+    uiTestImplementation('com.lowdragmc.ldlib2:ldlib2-neoforge-1.21.1:2.2.45:all') { transitive = false }
+}
+// LDLib2's optional JEI integration needs JEI >= 19.51, which itself needs a newer NeoForge.
+// These scenarios validate SKP without optional JEI; preserve the production NeoForge/JEI versions.
+configurations.uiTestRuntimeClasspath.exclude(group: 'mezz.jei')
+neoForge.addModdingDependenciesTo(uiTest)
+neoForge.mods.create('skp_autotest') { sourceSet(uiTest) }
+neoForge.runs.matching { it.name == 'client' }.configureEach {
+    sourceSet = uiTest
+    gameDirectory = layout.projectDirectory.dir('run-ldtest')
+}
+
+apply from: file('../../gradle/ldlib2-uitest.gradle')

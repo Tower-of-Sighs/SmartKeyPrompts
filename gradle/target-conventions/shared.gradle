@@ -1,0 +1,57 @@
+def properties = new Properties()
+file('../../gradle.properties').withInputStream { properties.load(it) }
+file('gradle.properties').withInputStream { properties.load(it) }
+properties.each { key, value -> ext.set(key.toString(), value.toString()) }
+
+group = mod_group_id
+version = mod_version
+
+base {
+    archivesName = "${mod_name}-${projectDir.name}"
+}
+
+java {
+    withSourcesJar()
+}
+
+def commonJava = objects.sourceDirectorySet('commonJava', 'Shared Java sources')
+commonJava.srcDir file('../../common/src/main/java')
+extensions.add('commonJava', commonJava)
+
+sourceSets {
+    main {
+        java.source commonJava
+        resources.srcDir '../../common/src/main/resources'
+    }
+    test {
+        java.srcDir '../../common/src/test/java'
+        resources.srcDir '../../common/src/test/resources'
+    }
+}
+
+repositories {
+    flatDir {
+        dirs layout.projectDirectory.dir('libs')
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: file('libs'), include: ['*.jar'], exclude: ['*-sources.jar', '*-javadoc.jar'])
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'com.google.code.gson:gson:2.10.1'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
+}
+
+tasks.named('processResources', ProcessResources).configure {
+    from('../../docs/en') {
+        into 'docs/en'
+    }
+}
